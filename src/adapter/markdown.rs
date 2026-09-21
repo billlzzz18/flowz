@@ -68,7 +68,7 @@ impl MarkdownDefinition {
     pub fn parse(path: &Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)?;
         let mut lines = content.lines();
-        if lines.next() != Some("---") {
+        if lines.next().map(|line| line.strip_prefix('\u{feff}').unwrap_or(line)) != Some("---") {
             return Err(FlowzError::Validation(format!(
                 "{} must start with YAML frontmatter",
                 path.display()
