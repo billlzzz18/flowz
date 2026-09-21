@@ -5,7 +5,7 @@
 
 ## Decision
 
-Definitions ของ cron, workflow และ subagent ที่รองรับ adapter ให้มนุษย์เขียนเป็น Markdown โดยใช้ YAML frontmatter สำหรับ structured metadata และ body สำหรับ natural-language instructions. รองรับ `[[wikilink]]`, URL และ `@file` เป็น optional supplements. JSON เป็น generated runtime artifact ไม่ใช่ authoring source.
+Definitions ของ cron และ (ตามแผน) workflow และ subagent ที่รองรับ adapter ให้มนุษย์เขียนเป็น Markdown โดยใช้ YAML frontmatter สำหรับ structured metadata และ body สำหรับ natural-language instructions. รองรับ `[[wikilink]]`, URL และ `@file` เป็น optional supplements. JSON เป็น generated runtime artifact ไม่ใช่ authoring source. Markdown authoring ของ workflow และ subagent ยังไม่ implemented ใน PR นี้
 
 ## Consequences
 
