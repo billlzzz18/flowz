@@ -16,7 +16,7 @@ Cron มีหน้าที่ต่างจาก workflow อย่าง�
 - execution hint อยู่ใน `CronDefinition.execution_mode` (`WithAgent` หรือ `NoAgent`)
 - skill และ tool ถูก resolve จาก frontmatter ก่อน runtime dispatch
 - ทุก definition ต้องมี `DefinitionSource` เพื่อ trace แหล่งที่มา (`Markdown`, `Api`, หรือ `Import`)
-- cron ห้าม spawn subagent โดยตรง และยังคงใช้ `ClientDispatcher` แยกจาก `WorkerSpawner`
++- cron ห้าม spawn subagent โดยตรง และใช้ `ClientDispatcher` สำหรับ dispatch ไปยัง client เท่านั้น
 - JSON เป็น generated runtime artifact; ห้ามใช้เป็น authoring source
 
 ## Runtime model
