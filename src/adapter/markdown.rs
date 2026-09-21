@@ -115,7 +115,7 @@ impl MarkdownDefinition {
 fn extract_links(body: &str) -> Vec<Link> {
     body.split_whitespace()
         .filter_map(|word| {
-            if word.starts_with("[[") && word.ends_with("]]") && word.len() >= 4 {
+            if word.starts_with("[[") && word.ends_with("]]") && word.len() > 4 {
                 return Some(Link::Wikilink(word[2..word.len() - 2].to_string()));
             }
             let clean = word.trim_matches(|c: char| "()[]{}<>,.;\"'".contains(c));
