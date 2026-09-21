@@ -9,6 +9,7 @@ pub mod subagent_delegate;
 pub mod subagent_list;
 pub mod subagent_steer;
 pub mod subagent_stop;
+pub mod canvas;
 
 // Re-export the trait and enum for external use
 pub use inner::{McpTool, Toolset};
@@ -23,3 +24,4 @@ pub use subagent_delegate::SubagentDelegateTool;
 pub use subagent_list::SubagentListTool;
 pub use subagent_steer::SubagentSteerTool;
 pub use subagent_stop::SubagentStopTool;
+pub use canvas::CanvasTool;

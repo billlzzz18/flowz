@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "server": "flowz",
+  "namespace": "flowz_",
+  "toolsets": {
+    "workflow": ["flowz_workflow_run", "flowz_workflow_job", "flowz_workflow_cancel"],
+    "cron": ["flowz_cron_create", "flowz_cron_list", "flowz_cron_cancel"],
+    "subagent": ["flowz_subagent_delegate", "flowz_subagent_list", "flowz_subagent_steer", "flowz_subagent_stop"],
+    "supervisor": ["flowz_supervisor_findings"],
+    "canvas": ["flowz_canvas"]
+  },
+  "tools": [
+    {
+      "name": "flowz_canvas",
+      "toolset": "canvas",
+      "description": "Validate a Flowz canvas document, run its workflow, or inspect a submitted canvas job.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["operation"],
+        "properties": {
+          "operation": {"type": "string", "enum": ["validate", "run", "job"]},
+          "document": {"type": "object", "description": "Required for validate and run."},
+          "job_id": {"type": "string", "description": "Required for job."}
+        }
+      },
+      "annotations": {
+        "read_only": false,
+        "destructive": false,
+        "idempotent": false,
+        "open_world_hint": false
+      },
+      "routing": {
+        "flowz-ui": ["validate", "run", "job"],
+        "flowz-tui": ["validate", "run", "job"]
+      }
+    }
+  ],
+  "clients": {
+    "flowz-ui": {
+      "kind": "desktop-canvas",
+      "default_toolset": "canvas",
+      "transport": "in_process_mcp_tool",
+      "required_focus_zones": ["navigator", "canvas", "inspector", "run_console"]
+    },
+    "flowz-tui": {
+      "kind": "terminal-canvas-operator",
+      "default_toolset": "canvas",
+      "transport": "in_process_mcp_tool",
+      "commands": ["canvas validate", "canvas run", "canvas job"]
+    }
+  }
+}
