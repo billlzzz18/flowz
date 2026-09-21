@@ -7,7 +7,6 @@
     "workflow": ["flowz_workflow_run", "flowz_workflow_job", "flowz_workflow_cancel"],
     "cron": ["flowz_cron_create", "flowz_cron_list", "flowz_cron_cancel"],
     "subagent": ["flowz_subagent_delegate", "flowz_subagent_list", "flowz_subagent_steer", "flowz_subagent_stop"],
-    "supervisor": ["flowz_supervisor_findings"],
     "canvas": ["flowz_canvas"]
   },
   "tools": [
@@ -21,8 +20,8 @@
         "required": ["operation"],
         "properties": {
           "operation": {"type": "string", "enum": ["validate", "run", "job"]},
-          "document": {"type": "object", "description": "Required for validate and run."},
-          "job_id": {"type": "string", "description": "Required for job."}
+          "document": {"type": "object", "description": "Required for validate and run operations."},
+          "job_id": {"type": "string", "description": "Required for job operation."}
         }
       },
       "annotations": {

@@ -1,5 +1,5 @@
 use crate::canvas::CanvasDocument;
-use crate::domain::{JobResult, JobStatus};
+use crate::domain::{JobResult, job_result_to_value};
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
@@ -66,13 +66,36 @@ impl McpTool for CanvasTool {
                 crate::error::FlowzError::Validation("operation required".to_string())
             })?;
 
+        // Validate operation-specific required fields
+        match operation {
+            "validate" | "run" => {
+                if args.get("document").is_none() {
+                    return Err(crate::error::FlowzError::Validation(
+                        "document required for validate and run operations".to_string(),
+                    ));
+                }
+            }
+            "job" => {
+                if args.get("job_id").is_none() {
+                    return Err(crate::error::FlowzError::Validation(
+                        "job_id required for job operation".to_string(),
+                    ));
+                }
+            }
+            _ => {
+                return Err(crate::error::FlowzError::Validation(format!(
+                    "unknown canvas operation: {operation}"
+                )));
+            }
+        }
+
         match operation {
             "validate" => {
                 let document = parse_document(&args)?;
                 let findings = document.validate();
                 Ok(json!({
                     "document_id": document.id,
-                    "valid": !findings.iter().any(|finding| finding.severity == "error"),
+                    "valid": !findings.iter().any(|finding| finding.severity == crate::domain::FindingSeverity::Error),
                     "findings": findings,
                 }))
             }
@@ -105,9 +128,7 @@ impl McpTool for CanvasTool {
                 value["todos"] = serde_json::to_value(todos).unwrap_or(Value::Null);
                 Ok(value)
             }
-            _ => Err(crate::error::FlowzError::Validation(format!(
-                "unknown canvas operation: {operation}"
-            ))),
+            _ => unreachable!(),
         }
     }
 }
@@ -119,28 +140,6 @@ fn parse_document(args: &Value) -> Result<CanvasDocument, crate::error::FlowzErr
     serde_json::from_value(value.clone()).map_err(|error| {
         crate::error::FlowzError::Validation(format!("invalid canvas document: {error}"))
     })
-}
-
-fn job_result_to_value(result: JobResult) -> Value {
-    let status = match result.status {
-        JobStatus::Pending => "pending",
-        JobStatus::PendingConfirmation => "pending_confirmation",
-        JobStatus::Running => "running",
-        JobStatus::Completed => "completed",
-        JobStatus::Failed => "failed",
-        JobStatus::Cancelled => "cancelled",
-    };
-    let mut value = json!({
-        "job_id": result.job_id,
-        "status": status,
-        "total": result.total,
-        "completed": result.completed,
-        "failed": result.failed,
-    });
-    if let Some(result) = result.result {
-        value["result"] = result;
-    }
-    value
 }
 
 #[cfg(test)]
@@ -167,7 +166,7 @@ mod tests {
                     id: "item-1".to_string(),
                     prompt: "prompt".to_string(),
                     brief: "brief".to_string(),
-                    schema: None,
+                    schema: Some(serde_json::json!({"type": "object"})),
                     input_files: Vec::<InputFile>::new(),
                     sandbox: SandboxMode::Isolated,
                     effort_level: EffortLevel::Standard,

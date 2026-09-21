@@ -145,7 +145,7 @@ Inspector เปลี่ยนตาม selection และต้องมี e
 
 ## 6. State ownership และ crate architecture
 
-ปัจจุบัน `Cargo.toml` เป็น binary/library เดียวและ `[workspace] members = []` จึงเสนอการเพิ่ม UI เป็น feature crate หลัง API boundary ของ engine ชัดเจน:
+ปัจจุบัน `Cargo.toml` เป็น single package ที่มี lib และหลาย binaries และ `[workspace] members = []` จึงเสนอการเพิ่ม UI เป็น feature crate หลัง API boundary ของ engine ชัดเจน:
 
 ```text
 crates/
@@ -244,7 +244,7 @@ Validation เป็นส่วนหนึ่งของ workflow model ไ�
 - sheet: ใช้สำหรับ run details/advanced configuration ที่ต้องสำรวจ
 - notification: ใช้บอกผล save/run ที่เห็นไม่ชัดจากตัว object
 
-คำยืนยันต้องระบุ object และ consequence เช่น `Delete “Research item”?` ปุ่มต้องชื่อ `Delete` และ reversible delete ควรมี `Undo` notification แทน dialog
+คำยืนยันต้องระบุ object และ consequence เช่น `Delete "Research item"?` ปุ่มต้องชื่อ `Delete` และ reversible delete ควรมี `Undo` notification แทน dialog
 
 ## 9. Persistence และ service seam
 
@@ -259,16 +259,15 @@ MCP/stdin server ที่ `src/main.rs` ใช้ `server.run_stdio()` ไม�
 
 ## 10. Implementation phases
 
-สอดคล้องกับ ADR-0022 และ enforcement ที่ห้าม merge ข้าม phase:
+สอดคล้องกับ ADR-0022 และ enforcement ที่ห้าม merge ข้าม phase (ADR กำหนด Phase 0–9):
 
-| Phase | งาน UI ที่อนุญาต |
+| Roadmap Milestone | งาน UI ที่อนุญาต (อ้างอิง ADR phase) |
 |---|---|
-| 0–2 | freeze domain/API names; สร้าง pure graph model และ mapping tests ได้ แต่ยังไม่ผูก live UI |
-| 3–4 | กำหนด event/read model seam, supervisor findings และ toolset capabilities ที่ UI ต้องอ่าน |
-| 5–7 | เพิ่ม cron trigger projection, role/live orchestration และ mode-specific labels ใน document model |
-| 8 | สร้าง `flowz-app`/`flowz-canvas`, GPUI bootstrap, shell, canvas, inspector, command routing |
-| 9 | ผูก skills/advanced node editor หลัง API และ names freeze |
-| 10 (เสนอเพิ่ม) | persistence, live runtime console, visual/accessibility regression, packaging |
+| Milestone 1 (ADR 0–2) | freeze domain/API names; สร้าง pure graph model และ mapping tests ได้ แต่ยังไม่ผูก live UI |
+| Milestone 2 (ADR 3–4) | กำหนด event/read model seam, supervisor findings และ toolset capabilities ที่ UI ต้องอ่าน |
+| Milestone 3 (ADR 5–7) | เพิ่ม cron trigger projection, role/live orchestration และ mode-specific labels ใน document model |
+| Milestone 4 (ADR 8–9) | สร้าง `flowz-app`/`flowz-canvas`, GPUI bootstrap, shell, canvas, inspector, command routing; ผูก skills/advanced node editor หลัง API และ names freeze |
+| Milestone 5 (post-ADR) | persistence, live runtime console, visual/accessibility regression, packaging |
 
 MVP ที่ควรส่งมอบก่อน: open blank workflow → add item nodes → connect/reorder → edit inspector → validate → export/run request → show validation result. Live execution console และ cron editor เป็น milestone ถัดไป ไม่ควรทำให้ canvas รอ backend ที่ยังเป็น stub
 
@@ -345,4 +344,4 @@ MVP ที่ควรส่งมอบก่อน: open blank workflow → ad
 - domain มี `WorkflowItem`, `ReducerSpec`, `RunRequest`, budgets, execution/failure policies และ job/subagent status models
 - `JobStore` มี snapshot methods (`get`, `get_state`, `get_todos`, `list`) แต่ยังไม่มี typed live event API ที่ UI ใช้ได้โดยตรง
 - `WorkflowService::run` ระบุเองว่าเป็น Phase 1 stub และ `SupervisorService::get_findings` คืน findings ว่าง
-- ADR-0022 กำหนด Phase 0–9 และ enforcement ว่าห้าม merge ข้าม phase; blueprint จึงเสนอ UI เป็น Phase 8/10 หลัง API seam พร้อม
+- ADR-0022 กำหนด Phase 0–9 และ enforcement ว่าห้าม merge ข้าม phase; blueprint จึงเสนอ UI เป็น Milestone 4/5 หลัง API seam พร้อม

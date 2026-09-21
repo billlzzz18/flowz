@@ -22,9 +22,12 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"]
 tracing-appender = "0.2"
 async-trait = "0.1"
 serde_repr = "0.1"
-notify-rust = "4"
+notify-rust = { version = "4", optional = true }
 which = "6"
 dirs = "5"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+notify-rust = "4"
 
 [[bin]]
 name = "flowz-mcp"
