@@ -1,0 +1,3 @@
+#!/bin/bash
+# Wrapper to call the Python worker
+exec python3 /data/data/com.termux/files/home/plugins/flowz-mcp/worker.py "$@"
