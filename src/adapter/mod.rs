@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
@@ -104,13 +104,19 @@ impl std::fmt::Display for AdapterType {
 }
 
 pub mod acp;
+pub mod agy;
 pub mod claude;
 pub mod codex;
+pub mod compiler;
 pub mod hermes;
-pub mod agy;
+pub mod markdown;
+pub mod registry;
 
 pub use acp::AcpAdapter;
+pub use agy::AgyAdapter;
 pub use claude::ClaudeAdapter;
 pub use codex::CodexAdapter;
+pub use compiler::{CompilerConfig, DefinitionCompiler, MarkdownCompiler};
 pub use hermes::HermesAdapter;
-pub use agy::AgyAdapter;
+pub use markdown::{Frontmatter, Link, MarkdownDefinition};
+pub use registry::{DefinitionSource, MarkdownRegistry};

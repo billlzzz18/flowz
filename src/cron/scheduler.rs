@@ -1,4 +1,4 @@
-use crate::cron::{CronDefinition, CronStore, ClientDispatcher};
+use crate::cron::{ClientDispatcher, CronDefinition, CronStore};
 use anyhow::Result;
 use std::sync::Arc;
 use tokio::time::{Duration, interval};
@@ -36,7 +36,7 @@ impl CronScheduler {
         let now = chrono::Utc::now();
         let due = self.store.due(now).await?;
         for cron in due {
-            let _ = self.dispatcher.dispatch(cron.payload).await;
+            let _ = self.dispatcher.dispatch(cron.command).await;
         }
         Ok(())
     }

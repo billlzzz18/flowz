@@ -23,9 +23,19 @@ pub fn validate_cron_definition(definition: &CronDefinition) -> Result<()> {
         anyhow::bail!("invalid timezone: {}", definition.timezone);
     }
 
-    // Validate payload
-    if definition.payload.command.trim().is_empty() {
-        anyhow::bail!("payload command must not be empty");
+    match &definition.command {
+        crate::domain::ResolvedCommand::Shell { command, .. } if command.trim().is_empty() => {
+            anyhow::bail!("shell command must not be empty")
+        }
+        crate::domain::ResolvedCommand::Tool { name, .. } if name.trim().is_empty() => {
+            anyhow::bail!("tool name must not be empty")
+        }
+        crate::domain::ResolvedCommand::Skill { path, body }
+            if path.as_os_str().is_empty() || body.trim().is_empty() =>
+        {
+            anyhow::bail!("skill path and body must not be empty")
+        }
+        _ => {}
     }
 
     Ok(())

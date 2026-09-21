@@ -321,35 +321,72 @@ pub struct Finding {
 pub struct CronDefinition {
     pub id: String,
     pub name: String,
+    #[serde(default)]
+    pub description: Option<String>,
     pub expression: String,
     pub timezone: String,
-    pub payload: CronPayload,
+    pub command: ResolvedCommand,
+    #[serde(default)]
+    pub execution_mode: CronExecutionMode,
+    #[serde(default)]
+    pub project: Option<String>,
     pub enabled: bool,
     pub overlap_policy: OverlapPolicy,
     pub misfire_policy: MisfirePolicy,
     pub max_runs: Option<u64>,
+    pub source: DefinitionSource,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CronPayload {
-    pub command: String,
-    pub arguments: Vec<String>,
-    pub client_id: Option<String>,
+#[serde(rename_all = "snake_case")]
+pub enum CronExecutionMode {
+    WithAgent,
+    NoAgent,
+}
+impl Default for CronExecutionMode {
+    fn default() -> Self {
+        Self::WithAgent
+    }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub enum ResolvedCommand {
+    Shell {
+        command: String,
+        args: Vec<String>,
+    },
+    Tool {
+        name: String,
+        args: serde_json::Value,
+    },
+    Skill {
+        path: std::path::PathBuf,
+        body: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub enum DefinitionSource {
+    Markdown { path: std::path::PathBuf },
+    Api,
+    Import { from: String },
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum OverlapPolicy {
+    #[default]
     Allow,
     Skip,
     Queue,
     Replace,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum MisfirePolicy {
     Skip,
+    #[default]
     RunOnce,
     CatchUp,
 }
