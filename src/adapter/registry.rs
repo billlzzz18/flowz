@@ -30,7 +30,7 @@ fn collect_markdown(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()> {
     }
     for entry in std::fs::read_dir(root)? {
         let path = entry?.path();
-        if path.is_dir() {
+        if std::fs::symlink_metadata(&path)?.is_dir() {
             collect_markdown(&path, paths)?;
         } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
             paths.push(path);
