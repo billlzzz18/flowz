@@ -146,8 +146,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                     if let Some(state) = store.get_state(&job_id).await {
                         let mut state = state;
                         state.time_budget = Some(TimeBudget {
-                            max_duration_secs: budget_secs,
-                            started_at: Some(started_at),
+                            max_duration_seconds: budget_secs,
+                            ..Default::default()
                         });
                         if let Some(todo) = state.todos.iter_mut().find(|t| t.item_id == item_id) {
                             todo.status = SubagentStatus::InProgress;
@@ -266,14 +266,13 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
 
         // Time budget: use item.max_duration_secs or fallback to spawner timeout
         let budget_secs = request.max_duration_secs.unwrap_or(self.spawner.timeout_secs());
-        let started_at = Utc::now();
 
         // Update todo to InProgress
         if let Some(state) = store.get_state(&job_id).await {
             let mut state = state;
             state.time_budget = Some(TimeBudget {
-                max_duration_secs: budget_secs,
-                started_at: Some(started_at),
+                max_duration_seconds: budget_secs,
+                ..Default::default()
             });
             if let Some(todo) = state.todos.iter_mut().find(|t| t.item_id == item_id) {
                 todo.status = SubagentStatus::InProgress;

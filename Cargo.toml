@@ -15,29 +15,36 @@ thiserror = "1"
 futures = "0.3"
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.8"
 anyhow = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"] }
 tracing-appender = "0.2"
 async-trait = "0.1"
+serde_repr = "0.1"
 notify-rust = { version = "4", optional = true }
 which = "6"
+dirs = "5"
 
 [[bin]]
 name = "flowz-mcp"
 path = "src/main.rs"
 
+[lib]
+name = "flowz"
+path = "src/lib.rs"
+
 [[bin]]
 name = "worker"
-path = "worker-test.rs"
+path = "tests/worker-test.rs"
 
 [[bin]]
 name = "test_spawn"
-path = "test_bin/test_spawn.rs"
+path = "tests/test_bin/test_spawn.rs"
 
 [[bin]]
 name = "test_spawn2"
-path = "test_bin/test_spawn2.rs"
+path = "tests/test_bin/test_spawn2.rs"
 
 [workspace]
 members = []

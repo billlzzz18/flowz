@@ -143,45 +143,36 @@ mod tests {
     use crate::spawn::test_utils::MockProcessSpawner;
     use serde_json::json;
 
+    fn test_item(id: &str) -> WorkflowItem {
+        WorkflowItem {
+            id: id.to_string(),
+            prompt: format!("Test prompt {}", id),
+            brief: format!("Test brief {}", id),
+            schema: Some(json!({"type": "object"})),
+            input_files: vec![],
+            sandbox: SandboxMode::Isolated,
+            effort_level: EffortLevel::Standard,
+            max_duration_secs: None,
+            time_budget: Default::default(),
+            iteration_budget: Default::default(),
+            role: Default::default(),
+        }
+    }
+
     fn test_request() -> RunRequest {
         RunRequest {
             items: vec![
-                WorkflowItem {
-                    id: "item-1".to_string(),
-                    prompt: "Test prompt 1".to_string(),
-                    brief: "Test brief 1".to_string(),
-                    schema: Some(json!({"type": "object"})),
-                    input_files: vec![],
-                    sandbox: SandboxMode::Isolated,
-                    effort_level: EffortLevel::Standard,
-                    max_duration_secs: None,
-                },
-                WorkflowItem {
-                    id: "item-2".to_string(),
-                    prompt: "Test prompt 2".to_string(),
-                    brief: "Test brief 2".to_string(),
-                    schema: Some(json!({"type": "object"})),
-                    input_files: vec![],
-                    sandbox: SandboxMode::Isolated,
-                    effort_level: EffortLevel::Standard,
-                    max_duration_secs: None,
-                },
-                WorkflowItem {
-                    id: "item-3".to_string(),
-                    prompt: "Test prompt 3".to_string(),
-                    brief: "Test brief 3".to_string(),
-                    schema: Some(json!({"type": "object"})),
-                    input_files: vec![],
-                    sandbox: SandboxMode::Isolated,
-                    effort_level: EffortLevel::Standard,
-                    max_duration_secs: None,
-                },
+                test_item("item-1"),
+                test_item("item-2"),
+                test_item("item-3"),
             ],
             mode: ExecutionMode::Parallel,
             failure_policy: FailurePolicy::Collect,
+            reducer: None,
             max_concurrency: Some(4),
             max_agent_calls: Some(10),
             confirmation_required: None,
+            run_budget: Default::default(),
         }
     }
 

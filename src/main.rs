@@ -1,16 +1,9 @@
-pub mod domain;
-pub mod logging;
-pub mod orchestration;
-pub mod spawn;
-pub mod storage;
-pub mod mcp;
-pub mod notify;
-
-use crate::logging::init_logging;
-use crate::mcp::{WorkflowRunTool, WorkflowJobTool, WorkflowCancelTool, ComposePrompt, WorkerPrompt, ReducerPrompt};
-use crate::notify::build_notifier;
-use crate::orchestration::{OrchestrationContext, WorkflowPolicy};
-use crate::spawn::StdProcessSpawner;
+use flowz::invocation::InvocationContext;
+use flowz::mcp::{register_all_tools, register_all_prompts};
+use flowz::notify::build_notifier;
+use flowz::orchestration::{OrchestrationContext, WorkflowPolicy};
+use flowz::service::FlowzService;
+use flowz::spawn::StdProcessSpawner;
 use anyhow::Result;
 use pmcp::{Server, ServerCapabilities};
 use std::path::PathBuf;
@@ -18,7 +11,7 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_logging()?;
+    flowz::logging::init_logging()?;
 
     let notifier = build_notifier();
     let policy = WorkflowPolicy::default();
@@ -33,19 +26,24 @@ async fn main() -> Result<()> {
         base_env: std::collections::HashMap::new(),
         timeout_secs: 300,
     };
-    let orch = Arc::new(OrchestrationContext::with_spawner_and_notifier(policy, spawner, notifier));
+    let orch = Arc::new(OrchestrationContext::with_spawner_and_notifier(policy, spawner, notifier.clone()));
 
-    let server = Server::builder()
+    let service = Arc::new(FlowzService::new());
+
+    let tools = register_all_tools(orch.clone(), service.clone());
+    let prompts = register_all_prompts();
+
+    let mut builder = Server::builder()
         .name("flowz-mcp")
         .version(env!("CARGO_PKG_VERSION"))
-        .capabilities(ServerCapabilities::default())
-        .tool("workflow/run", WorkflowRunTool::new(orch.clone()))
-        .tool("workflow/job", WorkflowJobTool::new(orch.clone()))
-        .tool("workflow/cancel", WorkflowCancelTool::new(orch.clone()))
-        .prompt("workflow/compose", ComposePrompt)
-        .prompt("workflow/worker-prompt", WorkerPrompt)
-        .prompt("workflow/reducer-prompt", ReducerPrompt)
-        .build()?;
+        .capabilities(ServerCapabilities::default());
+    for tool in tools {
+        builder = builder.tool_arc("flowz", Arc::from(tool));
+    }
+    for prompt in prompts {
+        builder = builder.prompt_arc("flowz", Arc::from(prompt));
+    }
+    let server = builder.build()?;
 
     server.run_stdio().await?;
     Ok(())
