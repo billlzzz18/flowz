@@ -25,13 +25,31 @@ impl DefinitionSource for MarkdownRegistry {
     }
 }
 fn collect_markdown(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()> {
+    collect_markdown_internal(root, paths, &mut std::collections::HashSet::new())
+}
+
+fn collect_markdown_internal(
+    root: &Path,
+    paths: &mut Vec<PathBuf>,
+    visited: &mut std::collections::HashSet<PathBuf>,
+) -> Result<()> {
     if !root.exists() {
+        return Ok(());
+    }
+    let canonical = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
+    if !visited.insert(canonical.clone()) {
+        // Already visited this directory (symlink cycle)
         return Ok(());
     }
     for entry in std::fs::read_dir(root)? {
         let path = entry?.path();
-        if std::fs::symlink_metadata(&path)?.is_dir() {
-            collect_markdown(&path, paths)?;
+        let meta = std::fs::symlink_metadata(&path)?;
+        if meta.file_type().is_symlink() {
+            // Skip symlinks to avoid cycles
+            continue;
+        }
+        if meta.is_dir() {
+            collect_markdown_internal(&path, paths, visited)?;
         } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
             paths.push(path);
         }

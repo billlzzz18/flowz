@@ -30,7 +30,7 @@ pub fn validate_cron_definition(definition: &CronDefinition) -> Result<()> {
         crate::domain::ResolvedCommand::Tool { name, .. } if name.trim().is_empty() => {
             anyhow::bail!("tool name must not be empty")
         }
-        ResolvedCommand::Skill { path, body }
+        crate::domain::ResolvedCommand::Skill { path, body }
             if path.as_os_str().is_empty() || body.trim().is_empty() =>
         {
             anyhow::bail!("skill path and body must not be empty")

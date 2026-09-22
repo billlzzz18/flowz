@@ -50,7 +50,7 @@ impl CronStore for MemoryCronStore {
         let crons = self.crons.read().await;
         Ok(crons
             .values()
-            .filter(|c| c.enabled)
+            .filter(|c| c.enabled && crate::cron::scheduler::is_due(c, now))
             .cloned()
             .collect())
     }

@@ -141,14 +141,25 @@ pub fn compile(def: &MarkdownDefinition, timezone: &str) -> Result<CronDefinitio
             args: serde_json::json!({"prompt": def.body}),
         }
     } else if let Some(skill) = &fm.skill {
+        // Sanitize skill path to prevent path traversal
+        let skill_path = PathBuf::from(skill);
+        if skill_path.is_absolute() || skill_path.components().any(|c| c.as_os_str() == "..") {
+            return Err(FlowzError::Validation("skill path must be relative and not contain '..'".into()));
+        }
         ResolvedCommand::Skill {
-            path: PathBuf::from(skill),
+            path: skill_path,
             body: def.body.clone(),
         }
-    } else {
+    } else if fm.no_agent || fm.execution_mode == Some(CronExecutionMode::NoAgent) {
         ResolvedCommand::Shell {
             command: def.body.clone(),
             args: Vec::new(),
+        }
+    } else {
+        // WithAgent mode without tool/skill: treat body as agent prompt via a default tool
+        ResolvedCommand::Tool {
+            name: "agent".to_string(),
+            args: serde_json::json!({"prompt": def.body}),
         }
     };
     let execution_mode = fm.execution_mode.clone().unwrap_or(if fm.no_agent {
