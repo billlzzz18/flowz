@@ -10,7 +10,7 @@ Definitions ของ cron และ (ตามแผน) workflow และ sub
 
 ### Timeout (cron)
 
-- cron ไม่มี timeout / ไม่ cap ระยะเวลารัน: รันตามกำหนดเวลา ทำงานเสร็จเมื่อไหร่ก็จบแค่นั้น; ถ้าครันไม่ได้ก็แค่ error แล้วจบ.
+- cron ไม่มี timeout / ไม่ cap ระยะเวลารัน: รันตามกำหนดเวลา ทำงานเสร็จเมื่อไหร่ก็จบแค่นั้น; ถ้ารันไม่ได้ก็แค่ error แล้วจบ.
 - `timeout` ไม่เป็น field ใน Markdown frontmatter และไม่ต้องมีใน `CronDefinition`. จงอย่าเพิ่ม timeout logic ให้ cron.
 
 ## Consequences
