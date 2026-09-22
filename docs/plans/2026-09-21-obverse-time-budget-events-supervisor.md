@@ -44,7 +44,7 @@ cargo test orchestration::tests
 
 ### Task 3: Add minimal event bus + types
 File: `src/events/mod.rs` (new)
-- `ObservedEvent` enum with variants: `Mcp { tool_name, args, ok }`, `Worker { item_id, ok, elapsed_secs }`, `Client { session_id, event_kind }`, `Cron { job_id, fired }`.
+- `ObservedEvent` enum with variants carrying `InvocationSource`, `request_id`, and optional `session_id` alongside the existing MCP, Worker, Client, and Cron data.
 - `EventBus` struct with `tx: broadcast::Sender<ObservedEvent>` and `rx: broadcast::Receiver`.
 - `publish(event)` and `subscribe()` methods.
 
