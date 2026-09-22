@@ -337,7 +337,7 @@ pub struct CronDefinition {
     pub source: DefinitionSource,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum CronExecutionMode {
     WithAgent,
