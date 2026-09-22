@@ -1,6 +1,6 @@
-pub mod workflow;
 pub mod cron;
 pub mod supervisor;
+pub mod workflow;
 
 pub struct FlowzService {
     pub workflow: workflow::WorkflowService,

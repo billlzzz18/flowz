@@ -18,10 +18,20 @@ impl DefinitionSource for MarkdownRegistry {
     fn scan(&self) -> Result<Vec<MarkdownDefinition>> {
         let mut paths = Vec::new();
         collect_markdown(&self.root, &mut paths)?;
-        paths
-            .into_iter()
-            .map(|path| MarkdownDefinition::parse(&path))
-            .collect()
+        let mut definitions = Vec::new();
+        // ponytail: one malformed/unrelated .md must not kill the whole registry;
+        // skip it with a warning, still load the rest. Directory-walk IO errors still propagate.
+        for path in paths {
+            match MarkdownDefinition::parse(&path) {
+                Ok(def) => definitions.push(def),
+                Err(e) => tracing::warn!(
+                    path = %path.display(),
+                    error = %e,
+                    "skipping malformed markdown definition"
+                ),
+            }
+        }
+        Ok(definitions)
     }
 }
 fn collect_markdown(root: &Path, paths: &mut Vec<PathBuf>) -> Result<()> {

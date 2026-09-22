@@ -73,11 +73,9 @@ Use this tool after flowz_workflow_run returns a job_id, especially when the job
 
         match operation {
             "status" | "result" => {
-                let job_result = self
-                    .orch
-                    .get_job(&job_id)
-                    .await
-                    .ok_or_else(|| crate::error::FlowzError::NotFound(format!("job not found: {}", job_id)))?;
+                let job_result = self.orch.get_job(&job_id).await.ok_or_else(|| {
+                    crate::error::FlowzError::NotFound(format!("job not found: {}", job_id))
+                })?;
                 Ok(job_result_to_value(job_result))
             }
             "approve" => {
@@ -87,7 +85,9 @@ Use this tool after flowz_workflow_run returns a job_id, especially when the job
                     .await
                     .map_err(|e| crate::error::FlowzError::Internal(e.to_string()))?
                     .ok_or_else(|| {
-                        crate::error::FlowzError::InvalidState("job not in pending_confirmation state".to_string())
+                        crate::error::FlowzError::InvalidState(
+                            "job not in pending_confirmation state".to_string(),
+                        )
                     })?;
                 Ok(job_result_to_value(result))
             }
@@ -112,24 +112,26 @@ Use this tool after flowz_workflow_run returns a job_id, especially when the job
                     .await
                     .map_err(|e| crate::error::FlowzError::Internal(e.to_string()))?;
                 if !success {
-                    return Err(crate::error::FlowzError::InvalidState("job not cancellable".to_string()));
+                    return Err(crate::error::FlowzError::InvalidState(
+                        "job not cancellable".to_string(),
+                    ));
                 }
                 let job_result = self.orch.get_job(&job_id).await.unwrap();
                 Ok(job_result_to_value(job_result))
             }
             "todos" => {
-                let todos = self
-                    .orch
-                    .get_todos(&job_id)
-                    .await
-                    .ok_or_else(|| crate::error::FlowzError::NotFound(format!("job not found: {}", job_id)))?;
+                let todos = self.orch.get_todos(&job_id).await.ok_or_else(|| {
+                    crate::error::FlowzError::NotFound(format!("job not found: {}", job_id))
+                })?;
                 let mut content = json!({
                     "job_id": job_id,
                     "todos": todos,
                 });
                 Ok(content)
             }
-            _ => Err(crate::error::FlowzError::Validation(format!("unknown operation: {operation}"))),
+            _ => {
+                Err(crate::error::FlowzError::Validation(format!("unknown operation: {operation}")))
+            }
         }
     }
 }

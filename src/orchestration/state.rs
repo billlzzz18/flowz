@@ -1,4 +1,6 @@
-use crate::domain::{JobResult, JobStatus, RunRequest, SubagentTodo, SubagentTimeout, TimeBudget, generate_id};
+use crate::domain::{
+    JobResult, JobStatus, RunRequest, SubagentTimeout, SubagentTodo, TimeBudget, generate_id,
+};
 use anyhow::Result;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -38,7 +40,10 @@ impl JobStore {
     }
 
     pub async fn insert_state(&self, state: JobState) {
-        self.states.write().await.insert(state.job_id.clone(), state);
+        self.states
+            .write()
+            .await
+            .insert(state.job_id.clone(), state);
     }
 
     pub async fn get_state(&self, job_id: &str) -> Option<JobState> {
@@ -46,7 +51,11 @@ impl JobStore {
     }
 
     pub async fn get_todos(&self, job_id: &str) -> Option<Vec<SubagentTodo>> {
-        self.states.read().await.get(job_id).map(|s| s.todos.clone())
+        self.states
+            .read()
+            .await
+            .get(job_id)
+            .map(|s| s.todos.clone())
     }
 
     pub async fn remove(&self, job_id: &str) -> Option<JobResult> {

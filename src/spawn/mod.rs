@@ -59,16 +59,16 @@ impl From<SpawnError> for WorkerError {
 pub enum SpawnError {
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
-    
+
     #[error("Serialization error: {0}")]
     Serialize(#[from] serde_json::Error),
-    
+
     #[error("Worker exited with status {0}: {1}")]
     Exit(String, String),
-    
+
     #[error("Timeout after {seconds}s")]
     Timeout { seconds: u64 },
-    
+
     #[error("Validation error: {0}")]
     Validation(String),
 }
@@ -193,7 +193,10 @@ pub mod protocol {
         serde_json::from_str(&line).map_err(SpawnError::Serialize)
     }
 
-    pub fn write_response<W: Write>(writer: &mut W, response: &WorkerResponse) -> Result<(), SpawnError> {
+    pub fn write_response<W: Write>(
+        writer: &mut W,
+        response: &WorkerResponse,
+    ) -> Result<(), SpawnError> {
         let line = serde_json::to_string(response).map_err(SpawnError::Serialize)?;
         writeln!(writer, "{}", line).map_err(SpawnError::Io)
     }

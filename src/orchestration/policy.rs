@@ -1,4 +1,6 @@
-use crate::domain::{ExecutionMode, FailurePolicy, JobStatus, RunRequest, SandboxMode, WorkflowItem};
+use crate::domain::{
+    ExecutionMode, FailurePolicy, JobStatus, RunRequest, SandboxMode, WorkflowItem,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,20 +27,28 @@ impl Default for WorkflowPolicy {
 impl WorkflowPolicy {
     pub fn validate_request(&self, request: &RunRequest) -> anyhow::Result<()> {
         let total_items = request.items.len() as u32;
-        
+
         if total_items > self.max_agent_calls {
             anyhow::bail!("too many workflow items: {} > {}", total_items, self.max_agent_calls);
         }
 
         for item in &request.items {
             if item.prompt.len() > self.max_prompt_bytes {
-                anyhow::bail!("prompt too large: {} > {} bytes", item.prompt.len(), self.max_prompt_bytes);
+                anyhow::bail!(
+                    "prompt too large: {} > {} bytes",
+                    item.prompt.len(),
+                    self.max_prompt_bytes
+                );
             }
         }
 
         if let Some(max_concurrency) = request.max_concurrency {
             if max_concurrency as usize > self.max_concurrency {
-                anyhow::bail!("max_concurrency {} exceeds policy limit {}", max_concurrency, self.max_concurrency);
+                anyhow::bail!(
+                    "max_concurrency {} exceeds policy limit {}",
+                    max_concurrency,
+                    self.max_concurrency
+                );
             }
         }
 

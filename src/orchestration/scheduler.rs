@@ -19,7 +19,11 @@ pub struct WorkflowScheduler<S: ProcessSpawner + Default + 'static> {
 }
 
 impl<S: ProcessSpawner + Default + 'static> WorkflowScheduler<S> {
-    pub fn new(policy: Arc<WorkflowPolicy>, store: Arc<JobStore>, notifier: Arc<dyn Notifier>) -> Self {
+    pub fn new(
+        policy: Arc<WorkflowPolicy>,
+        store: Arc<JobStore>,
+        notifier: Arc<dyn Notifier>,
+    ) -> Self {
         Self {
             policy,
             store,
@@ -30,7 +34,12 @@ impl<S: ProcessSpawner + Default + 'static> WorkflowScheduler<S> {
         }
     }
 
-    pub fn with_spawner(policy: Arc<WorkflowPolicy>, store: Arc<JobStore>, notifier: Arc<dyn Notifier>, spawner: S) -> Self {
+    pub fn with_spawner(
+        policy: Arc<WorkflowPolicy>,
+        store: Arc<JobStore>,
+        notifier: Arc<dyn Notifier>,
+        spawner: S,
+    ) -> Self {
         Self {
             policy,
             store,
@@ -50,7 +59,12 @@ impl<S: ProcessSpawner + Default + 'static> WorkflowScheduler<S> {
             .spawner
             .clone()
             .unwrap_or_else(|| Arc::new(S::default()));
-        let engine = Arc::new(WorkflowEngine::new(spawner, self.policy.clone(), self.notifier.clone(), self.store.clone()));
+        let engine = Arc::new(WorkflowEngine::new(
+            spawner,
+            self.policy.clone(),
+            self.notifier.clone(),
+            self.store.clone(),
+        ));
 
         self.engines
             .write()

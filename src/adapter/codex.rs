@@ -1,4 +1,4 @@
-use super::{AdapterType, AgentAdapter, ChatMessage, SessionInfo, ToolCallInfo, ContentBlock};
+use super::{AdapterType, AgentAdapter, ChatMessage, ContentBlock, SessionInfo, ToolCallInfo};
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use tokio::fs;
@@ -20,7 +20,10 @@ impl CodexAdapter {
     }
 
     fn find_session_file(&self, session_id: &str) -> Option<PathBuf> {
-        if !session_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+        if !session_id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        {
             return None;
         }
 
@@ -42,7 +45,11 @@ impl CodexAdapter {
                     return Some(found);
                 }
             } else if entry.file_type().ok()?.is_file() {
-                if path.file_name()?.to_str()?.ends_with(&format!("-{}.jsonl", session_id)) {
+                if path
+                    .file_name()?
+                    .to_str()?
+                    .ends_with(&format!("-{}.jsonl", session_id))
+                {
                     return Some(path);
                 }
             }
@@ -114,7 +121,8 @@ impl AgentAdapter for CodexAdapter {
     }
 
     async fn read_session(&self, session_id: &str) -> anyhow::Result<Vec<ChatMessage>> {
-        let file_path = self.find_session_file(session_id)
+        let file_path = self
+            .find_session_file(session_id)
             .ok_or_else(|| anyhow::anyhow!("Session not found: {}", session_id))?;
 
         let content = fs::read_to_string(&file_path).await?;
@@ -131,7 +139,9 @@ fn parse_codex_session(content: &str) -> Vec<ChatMessage> {
         .lines()
         .filter_map(|line| {
             let line = line.trim();
-            if line.is_empty() { return None; }
+            if line.is_empty() {
+                return None;
+            }
             parse_codex_line(line)
         })
         .collect();
@@ -145,17 +155,35 @@ fn parse_codex_session(content: &str) -> Vec<ChatMessage> {
             match record_type.as_str() {
                 "event" => {
                     if let Some(event) = &record.event {
-                        process_legacy_event(event, record.timestamp, &mut current_turn, &mut messages, &mut msg_index);
+                        process_legacy_event(
+                            event,
+                            record.timestamp,
+                            &mut current_turn,
+                            &mut messages,
+                            &mut msg_index,
+                        );
                     }
                 }
                 "event_msg" => {
                     if let Some(payload) = &record.payload {
-                        process_event_msg(payload, record.timestamp, &mut current_turn, &mut messages, &mut msg_index);
+                        process_event_msg(
+                            payload,
+                            record.timestamp,
+                            &mut current_turn,
+                            &mut messages,
+                            &mut msg_index,
+                        );
                     }
                 }
                 "response_item" => {
                     if let Some(payload) = &record.payload {
-                        process_response_item(payload, record.timestamp, &mut current_turn, &mut messages, &mut msg_index);
+                        process_response_item(
+                            payload,
+                            record.timestamp,
+                            &mut current_turn,
+                            &mut messages,
+                            &mut msg_index,
+                        );
                     }
                 }
                 "compacted" => {}
@@ -174,8 +202,15 @@ fn parse_codex_session(content: &str) -> Vec<ChatMessage> {
 fn parse_codex_line(line: &str) -> Option<ParsedRecord> {
     let parsed: serde_json::Value = serde_json::from_str(line).ok()?;
     Some(ParsedRecord {
-        timestamp: parsed.get("timestamp").and_then(|v| v.as_str()).map(CodexAdapter::parse_timestamp).unwrap_or(0),
-        record_type: parsed.get("type").and_then(|v| v.as_str()).map(String::from),
+        timestamp: parsed
+            .get("timestamp")
+            .and_then(|v| v.as_str())
+            .map(CodexAdapter::parse_timestamp)
+            .unwrap_or(0),
+        record_type: parsed
+            .get("type")
+            .and_then(|v| v.as_str())
+            .map(String::from),
         event: parsed.get("event").cloned(),
         payload: parsed.get("payload").cloned(),
     })
@@ -196,31 +231,53 @@ struct TurnState {
     server_turn_id: Option<String>,
 }
 
-fn process_legacy_event(event: &serde_json::Value, timestamp: i64, turn: &mut Option<TurnState>, messages: &mut Vec<ChatMessage>, msg_index: &mut usize) {
+fn process_legacy_event(
+    event: &serde_json::Value,
+    timestamp: i64,
+    turn: &mut Option<TurnState>,
+    messages: &mut Vec<ChatMessage>,
+    msg_index: &mut usize,
+) {
     let event_type = event.get("type").and_then(|v| v.as_str()).unwrap_or("");
     let item = event.get("item");
 
     match event_type {
         "turn.started" => {
-            if let Some(t) = turn.take() { flush_turn(t, messages, msg_index); }
+            if let Some(t) = turn.take() {
+                flush_turn(t, messages, msg_index);
+            }
             *turn = Some(TurnState::default());
         }
         "item.started" | "item.updated" | "item.completed" => {
             if let Some(item) = item {
-                process_legacy_item(event_type, item, turn.get_or_insert_with(TurnState::default), timestamp);
+                process_legacy_item(
+                    event_type,
+                    item,
+                    turn.get_or_insert_with(TurnState::default),
+                    timestamp,
+                );
             }
         }
         "turn.completed" => {
-            if let Some(t) = turn.as_mut() { t.completed_at = Some(timestamp); }
+            if let Some(t) = turn.as_mut() {
+                t.completed_at = Some(timestamp);
+            }
         }
         "turn.failed" => {
-            if let Some(t) = turn.as_mut() { t.interrupted = true; }
+            if let Some(t) = turn.as_mut() {
+                t.interrupted = true;
+            }
         }
         _ => {}
     }
 }
 
-fn process_legacy_item(event_type: &str, item: &serde_json::Value, turn: &mut TurnState, timestamp: i64) {
+fn process_legacy_item(
+    event_type: &str,
+    item: &serde_json::Value,
+    turn: &mut TurnState,
+    timestamp: i64,
+) {
     let item_type = item.get("type").and_then(|v| v.as_str()).unwrap_or("");
     let item_id = item.get("id").and_then(|v| v.as_str()).unwrap_or("");
 
@@ -249,32 +306,64 @@ fn process_legacy_item(event_type: &str, item: &serde_json::Value, turn: &mut Tu
                     status: Some("running".to_string()),
                     result: None,
                 });
-                turn.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(item_id.to_string()), content: None, citations: None });
+                turn.content_blocks.push(ContentBlock {
+                    r#type: "tool_use".to_string(),
+                    tool_id: Some(item_id.to_string()),
+                    content: None,
+                    citations: None,
+                });
             } else if event_type == "item.completed" {
                 if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                    let raw = item.get("aggregated_output").and_then(|v| v.as_str()).unwrap_or("");
+                    let raw = item
+                        .get("aggregated_output")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
                     tc.result = Some(raw.to_string());
                     let exit_code = item.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1);
-                    tc.status = Some(if exit_code == 0 { "completed" } else { "error" }.to_string());
+                    tc.status =
+                        Some(if exit_code == 0 { "completed" } else { "error" }.to_string());
                 }
             }
         }
         "file_change" => {
             if matches!(event_type, "item.started" | "item.completed") {
-                let changes = item.get("changes").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                let changes = item
+                    .get("changes")
+                    .and_then(|v| v.as_array())
+                    .cloned()
+                    .unwrap_or_default();
                 let existing = turn.tool_calls.iter().find(|tc| tc.id == item_id).cloned();
                 if existing.is_none() {
                     turn.tool_calls.push(ToolCallInfo {
                         id: item_id.to_string(),
                         name: "Edit".to_string(),
                         input: serde_json::json!({ "changes": changes }),
-                        status: Some(if item.get("status").and_then(|v| v.as_str()) == Some("completed") { "completed" } else { "error" }.to_string()),
+                        status: Some(
+                            if item.get("status").and_then(|v| v.as_str()) == Some("completed") {
+                                "completed"
+                            } else {
+                                "error"
+                            }
+                            .to_string(),
+                        ),
                         result: None,
                     });
-                    turn.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(item_id.to_string()), content: None, citations: None });
+                    turn.content_blocks.push(ContentBlock {
+                        r#type: "tool_use".to_string(),
+                        tool_id: Some(item_id.to_string()),
+                        content: None,
+                        citations: None,
+                    });
                 } else if event_type == "item.completed" {
                     if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                        tc.status = Some(if item.get("status").and_then(|v| v.as_str()) == Some("completed") { "completed" } else { "error" }.to_string());
+                        tc.status = Some(
+                            if item.get("status").and_then(|v| v.as_str()) == Some("completed") {
+                                "completed"
+                            } else {
+                                "error"
+                            }
+                            .to_string(),
+                        );
                     }
                 }
             }
@@ -288,7 +377,12 @@ fn process_legacy_item(event_type: &str, item: &serde_json::Value, turn: &mut Tu
                     status: Some("running".to_string()),
                     result: None,
                 });
-                turn.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(item_id.to_string()), content: None, citations: None });
+                turn.content_blocks.push(ContentBlock {
+                    r#type: "tool_use".to_string(),
+                    tool_id: Some(item_id.to_string()),
+                    content: None,
+                    citations: None,
+                });
             } else if event_type == "item.completed" {
                 if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
                     tc.result = Some("Search complete".to_string());
@@ -307,12 +401,31 @@ fn process_legacy_item(event_type: &str, item: &serde_json::Value, turn: &mut Tu
                     status: Some("running".to_string()),
                     result: None,
                 });
-                turn.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(item_id.to_string()), content: None, citations: None });
+                turn.content_blocks.push(ContentBlock {
+                    r#type: "tool_use".to_string(),
+                    tool_id: Some(item_id.to_string()),
+                    content: None,
+                    citations: None,
+                });
             } else if event_type == "item.completed" {
                 if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
                     let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("");
-                    tc.status = Some(if status == "completed" { "completed" } else { "error" }.to_string());
-                    tc.result = Some(if status == "completed" { "Completed" } else { "Failed" }.to_string());
+                    tc.status = Some(
+                        if status == "completed" {
+                            "completed"
+                        } else {
+                            "error"
+                        }
+                        .to_string(),
+                    );
+                    tc.result = Some(
+                        if status == "completed" {
+                            "Completed"
+                        } else {
+                            "Failed"
+                        }
+                        .to_string(),
+                    );
                 }
             }
         }
@@ -320,22 +433,36 @@ fn process_legacy_item(event_type: &str, item: &serde_json::Value, turn: &mut Tu
     }
 }
 
-fn process_event_msg(payload: &serde_json::Value, timestamp: i64, turn: &mut Option<TurnState>, messages: &mut Vec<ChatMessage>, msg_index: &mut usize) {
+fn process_event_msg(
+    payload: &serde_json::Value,
+    timestamp: i64,
+    turn: &mut Option<TurnState>,
+    messages: &mut Vec<ChatMessage>,
+    msg_index: &mut usize,
+) {
     let msg_type = payload.get("type").and_then(|v| v.as_str()).unwrap_or("");
 
     match msg_type {
         "task_started" => {
-            if let Some(t) = turn.take() { flush_turn(t, messages, msg_index); }
+            if let Some(t) = turn.take() {
+                flush_turn(t, messages, msg_index);
+            }
             let mut new_turn = TurnState::default();
             new_turn.timestamp = timestamp;
-            new_turn.server_turn_id = payload.get("turn_id").and_then(|v| v.as_str()).map(String::from);
+            new_turn.server_turn_id = payload
+                .get("turn_id")
+                .and_then(|v| v.as_str())
+                .map(String::from);
             *turn = Some(new_turn);
         }
         "task_complete" => {
             if let Some(t) = turn.as_mut() {
                 t.completed_at = Some(timestamp);
                 if t.server_turn_id.is_none() {
-                    t.server_turn_id = payload.get("turn_id").and_then(|v| v.as_str()).map(String::from);
+                    t.server_turn_id = payload
+                        .get("turn_id")
+                        .and_then(|v| v.as_str())
+                        .map(String::from);
                 }
             }
         }
@@ -367,7 +494,13 @@ fn process_event_msg(payload: &serde_json::Value, timestamp: i64, turn: &mut Opt
     }
 }
 
-fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut Option<TurnState>, messages: &mut Vec<ChatMessage>, msg_index: &mut usize) {
+fn process_response_item(
+    payload: &serde_json::Value,
+    timestamp: i64,
+    turn: &mut Option<TurnState>,
+    messages: &mut Vec<ChatMessage>,
+    msg_index: &mut usize,
+) {
     let item_type = payload.get("type").and_then(|v| v.as_str()).unwrap_or("");
 
     match item_type {
@@ -376,7 +509,9 @@ fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut
             let content = payload.get("content").and_then(|v| v.as_array());
 
             if role == "user" {
-                if let Some(t) = turn.take() { flush_turn(t, messages, msg_index); }
+                if let Some(t) = turn.take() {
+                    flush_turn(t, messages, msg_index);
+                }
                 let mut new_turn = TurnState::default();
                 new_turn.timestamp = timestamp;
                 if let Some(content) = content {
@@ -405,10 +540,14 @@ fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut
         }
         "function_call" | "custom_tool_call" => {
             let t = turn.get_or_insert_with(TurnState::default);
-            let call_id = payload.get("call_id").and_then(|v| v.as_str()).unwrap_or("");
+            let call_id = payload
+                .get("call_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let name = payload.get("name").and_then(|v| v.as_str()).unwrap_or("");
             let args = payload.get("arguments").or_else(|| payload.get("input"));
-            let input = serde_json::from_value(args.cloned().unwrap_or(serde_json::json!({}))).unwrap_or(serde_json::json!({}));
+            let input = serde_json::from_value(args.cloned().unwrap_or(serde_json::json!({})))
+                .unwrap_or(serde_json::json!({}));
 
             t.tool_calls.push(ToolCallInfo {
                 id: call_id.to_string(),
@@ -417,11 +556,19 @@ fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut
                 status: Some("running".to_string()),
                 result: None,
             });
-            t.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(call_id.to_string()), content: None, citations: None });
+            t.content_blocks.push(ContentBlock {
+                r#type: "tool_use".to_string(),
+                tool_id: Some(call_id.to_string()),
+                content: None,
+                citations: None,
+            });
         }
         "function_call_output" | "custom_tool_call_output" => {
             let t = turn.get_or_insert_with(TurnState::default);
-            let call_id = payload.get("call_id").and_then(|v| v.as_str()).unwrap_or("");
+            let call_id = payload
+                .get("call_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let output = payload.get("output");
             let raw = output.cloned().unwrap_or(serde_json::json!({})).to_string();
 
@@ -433,26 +580,54 @@ fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut
         }
         "web_search_call" => {
             let t = turn.get_or_insert_with(TurnState::default);
-            let call_id = payload.get("call_id").and_then(|v| v.as_str()).unwrap_or_else(|| {
-                let ts = format!("ws-{}", timestamp);
-                Box::leak(ts.into_boxed_str())
-            });
+            let call_id = payload
+                .get("call_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or_else(|| {
+                    let ts = format!("ws-{}", timestamp);
+                    Box::leak(ts.into_boxed_str())
+                });
             t.tool_calls.push(ToolCallInfo {
                 id: call_id.to_string(),
                 name: "WebSearch".to_string(),
                 input: serde_json::json!({ "action": payload.get("action") }),
-                status: Some(if payload.get("status").and_then(|v| v.as_str()) == Some("completed") { "completed" } else { "running" }.to_string()),
-                result: if payload.get("status").and_then(|v| v.as_str()) == Some("completed") { Some("Search complete".to_string()) } else { None },
+                status: Some(
+                    if payload.get("status").and_then(|v| v.as_str()) == Some("completed") {
+                        "completed"
+                    } else {
+                        "running"
+                    }
+                    .to_string(),
+                ),
+                result: if payload.get("status").and_then(|v| v.as_str()) == Some("completed") {
+                    Some("Search complete".to_string())
+                } else {
+                    None
+                },
             });
-            t.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(call_id.to_string()), content: None, citations: None });
+            t.content_blocks.push(ContentBlock {
+                r#type: "tool_use".to_string(),
+                tool_id: Some(call_id.to_string()),
+                content: None,
+                citations: None,
+            });
         }
         "mcp_tool_call" => {
             let t = turn.get_or_insert_with(TurnState::default);
-            let call_id = payload.get("call_id").and_then(|v| v.as_str()).unwrap_or("");
+            let call_id = payload
+                .get("call_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let server = payload.get("server").and_then(|v| v.as_str()).unwrap_or("");
             let tool = payload.get("tool").and_then(|v| v.as_str()).unwrap_or("");
-            let args = payload.get("arguments").cloned().unwrap_or(serde_json::json!({}));
-            let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("running");
+            let args = payload
+                .get("arguments")
+                .cloned()
+                .unwrap_or(serde_json::json!({}));
+            let status = payload
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("running");
             let result = payload.get("result");
             let error = payload.get("error");
 
@@ -462,16 +637,40 @@ fn process_response_item(payload: &serde_json::Value, timestamp: i64, turn: &mut
             }
 
             let is_error = error.is_some() && !error.unwrap().is_null();
-            let result_str = if is_error { "Failed" } else if result.is_some() { "Completed" } else { "" };
+            let result_str = if is_error {
+                "Failed"
+            } else if result.is_some() {
+                "Completed"
+            } else {
+                ""
+            };
 
             t.tool_calls.push(ToolCallInfo {
                 id: call_id.to_string(),
                 name: format!("mcp__{}__{}", server, tool),
                 input: normalized_input,
-                status: Some(if status == "completed" && !is_error { "completed" } else if is_error { "error" } else { "running" }.to_string()),
-                result: if !result_str.is_empty() { Some(result_str.to_string()) } else { None },
+                status: Some(
+                    if status == "completed" && !is_error {
+                        "completed"
+                    } else if is_error {
+                        "error"
+                    } else {
+                        "running"
+                    }
+                    .to_string(),
+                ),
+                result: if !result_str.is_empty() {
+                    Some(result_str.to_string())
+                } else {
+                    None
+                },
             });
-            t.content_blocks.push(ContentBlock { r#type: "tool_use".to_string(), tool_id: Some(call_id.to_string()), content: None, citations: None });
+            t.content_blocks.push(ContentBlock {
+                r#type: "tool_use".to_string(),
+                tool_id: Some(call_id.to_string()),
+                content: None,
+                citations: None,
+            });
         }
         _ => {}
     }
@@ -493,10 +692,15 @@ fn flush_turn(turn: TurnState, messages: &mut Vec<ChatMessage>, msg_index: &mut 
         *msg_index += 1;
     }
 
-    if !turn.assistant_text.trim().is_empty() || !turn.thinking_text.trim().is_empty() || !turn.tool_calls.is_empty() {
+    if !turn.assistant_text.trim().is_empty()
+        || !turn.thinking_text.trim().is_empty()
+        || !turn.tool_calls.is_empty()
+    {
         let mut content = turn.assistant_text.clone();
         if !turn.thinking_text.trim().is_empty() {
-            if !content.is_empty() { content.push_str("\n\n"); }
+            if !content.is_empty() {
+                content.push_str("\n\n");
+            }
             content.push_str(&turn.thinking_text);
         }
 
@@ -505,8 +709,16 @@ fn flush_turn(turn: TurnState, messages: &mut Vec<ChatMessage>, msg_index: &mut 
             role: "assistant".to_string(),
             content,
             timestamp: turn.timestamp,
-            tool_calls: if turn.tool_calls.is_empty() { None } else { Some(turn.tool_calls) },
-            content_blocks: if turn.content_blocks.is_empty() { None } else { Some(turn.content_blocks) },
+            tool_calls: if turn.tool_calls.is_empty() {
+                None
+            } else {
+                Some(turn.tool_calls)
+            },
+            content_blocks: if turn.content_blocks.is_empty() {
+                None
+            } else {
+                Some(turn.content_blocks)
+            },
             is_interrupt: if turn.interrupted { Some(true) } else { None },
             completed_at: turn.completed_at,
             duration_seconds: None,
@@ -547,12 +759,25 @@ fn strip_citation_markup(text: &str) -> &str {
 
 fn extract_reasoning_text(payload: &serde_json::Value) -> Option<String> {
     if let Some(summary) = payload.get("summary").and_then(|v| v.as_array()) {
-        let texts: Vec<String> = summary.iter().filter_map(|v| v.as_str().map(String::from)).collect();
-        if !texts.is_empty() { return Some(texts.join("\n\n")); }
+        let texts: Vec<String> = summary
+            .iter()
+            .filter_map(|v| v.as_str().map(String::from))
+            .collect();
+        if !texts.is_empty() {
+            return Some(texts.join("\n\n"));
+        }
     }
     if let Some(content) = payload.get("content").and_then(|v| v.as_array()) {
-        let texts: Vec<String> = content.iter().filter_map(|v| v.as_str().map(String::from)).collect();
-        if !texts.is_empty() { return Some(texts.join("\n\n")); }
+        let texts: Vec<String> = content
+            .iter()
+            .filter_map(|v| v.as_str().map(String::from))
+            .collect();
+        if !texts.is_empty() {
+            return Some(texts.join("\n\n"));
+        }
     }
-    payload.get("text").and_then(|v| v.as_str()).map(|s| s.trim().to_string())
+    payload
+        .get("text")
+        .and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string())
 }

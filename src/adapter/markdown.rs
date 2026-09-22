@@ -29,8 +29,6 @@ pub struct Frontmatter {
     pub overlap: OverlapPolicy,
     #[serde(default = "default_misfire")]
     pub misfire: MisfirePolicy,
-    #[serde(default = "default_timeout")]
-    pub timeout: u64,
     #[serde(default)]
     pub iterations: Option<u64>,
     #[serde(default = "default_enabled")]
@@ -41,9 +39,6 @@ fn default_overlap() -> OverlapPolicy {
 }
 fn default_misfire() -> MisfirePolicy {
     MisfirePolicy::RunOnce
-}
-fn default_timeout() -> u64 {
-    300
 }
 fn default_enabled() -> bool {
     true
@@ -68,7 +63,11 @@ impl MarkdownDefinition {
     pub fn parse(path: &Path) -> Result<Self> {
         let content = std::fs::read_to_string(path)?;
         let mut lines = content.lines();
-        if lines.next().map(|line| line.strip_prefix('\u{feff}').unwrap_or(line)) != Some("---") {
+        if lines
+            .next()
+            .map(|line| line.strip_prefix('\u{feff}').unwrap_or(line))
+            != Some("---")
+        {
             return Err(FlowzError::Validation(format!(
                 "{} must start with YAML frontmatter",
                 path.display()
@@ -144,7 +143,9 @@ pub fn compile(def: &MarkdownDefinition, timezone: &str) -> Result<CronDefinitio
         // Sanitize skill path to prevent path traversal
         let skill_path = PathBuf::from(skill);
         if skill_path.is_absolute() || skill_path.components().any(|c| c.as_os_str() == "..") {
-            return Err(FlowzError::Validation("skill path must be relative and not contain '..'".into()));
+            return Err(FlowzError::Validation(
+                "skill path must be relative and not contain '..'".into(),
+            ));
         }
         ResolvedCommand::Skill {
             path: skill_path,

@@ -1,5 +1,8 @@
 use async_trait::async_trait;
-use pmcp::{PromptHandler, RequestHandlerExtra, Result as McpResult, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage}};
+use pmcp::{
+    PromptHandler, RequestHandlerExtra, Result as McpResult,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage},
+};
 use std::collections::HashMap;
 
 pub struct SubagentDelegatePrompt;
@@ -11,7 +14,10 @@ impl PromptHandler for SubagentDelegatePrompt {
         args: HashMap<String, String>,
         _extra: RequestHandlerExtra,
     ) -> McpResult<GetPromptResult> {
-        let action = args.get("action").cloned().unwrap_or_else(|| "spawn".to_string());
+        let action = args
+            .get("action")
+            .cloned()
+            .unwrap_or_else(|| "spawn".to_string());
         let items_str = args.get("items").cloned().unwrap_or_default();
         let item_id = args.get("item_id").cloned().unwrap_or_default();
         let instruction = args.get("instruction").cloned().unwrap_or_default();
@@ -38,9 +44,15 @@ impl PromptHandler for SubagentDelegatePrompt {
     }
 }
 
-pub fn subagent_delegate_prompt_template(action: &str, items_str: &str, item_id: &str, instruction: &str) -> String {
+pub fn subagent_delegate_prompt_template(
+    action: &str,
+    items_str: &str,
+    item_id: &str,
+    instruction: &str,
+) -> String {
     match action {
-        "spawn" => format!(r#"
+        "spawn" => format!(
+            r#"
 Spawn subagents for parallel work in flowz-mcp.
 
 Items: {items_str}
@@ -54,13 +66,17 @@ Rules:
 6. Use flowz_subagent_delegate tool with action=spawn
 
 Return a flowz_subagent_delegate request with action=spawn.
-"#),
-        "list" => format!(r#"
+"#
+        ),
+        "list" => format!(
+            r#"
 List running subagents in flowz-mcp.
 
 Use flowz_subagent_list tool.
-"#),
-        "steer" => format!(r#"
+"#
+        ),
+        "steer" => format!(
+            r#"
 Steer a running subagent in flowz-mcp.
 
 Item ID: {item_id}
@@ -72,8 +88,10 @@ Rules:
 3. Use flowz_subagent_steer tool
 
 Return a flowz_subagent_steer request.
-"#),
-        "stop" => format!(r#"
+"#
+        ),
+        "stop" => format!(
+            r#"
 Stop a running subagent in flowz-mcp.
 
 Item ID: {item_id}
@@ -83,7 +101,8 @@ Rules:
 2. Use flowz_subagent_stop tool
 
 Return a flowz_subagent_stop request.
-"#),
+"#
+        ),
         _ => "Unknown action. Use: spawn, list, steer, stop".to_string(),
     }
 }

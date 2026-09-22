@@ -1,5 +1,8 @@
 use async_trait::async_trait;
-use pmcp::{PromptHandler, RequestHandlerExtra, Result as McpResult, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage}};
+use pmcp::{
+    PromptHandler, RequestHandlerExtra, Result as McpResult,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage},
+};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 
@@ -41,12 +44,17 @@ impl PromptHandler for ReducerPrompt {
     }
 }
 
-pub fn reducer_prompt_template(results: &Value, failures: &Value, reducer_schema: &Value) -> String {
+pub fn reducer_prompt_template(
+    results: &Value,
+    failures: &Value,
+    reducer_schema: &Value,
+) -> String {
     let results_str = serde_json::to_string_pretty(results).unwrap_or_default();
     let failures_str = serde_json::to_string_pretty(failures).unwrap_or_default();
     let schema_str = serde_json::to_string_pretty(reducer_schema).unwrap_or_default();
 
-    format!(r#"
+    format!(
+        r#"
 You are the reducer for a multi-agent workflow.
 
 Goal:
@@ -65,5 +73,6 @@ Rules:
 - Resolve conflicts explicitly.
 - Return one JSON object matching this schema:
 {schema_str}
-"#)
+"#
+    )
 }

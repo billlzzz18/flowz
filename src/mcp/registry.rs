@@ -1,6 +1,6 @@
+use crate::mcp::tools::{McpTool, Toolset};
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::mcp::tools::{McpTool, Toolset};
 
 pub struct ToolRegistry {
     pub tools: HashMap<&'static str, Arc<dyn McpTool>>,
@@ -8,9 +8,7 @@ pub struct ToolRegistry {
 
 impl ToolRegistry {
     pub fn new() -> Self {
-        Self {
-            tools: HashMap::new(),
-        }
+        Self { tools: HashMap::new() }
     }
 
     pub fn register<T: McpTool + 'static>(&mut self, tool: T) {
@@ -33,7 +31,9 @@ impl ToolRegistry {
 
     pub fn all_schemas(&self) -> serde_json::Value {
         use serde_json::json;
-        let tools: Vec<_> = self.tools.values()
+        let tools: Vec<_> = self
+            .tools
+            .values()
             .map(|t| {
                 json!({
                     "type": "function",

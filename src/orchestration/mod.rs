@@ -1,4 +1,7 @@
-use crate::domain::{ExecutionMode, FailurePolicy, JobResult, JobStatus, RunRequest, SandboxMode, SubagentTodo, WorkflowItem, generate_id};
+use crate::domain::{
+    ExecutionMode, FailurePolicy, JobResult, JobStatus, RunRequest, SandboxMode, SubagentTodo,
+    WorkflowItem, generate_id,
+};
 use crate::notify::Notifier;
 use anyhow::Result;
 use std::collections::HashMap;
@@ -15,7 +18,9 @@ pub use policy::WorkflowPolicy;
 pub use scheduler::WorkflowScheduler;
 pub use state::{JobState, JobStore};
 
-pub struct OrchestrationContext<S: crate::spawn::ProcessSpawner + Default + 'static = crate::spawn::StdProcessSpawner> {
+pub struct OrchestrationContext<
+    S: crate::spawn::ProcessSpawner + Default + 'static = crate::spawn::StdProcessSpawner,
+> {
     pub policy: Arc<WorkflowPolicy>,
     pub store: Arc<JobStore>,
     pub scheduler: WorkflowScheduler<S>,
@@ -31,29 +36,59 @@ impl<S: crate::spawn::ProcessSpawner + Default + 'static> OrchestrationContext<S
         let store = Arc::new(JobStore::new());
         let notifier = crate::notify::build_notifier();
         let scheduler = WorkflowScheduler::new(policy.clone(), store.clone(), notifier.clone());
-        Self { policy, store, scheduler, notifier }
+        Self {
+            policy,
+            store,
+            scheduler,
+            notifier,
+        }
     }
 
     pub fn with_spawner(policy: WorkflowPolicy, spawner: S) -> Self {
         let policy = Arc::new(policy);
         let store = Arc::new(JobStore::new());
         let notifier = crate::notify::build_notifier();
-        let scheduler = WorkflowScheduler::with_spawner(policy.clone(), store.clone(), notifier.clone(), spawner);
-        Self { policy, store, scheduler, notifier }
+        let scheduler = WorkflowScheduler::with_spawner(
+            policy.clone(),
+            store.clone(),
+            notifier.clone(),
+            spawner,
+        );
+        Self {
+            policy,
+            store,
+            scheduler,
+            notifier,
+        }
     }
 
-    pub fn with_spawner_and_notifier(policy: WorkflowPolicy, spawner: S, notifier: Arc<dyn Notifier>) -> Self {
+    pub fn with_spawner_and_notifier(
+        policy: WorkflowPolicy,
+        spawner: S,
+        notifier: Arc<dyn Notifier>,
+    ) -> Self {
         let policy = Arc::new(policy);
         let store = Arc::new(JobStore::new());
-        let scheduler = WorkflowScheduler::with_spawner(policy.clone(), store.clone(), notifier.clone(), spawner);
-        Self { policy, store, scheduler, notifier }
+        let scheduler = WorkflowScheduler::with_spawner(
+            policy.clone(),
+            store.clone(),
+            notifier.clone(),
+            spawner,
+        );
+        Self {
+            policy,
+            store,
+            scheduler,
+            notifier,
+        }
     }
 
     pub async fn run_workflow(&self, request: RunRequest) -> Result<JobResult> {
         let job_id = generate_id();
         let estimated_calls = request.estimated_agent_calls();
 
-        let confirmation_required = request.confirmation_required
+        let confirmation_required = request
+            .confirmation_required
             .unwrap_or_else(|| estimated_calls > self.policy.confirmation_threshold);
 
         let status = if confirmation_required {
@@ -66,7 +101,9 @@ impl<S: crate::spawn::ProcessSpawner + Default + 'static> OrchestrationContext<S
         self.store.insert(job_id.clone(), job_result.clone()).await;
 
         // Always store the request so it can be retrieved for approval
-        self.scheduler.store_request(job_id.clone(), request.clone()).await;
+        self.scheduler
+            .store_request(job_id.clone(), request.clone())
+            .await;
 
         if confirmation_required {
             return Ok(job_result);
@@ -78,8 +115,16 @@ impl<S: crate::spawn::ProcessSpawner + Default + 'static> OrchestrationContext<S
     pub async fn execute_workflow(&self, job_id: String, request: RunRequest) -> Result<JobResult> {
         let result = self.scheduler.run(job_id.clone(), request).await;
 
-        let mut job_result = self.store.get(&job_id).await.unwrap_or_else(|| JobResult::new(job_id.clone(), JobStatus::Failed, 0));
-        job_result.status = if result.failed > 0 && result.failed == result.total { JobStatus::Failed } else { JobStatus::Completed };
+        let mut job_result = self
+            .store
+            .get(&job_id)
+            .await
+            .unwrap_or_else(|| JobResult::new(job_id.clone(), JobStatus::Failed, 0));
+        job_result.status = if result.failed > 0 && result.failed == result.total {
+            JobStatus::Failed
+        } else {
+            JobStatus::Completed
+        };
         job_result.completed = result.completed;
         job_result.failed = result.failed;
         job_result.result = Some(serde_json::to_value(&result.results)?);
@@ -104,7 +149,9 @@ impl<S: crate::spawn::ProcessSpawner + Default + 'static> OrchestrationContext<S
 
         let request = self.scheduler.get_request(job_id).await?;
         job_result.status = JobStatus::Running;
-        self.store.insert(job_id.to_string(), job_result.clone()).await;
+        self.store
+            .insert(job_id.to_string(), job_result.clone())
+            .await;
 
         let result = self.execute_workflow(job_id.to_string(), request).await?;
         Ok(Some(result))
@@ -161,11 +208,7 @@ mod tests {
 
     fn test_request() -> RunRequest {
         RunRequest {
-            items: vec![
-                test_item("item-1"),
-                test_item("item-2"),
-                test_item("item-3"),
-            ],
+            items: vec![test_item("item-1"), test_item("item-2"), test_item("item-3")],
             mode: ExecutionMode::Parallel,
             failure_policy: FailurePolicy::Collect,
             reducer: None,
@@ -177,7 +220,11 @@ mod tests {
     }
 
     fn mock_spawner() -> MockProcessSpawner {
-        MockProcessSpawner::success_for_items(&["item-1".to_string(), "item-2".to_string(), "item-3".to_string()])
+        MockProcessSpawner::success_for_items(&[
+            "item-1".to_string(),
+            "item-2".to_string(),
+            "item-3".to_string(),
+        ])
     }
 
     #[tokio::test]
@@ -282,7 +329,8 @@ mod tests {
         let policy = WorkflowPolicy::default();
         let ctx = OrchestrationContext::with_spawner(policy, mock_spawner());
 
-        let job_result = crate::domain::JobResult::new("test-job".to_string(), JobStatus::Completed, 3);
+        let job_result =
+            crate::domain::JobResult::new("test-job".to_string(), JobStatus::Completed, 3);
         ctx.store.insert("test-job".to_string(), job_result).await;
 
         let cancelled = ctx.cancel_job("test-job").await.unwrap();
