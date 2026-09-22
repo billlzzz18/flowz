@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
-use tracing::{info_span, Instrument};
+use tracing::{Instrument, info_span};
 
 pub struct WorkflowEngine<S: ProcessSpawner> {
     spawner: Arc<S>,
@@ -42,7 +42,11 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
             .min(self.policy.max_concurrency as u32) as usize;
 
         let total_items = request.items.len();
-        let job_id = request.items.first().map(|i| i.id.clone()).unwrap_or_default();
+        let job_id = request
+            .items
+            .first()
+            .map(|i| i.id.clone())
+            .unwrap_or_default();
 
         let todos: Vec<SubagentTodo> = request
             .items
@@ -265,7 +269,9 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         let job_id = job_id.to_string();
 
         // Time budget: use item.max_duration_secs or fallback to spawner timeout
-        let budget_secs = request.max_duration_secs.unwrap_or(self.spawner.timeout_secs());
+        let budget_secs = request
+            .max_duration_secs
+            .unwrap_or(self.spawner.timeout_secs());
 
         // Update todo to InProgress
         if let Some(state) = store.get_state(&job_id).await {
@@ -281,7 +287,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         }
 
         let start_instant = Instant::now();
-        let span = info_span!("subagent", job_id = %job_id, item_id = %item_id, brief = %request.brief);
+        let span =
+            info_span!("subagent", job_id = %job_id, item_id = %item_id, brief = %request.brief);
         let mut result = async {
             let result = self.spawner.run(request).await;
             let elapsed = start_instant.elapsed().as_secs();
@@ -320,7 +327,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                     level,
                     duration: Duration::from_millis(if success { 250 } else { 700 }),
                 },
-            ).await;
+            )
+            .await;
 
             // Update todo to Completed/Failed
             if let Some(state) = store.get_state(&job_id).await {

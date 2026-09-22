@@ -1,10 +1,10 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-pub mod termux;
-pub mod windows;
 pub mod linux;
 pub mod noop;
+pub mod termux;
+pub mod windows;
 
 #[derive(Debug, Clone)]
 pub struct NotificationEvent {
@@ -38,16 +38,10 @@ pub enum NotificationError {
 
 #[async_trait::async_trait]
 pub trait Notifier: Send + Sync {
-    async fn notify(
-        &self,
-        event: NotificationEvent,
-    ) -> Result<(), NotificationError>;
+    async fn notify(&self, event: NotificationEvent) -> Result<(), NotificationError>;
 }
 
-pub async fn notify_safely(
-    notifier: &dyn Notifier,
-    event: NotificationEvent,
-) {
+pub async fn notify_safely(notifier: &dyn Notifier, event: NotificationEvent) {
     if let Err(error) = notifier.notify(event).await {
         tracing::warn!(
             error = %error,
@@ -86,19 +80,11 @@ pub fn detect_environment() -> RuntimeEnvironment {
 
 pub fn build_notifier() -> Arc<dyn Notifier> {
     match detect_environment() {
-        RuntimeEnvironment::Termux => {
-            Arc::new(termux::TermuxNotifier { force: false })
-        }
-        RuntimeEnvironment::Windows => {
-            Arc::new(windows::WindowsNotifier {
-                powershell: std::path::PathBuf::from("powershell.exe"),
-            })
-        }
-        RuntimeEnvironment::Linux => {
-            Arc::new(linux::LinuxNotifier)
-        }
-        RuntimeEnvironment::Unknown => {
-            Arc::new(noop::NoopNotifier)
-        }
+        RuntimeEnvironment::Termux => Arc::new(termux::TermuxNotifier { force: false }),
+        RuntimeEnvironment::Windows => Arc::new(windows::WindowsNotifier {
+            powershell: std::path::PathBuf::from("powershell.exe"),
+        }),
+        RuntimeEnvironment::Linux => Arc::new(linux::LinuxNotifier),
+        RuntimeEnvironment::Unknown => Arc::new(noop::NoopNotifier),
     }
 }

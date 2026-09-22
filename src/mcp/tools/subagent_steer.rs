@@ -60,7 +60,9 @@ impl McpTool for SubagentSteerTool {
         let instruction = args
             .get("instruction")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| crate::error::FlowzError::Validation("instruction required".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("instruction required".to_string())
+            })?;
 
         // TODO: Implement steer logic - send instruction to running subagent
         // For now, update todo with instruction

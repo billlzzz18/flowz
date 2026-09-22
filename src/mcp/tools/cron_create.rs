@@ -1,4 +1,7 @@
-use crate::cron::{CronDefinition, CronPayload, OverlapPolicy, MisfirePolicy, validate_cron_definition};
+use crate::cron::{
+    CronDefinition, CronExecutionMode, DefinitionSource, MisfirePolicy, OverlapPolicy,
+    ResolvedCommand, validate_cron_definition,
+};
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::service::FlowzService;
@@ -63,7 +66,9 @@ impl McpTool for CronCreateTool {
         let expression = args
             .get("expression")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| crate::error::FlowzError::Validation("expression required".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("expression required".to_string())
+            })?;
 
         let timezone = args
             .get("timezone")
@@ -85,8 +90,6 @@ impl McpTool for CronCreateTool {
             })
             .unwrap_or_default();
 
-        let client_id = args.get("client_id").and_then(|v| v.as_str()).map(|s| s.to_string());
-
         let overlap_policy = match args.get("overlap_policy").and_then(|v| v.as_str()) {
             Some("allow") => OverlapPolicy::Allow,
             Some("queue") => OverlapPolicy::Queue,
@@ -102,22 +105,23 @@ impl McpTool for CronCreateTool {
 
         let max_runs = args.get("max_runs").and_then(|v| v.as_u64());
 
-        let payload = CronPayload {
-            command: command.to_string(),
-            arguments,
-            client_id,
-        };
-
-        let mut definition = CronDefinition {
+        let definition = CronDefinition {
             id: crate::domain::generate_id(),
             name: name.to_string(),
+            description: None,
             expression: expression.to_string(),
             timezone: timezone.to_string(),
-            payload,
+            command: ResolvedCommand::Shell {
+                command: command.to_string(),
+                args: arguments,
+            },
+            execution_mode: CronExecutionMode::NoAgent,
+            project: None,
             enabled: true,
             overlap_policy,
             misfire_policy,
             max_runs,
+            source: DefinitionSource::Api,
         };
 
         validate_cron_definition(&definition)

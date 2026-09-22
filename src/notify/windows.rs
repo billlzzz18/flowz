@@ -1,4 +1,4 @@
-use crate::notify::{Notifier, NotificationError, NotificationEvent};
+use crate::notify::{NotificationError, NotificationEvent, Notifier};
 use async_trait::async_trait;
 use std::path::PathBuf;
 use tokio::process::Command;
@@ -11,11 +11,26 @@ fn escape_xml(value: &str) -> String {
     let mut result = String::with_capacity(value.len() + 32);
     for ch in value.chars() {
         match ch as u32 {
-            0x26 => { result.push('&'); result.push_str("amp;"); }      // &
-            0x3C => { result.push('&'); result.push_str("lt;"); }       // <
-            0x3E => { result.push('&'); result.push_str("gt;"); }       // >
-            0x22 => { result.push('&'); result.push_str("quot;"); }     // "
-            0x27 => { result.push('&'); result.push_str("apos;"); }     // '
+            0x26 => {
+                result.push('&');
+                result.push_str("amp;");
+            } // &
+            0x3C => {
+                result.push('&');
+                result.push_str("lt;");
+            } // <
+            0x3E => {
+                result.push('&');
+                result.push_str("gt;");
+            } // >
+            0x22 => {
+                result.push('&');
+                result.push_str("quot;");
+            } // "
+            0x27 => {
+                result.push('&');
+                result.push_str("apos;");
+            } // '
             _ => result.push(ch),
         }
     }
@@ -74,10 +89,7 @@ fn build_script(toast_xml: &str) -> String {
 
 #[async_trait]
 impl Notifier for WindowsNotifier {
-    async fn notify(
-        &self,
-        event: NotificationEvent,
-    ) -> Result<(), NotificationError> {
+    async fn notify(&self, event: NotificationEvent) -> Result<(), NotificationError> {
         let title = escape_xml(&event.title);
         let body = escape_xml(&event.body);
         let toast_xml = TOAST_TEMPLATE

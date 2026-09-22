@@ -1,10 +1,10 @@
+use anyhow::Result;
 use flowz::invocation::InvocationContext;
-use flowz::mcp::{register_all_tools, register_all_prompts};
+use flowz::mcp::{register_all_prompts, register_all_tools};
 use flowz::notify::build_notifier;
 use flowz::orchestration::{OrchestrationContext, WorkflowPolicy};
 use flowz::service::FlowzService;
 use flowz::spawn::StdProcessSpawner;
-use anyhow::Result;
 use pmcp::{Server, ServerCapabilities};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -26,7 +26,11 @@ async fn main() -> Result<()> {
         base_env: std::collections::HashMap::new(),
         timeout_secs: 300,
     };
-    let orch = Arc::new(OrchestrationContext::with_spawner_and_notifier(policy, spawner, notifier.clone()));
+    let orch = Arc::new(OrchestrationContext::with_spawner_and_notifier(
+        policy,
+        spawner,
+        notifier.clone(),
+    ));
 
     let service = Arc::new(FlowzService::new());
 

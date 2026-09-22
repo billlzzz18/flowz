@@ -33,10 +33,10 @@ struct WorkerResponse {
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines();
-    
+
     if let Some(Ok(line)) = lines.next() {
         let request: WorkerRequest = serde_json::from_str(&line).unwrap();
-        
+
         // Simple test response
         let response = WorkerResponse {
             item_id: request.item_id,
@@ -48,11 +48,11 @@ fn main() -> io::Result<()> {
             files: vec![],
             error: None,
         };
-        
+
         let mut stdout = io::stdout();
         writeln!(stdout, "{}", serde_json::to_string(&response).unwrap())?;
         stdout.flush()?;
     }
-    
+
     Ok(())
 }

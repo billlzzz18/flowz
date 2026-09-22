@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use crate::cron::CronDefinition;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait CronStore: Send + Sync {
@@ -26,7 +26,10 @@ impl MemoryCronStore {
 #[async_trait]
 impl CronStore for MemoryCronStore {
     async fn create(&self, definition: CronDefinition) -> anyhow::Result<()> {
-        self.crons.write().await.insert(definition.id.clone(), definition);
+        self.crons
+            .write()
+            .await
+            .insert(definition.id.clone(), definition);
         Ok(())
     }
 
@@ -50,7 +53,7 @@ impl CronStore for MemoryCronStore {
         let crons = self.crons.read().await;
         Ok(crons
             .values()
-            .filter(|c| c.enabled)
+            .filter(|c| c.enabled && crate::cron::scheduler::is_due(c, now))
             .cloned()
             .collect())
     }
@@ -60,7 +63,10 @@ impl CronStore for MemoryCronStore {
     }
 
     async fn update(&self, definition: CronDefinition) -> anyhow::Result<()> {
-        self.crons.write().await.insert(definition.id.clone(), definition);
+        self.crons
+            .write()
+            .await
+            .insert(definition.id.clone(), definition);
         Ok(())
     }
 }

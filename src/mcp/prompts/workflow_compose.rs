@@ -1,6 +1,12 @@
-use crate::domain::{ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, EffortLevel, WorkflowItem, generate_id};
+use crate::domain::{
+    EffortLevel, ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, WorkflowItem,
+    generate_id,
+};
 use async_trait::async_trait;
-use pmcp::{PromptHandler, RequestHandlerExtra, Result as McpResult, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage}};
+use pmcp::{
+    PromptHandler, RequestHandlerExtra, Result as McpResult,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage},
+};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 
@@ -16,7 +22,10 @@ impl PromptHandler for ComposePrompt {
         let task = args.get("task").cloned().unwrap_or_default();
         let constraints = args.get("constraints").cloned().unwrap_or_default();
         let desired_output = args.get("desired_output").cloned().unwrap_or_default();
-        let language = args.get("language").cloned().unwrap_or_else(|| "en".to_string());
+        let language = args
+            .get("language")
+            .cloned()
+            .unwrap_or_else(|| "en".to_string());
 
         let prompt = compose_prompt_template(&task, &constraints, &desired_output, &language);
 
@@ -40,8 +49,14 @@ impl PromptHandler for ComposePrompt {
     }
 }
 
-pub fn compose_prompt_template(task: &str, constraints: &str, desired_output: &str, language: &str) -> String {
-    format!(r#"
+pub fn compose_prompt_template(
+    task: &str,
+    constraints: &str,
+    desired_output: &str,
+    language: &str,
+) -> String {
+    format!(
+        r#"
 You are composing a workflow for the flowz-mcp server.
 
 User task:
@@ -76,5 +91,6 @@ Apply the following rules:
 17. If the task does not meet the threshold, answer directly instead of creating a workflow.
 
 Return a flowz_workflow_run request only when the task qualifies.
-"#)
+"#
+    )
 }

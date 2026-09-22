@@ -1,5 +1,8 @@
 use async_trait::async_trait;
-use pmcp::{PromptHandler, RequestHandlerExtra, Result as McpResult, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage}};
+use pmcp::{
+    PromptHandler, RequestHandlerExtra, Result as McpResult,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage},
+};
 use std::collections::HashMap;
 
 pub struct CronCreatePrompt;
@@ -13,7 +16,10 @@ impl PromptHandler for CronCreatePrompt {
     ) -> McpResult<GetPromptResult> {
         let name = args.get("name").cloned().unwrap_or_default();
         let schedule = args.get("schedule").cloned().unwrap_or_default();
-        let timezone = args.get("timezone").cloned().unwrap_or_else(|| "UTC".to_string());
+        let timezone = args
+            .get("timezone")
+            .cloned()
+            .unwrap_or_else(|| "UTC".to_string());
         let command = args.get("command").cloned().unwrap_or_default();
         let arguments = args.get("arguments").cloned().unwrap_or_default();
 
@@ -28,20 +34,36 @@ impl PromptHandler for CronCreatePrompt {
     fn metadata(&self) -> Option<PromptInfo> {
         Some(
             PromptInfo::new("flowz_cron_create")
-                .with_description("Create a cron job definition with schedule, timezone, and command payload.")
+                .with_description(
+                    "Create a cron job definition with schedule, timezone, and command payload.",
+                )
                 .with_arguments(vec![
-                    PromptArgument::new("name").with_description("Name of the cron job").required(),
-                    PromptArgument::new("schedule").with_description("Cron expression (5 or 6 fields)").required(),
-                    PromptArgument::new("timezone").with_description("Timezone (e.g., UTC, Asia/Bangkok)"),
-                    PromptArgument::new("command").with_description("Command to execute").required(),
+                    PromptArgument::new("name")
+                        .with_description("Name of the cron job")
+                        .required(),
+                    PromptArgument::new("schedule")
+                        .with_description("Cron expression (5 or 6 fields)")
+                        .required(),
+                    PromptArgument::new("timezone")
+                        .with_description("Timezone (e.g., UTC, Asia/Bangkok)"),
+                    PromptArgument::new("command")
+                        .with_description("Command to execute")
+                        .required(),
                     PromptArgument::new("arguments").with_description("Arguments for the command"),
                 ]),
         )
     }
 }
 
-pub fn cron_create_prompt_template(name: &str, schedule: &str, timezone: &str, command: &str, arguments: &str) -> String {
-    format!(r#"
+pub fn cron_create_prompt_template(
+    name: &str,
+    schedule: &str,
+    timezone: &str,
+    command: &str,
+    arguments: &str,
+) -> String {
+    format!(
+        r#"
 Create a cron job definition for flowz-mcp.
 
 Name: {name}
@@ -59,5 +81,6 @@ Rules:
 6. Use flowz_cron_create tool to register this definition
 
 Return a flowz_cron_create request.
-"#)
+"#
+    )
 }

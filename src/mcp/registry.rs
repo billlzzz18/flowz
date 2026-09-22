@@ -1,9 +1,9 @@
+use crate::mcp::tools::{McpTool, Toolset};
 use std::collections::HashMap;
 use std::sync::Arc;
 use serde_json::Value;
 use crate::error::FlowzError;
 use crate::invocation::InvocationContext;
-use crate::mcp::tools::{McpTool, Toolset};
 
 pub struct ToolRegistry {
     pub tools: HashMap<&'static str, Arc<dyn McpTool>>,
@@ -11,9 +11,7 @@ pub struct ToolRegistry {
 
 impl ToolRegistry {
     pub fn new() -> Self {
-        Self {
-            tools: HashMap::new(),
-        }
+        Self { tools: HashMap::new() }
     }
 
     pub fn register<T: McpTool + 'static>(&mut self, tool: T) {

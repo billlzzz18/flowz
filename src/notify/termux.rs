@@ -1,4 +1,4 @@
-use crate::notify::{Notifier, NotificationError, NotificationEvent};
+use crate::notify::{NotificationError, NotificationEvent, Notifier};
 use async_trait::async_trait;
 use std::time::Duration;
 use tokio::process::Command;
@@ -37,16 +37,11 @@ pub struct TermuxNotifier {
 
 #[async_trait]
 impl Notifier for TermuxNotifier {
-    async fn notify(
-        &self,
-        event: NotificationEvent,
-    ) -> Result<(), NotificationError> {
+    async fn notify(&self, event: NotificationEvent) -> Result<(), NotificationError> {
         let milliseconds = event.duration.as_millis().clamp(100, 10_000);
 
         let mut command = Command::new("termux-vibrate");
-        command
-            .arg("-d")
-            .arg(milliseconds.to_string());
+        command.arg("-d").arg(milliseconds.to_string());
 
         if self.force {
             command.arg("-f");

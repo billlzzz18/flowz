@@ -1,4 +1,7 @@
-use crate::domain::{ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, EffortLevel, WorkflowItem, SubagentRole};
+use crate::domain::{
+    EffortLevel, ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, SubagentRole,
+    WorkflowItem,
+};
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
@@ -125,22 +128,21 @@ impl SubagentDelegateTool {
         let items = args
             .get("items")
             .and_then(|v| v.as_array())
-            .ok_or_else(|| crate::error::FlowzError::Validation("items required for spawn".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("items required for spawn".to_string())
+            })?;
 
         let mut workflow_items = Vec::new();
         for item in items {
-            let id = item
-                .get("id")
-                .and_then(|v| v.as_str())
-                .ok_or_else(|| crate::error::FlowzError::Validation("item id required".to_string()))?;
-            let prompt = item
-                .get("prompt")
-                .and_then(|v| v.as_str())
-                .ok_or_else(|| crate::error::FlowzError::Validation("prompt required".to_string()))?;
-            let brief = item
-                .get("brief")
-                .and_then(|v| v.as_str())
-                .ok_or_else(|| crate::error::FlowzError::Validation("brief required".to_string()))?;
+            let id = item.get("id").and_then(|v| v.as_str()).ok_or_else(|| {
+                crate::error::FlowzError::Validation("item id required".to_string())
+            })?;
+            let prompt = item.get("prompt").and_then(|v| v.as_str()).ok_or_else(|| {
+                crate::error::FlowzError::Validation("prompt required".to_string())
+            })?;
+            let brief = item.get("brief").and_then(|v| v.as_str()).ok_or_else(|| {
+                crate::error::FlowzError::Validation("brief required".to_string())
+            })?;
 
             let schema = item.get("schema").cloned();
 
@@ -198,12 +200,18 @@ impl SubagentDelegateTool {
             failure_policy: FailurePolicy::Collect,
             reducer: None,
             max_concurrency: None,
-            max_agent_calls: args.get("max_agent_calls").and_then(|v| v.as_u64()).map(|v| v as u32),
+            max_agent_calls: args
+                .get("max_agent_calls")
+                .and_then(|v| v.as_u64())
+                .map(|v| v as u32),
             confirmation_required: None,
             run_budget: Default::default(),
         };
 
-        let result = self.orch.run_workflow(request).await
+        let result = self
+            .orch
+            .run_workflow(request)
+            .await
             .map_err(|e| crate::error::FlowzError::Internal(e.to_string()))?;
 
         Ok(serde_json::json!({
@@ -224,12 +232,16 @@ impl SubagentDelegateTool {
         let _item_id = args
             .get("item_id")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| crate::error::FlowzError::Validation("item_id required for steer".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("item_id required for steer".to_string())
+            })?;
 
         let _instruction = args
             .get("instruction")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| crate::error::FlowzError::Validation("instruction required for steer".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("instruction required for steer".to_string())
+            })?;
 
         // TODO: Implement steer logic
         Ok(serde_json::json!({
@@ -241,7 +253,9 @@ impl SubagentDelegateTool {
         let item_id = args
             .get("item_id")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| crate::error::FlowzError::Validation("item_id required for stop".to_string()))?;
+            .ok_or_else(|| {
+                crate::error::FlowzError::Validation("item_id required for stop".to_string())
+            })?;
 
         // TODO: Implement stop logic
         Ok(serde_json::json!({

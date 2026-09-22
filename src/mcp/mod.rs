@@ -2,16 +2,19 @@ use crate::invocation::InvocationContext;
 use crate::orchestration::OrchestrationContext;
 use crate::service::FlowzService;
 use async_trait::async_trait;
-use pmcp::{Error, PromptHandler, RequestHandlerExtra, Result as McpResult, ToolHandler, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage, ToolInfo}};
+use pmcp::{
+    Error, PromptHandler, RequestHandlerExtra, Result as McpResult, ToolHandler,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage, ToolInfo},
+};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::sync::Arc;
 
 pub mod adapter;
-pub mod registry;
-pub mod toolsets;
-pub mod tools;
 pub mod prompts;
+pub mod registry;
+pub mod tools;
+pub mod toolsets;
 
 pub use registry::ToolRegistry;
 pub use toolsets::toolset_name;
@@ -49,7 +52,8 @@ pub fn build_registry(
     registry.register(crate::mcp::tools::cron_cancel::CronCancelTool::new(service.clone()));
 
     // Register subagent tools
-    registry.register(crate::mcp::tools::subagent_delegate::SubagentDelegateTool::new(orch.clone()));
+    registry
+        .register(crate::mcp::tools::subagent_delegate::SubagentDelegateTool::new(orch.clone()));
     registry.register(crate::mcp::tools::subagent_list::SubagentListTool::new(orch.clone()));
     registry.register(crate::mcp::tools::subagent_steer::SubagentSteerTool::new(orch.clone()));
     registry.register(crate::mcp::tools::subagent_stop::SubagentStopTool::new(orch.clone()));

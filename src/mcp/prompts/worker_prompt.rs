@@ -1,6 +1,9 @@
 use crate::domain::{EffortLevel, InputFile, SandboxMode, generate_id};
 use async_trait::async_trait;
-use pmcp::{PromptHandler, RequestHandlerExtra, Result as McpResult, types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage}};
+use pmcp::{
+    PromptHandler, RequestHandlerExtra, Result as McpResult,
+    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage},
+};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 
@@ -21,7 +24,13 @@ impl PromptHandler for WorkerPrompt {
 
         let output_schema: Value = serde_json::from_str(&output_schema_str).unwrap_or(json!({}));
 
-        let prompt = worker_prompt_template(&item_id, &task, &requirements, &source_requirements, &output_schema);
+        let prompt = worker_prompt_template(
+            &item_id,
+            &task,
+            &requirements,
+            &source_requirements,
+            &output_schema,
+        );
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],
@@ -44,10 +53,17 @@ impl PromptHandler for WorkerPrompt {
     }
 }
 
-pub fn worker_prompt_template(item_id: &str, task: &str, requirements: &str, source_requirements: &str, output_schema: &Value) -> String {
+pub fn worker_prompt_template(
+    item_id: &str,
+    task: &str,
+    requirements: &str,
+    source_requirements: &str,
+    output_schema: &Value,
+) -> String {
     let schema_str = serde_json::to_string_pretty(output_schema).unwrap_or_default();
 
-    format!(r#"
+    format!(
+        r#"
 You are a dedicated worker in a local multi-agent workflow.
 
 Task:
@@ -78,5 +94,6 @@ Files:
 Failure behavior:
 - If the task cannot be completed, return a structured error.
 - Do not fabricate facts.
-"#)
+"#
+    )
 }
