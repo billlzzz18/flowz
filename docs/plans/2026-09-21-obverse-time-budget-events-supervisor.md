@@ -35,7 +35,7 @@ Files: `src/orchestration/state.rs`, `src/orchestration/engine.rs`
 - In `JobState`, add `time_budget: Option<TimeBudget>` and `timeout_events: Vec<SubagentTimeout>`.
 - In `engine.rs`, before spawning each item, set `time_budget.started_at = Some(Utc::now())`.
 - After worker returns or fails, compute `elapsed_secs`. If `elapsed > max_duration`, append a `SubagentTimeout` to `timeout_events` and mark the item `Failed` with reason `"time_budget_exceeded"`.
-- If the worker is still running after budget, call `process.kill()` via the spawner (ponytail: `StdProcessSpawner` already spawns a process; add a `kill` method using `std::process::Command::kill`).
+- Retain a kill-capable child handle from the spawner while the worker runs, and terminate it when the budget expires before awaiting completion.
 
 Verification:
 ```bash
