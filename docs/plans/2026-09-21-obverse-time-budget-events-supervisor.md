@@ -90,10 +90,10 @@ Files: `src/domain/mod.rs`, `src/orchestration/state.rs`
 ### Task 7: Expose cron + findings via MCP tools
 File: `src/mcp/mod.rs`
 - Add tools:
-  - `cron/create` → inserts `CronJob`.
-  - `cron/list` → returns jobs.
-  - `cron/cancel` → removes by id.
-  - `workflow/findings` → returns `JobState.findings`.
+  - `flowz_cron_create` → inserts `CronJob`.
+  - `flowz_cron_list` → returns jobs.
+  - `flowz_cron_cancel` → removes by id.
+  - `flowz_workflow_findings` → returns `JobState.findings`.
 - Update `src/main.rs` if new tool structs are needed.
 
 Verification:
