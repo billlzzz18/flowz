@@ -24,11 +24,12 @@ impl DefinitionSource for MarkdownRegistry {
         for path in paths {
             match MarkdownDefinition::parse(&path) {
                 Ok(def) => definitions.push(def),
-                Err(e) => tracing::warn!(
+                Err(crate::error::FlowzError::Validation(e)) => tracing::warn!(
                     path = %path.display(),
                     error = %e,
                     "skipping malformed markdown definition"
                 ),
+                Err(e) => return Err(e),
             }
         }
         Ok(definitions)
