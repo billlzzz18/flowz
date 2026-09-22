@@ -2,6 +2,30 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FindingSeverity {
+    Error,
+    Warning,
+    Info,
+}
+
+impl FindingSeverity {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            FindingSeverity::Error => "error",
+            FindingSeverity::Warning => "warning",
+            FindingSeverity::Info => "info",
+        }
+    }
+}
+
+impl From<FindingSeverity> for String {
+    fn from(s: FindingSeverity) -> Self {
+        s.as_str().to_string()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecutionMode {
@@ -356,4 +380,29 @@ pub enum MisfirePolicy {
 
 pub fn generate_id() -> String {
     Uuid::new_v4().to_string()
+}
+
+pub fn job_result_to_value(job_result: JobResult) -> serde_json::Value {
+    let status_str = match job_result.status {
+        JobStatus::Pending => "pending",
+        JobStatus::PendingConfirmation => "pending_confirmation",
+        JobStatus::Running => "running",
+        JobStatus::Completed => "completed",
+        JobStatus::Failed => "failed",
+        JobStatus::Cancelled => "cancelled",
+    };
+
+    let mut content = serde_json::json!({
+        "job_id": job_result.job_id,
+        "status": status_str,
+        "total": job_result.total,
+        "completed": job_result.completed,
+        "failed": job_result.failed,
+    });
+
+    if let Some(result) = job_result.result {
+        content["result"] = result;
+    }
+
+    content
 }

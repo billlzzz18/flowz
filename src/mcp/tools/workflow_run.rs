@@ -1,4 +1,4 @@
-use crate::domain::{ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, EffortLevel, WorkflowItem, generate_id};
+use crate::domain::{ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, EffortLevel, WorkflowItem, generate_id, job_result_to_value};
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
@@ -312,29 +312,4 @@ fn parse_run_request(args: Value) -> Result<RunRequest, pmcp::Error> {
         confirmation_required,
         run_budget: Default::default(),
     })
-}
-
-fn job_result_to_value(job_result: crate::domain::JobResult) -> Value {
-    let status_str = match job_result.status {
-        crate::domain::JobStatus::Pending => "pending",
-        crate::domain::JobStatus::PendingConfirmation => "pending_confirmation",
-        crate::domain::JobStatus::Running => "running",
-        crate::domain::JobStatus::Completed => "completed",
-        crate::domain::JobStatus::Failed => "failed",
-        crate::domain::JobStatus::Cancelled => "cancelled",
-    };
-
-    let mut content = json!({
-        "job_id": job_result.job_id,
-        "status": status_str,
-        "total": job_result.total,
-        "completed": job_result.completed,
-        "failed": job_result.failed,
-    });
-
-    if let Some(result) = job_result.result {
-        content["result"] = result;
-    }
-
-    content
 }

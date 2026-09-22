@@ -6,5 +6,6 @@ pub fn toolset_name(toolset: Toolset) -> &'static str {
         Toolset::Cron => "cron",
         Toolset::Subagent => "subagent",
         Toolset::Supervisor => "supervisor",
+        Toolset::Canvas => "canvas",
     }
 }

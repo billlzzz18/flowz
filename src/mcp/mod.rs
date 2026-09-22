@@ -20,7 +20,25 @@ pub fn register_all_tools(
     orch: Arc<OrchestrationContext>,
     service: Arc<FlowzService>,
 ) -> Vec<Box<dyn ToolHandler>> {
-    let mut registry = ToolRegistry::new();    // Register workflow tools
+    let registry = build_registry(orch, service);
+    let ctx = Arc::new(InvocationContext::new_mcp(uuid::Uuid::new_v4().to_string()));
+    registry
+        .tools
+        .into_values()
+        .map(|t| {
+            let adapter = adapter::McpToolAdapter::new(t, ctx.clone());
+            Box::new(adapter) as Box<dyn ToolHandler>
+        })
+        .collect()
+}
+
+pub fn build_registry(
+    orch: Arc<OrchestrationContext>,
+    service: Arc<FlowzService>,
+) -> ToolRegistry {
+    let mut registry = ToolRegistry::new();
+
+    // Register workflow tools
     registry.register(crate::mcp::tools::workflow_run::WorkflowRunTool::new(orch.clone()));
     registry.register(crate::mcp::tools::workflow_job::WorkflowJobTool::new(orch.clone()));
     registry.register(crate::mcp::tools::workflow_cancel::WorkflowCancelTool::new(orch.clone()));
@@ -36,15 +54,10 @@ pub fn register_all_tools(
     registry.register(crate::mcp::tools::subagent_steer::SubagentSteerTool::new(orch.clone()));
     registry.register(crate::mcp::tools::subagent_stop::SubagentStopTool::new(orch.clone()));
 
-    let ctx = Arc::new(InvocationContext::new_mcp(uuid::Uuid::new_v4().to_string()));
+    // Canvas uses the same orchestration service as MCP and CLI.
+    registry.register(crate::mcp::tools::canvas::CanvasTool::new(orch.clone()));
+
     registry
-        .tools
-        .into_values()
-        .map(|t| {
-            let adapter = adapter::McpToolAdapter::new(t, ctx.clone());
-            Box::new(adapter) as Box<dyn ToolHandler>
-        })
-        .collect()
 }
 
 pub fn register_all_prompts() -> Vec<Box<dyn PromptHandler>> {

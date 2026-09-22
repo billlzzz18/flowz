@@ -8,6 +8,7 @@ pub enum Toolset {
     Cron = 2,
     Subagent = 3,
     Supervisor = 4,
+    Canvas = 5,
 }
 
 #[async_trait]
