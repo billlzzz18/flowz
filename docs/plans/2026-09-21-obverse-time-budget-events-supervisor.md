@@ -116,7 +116,7 @@ Verification:
 
 ### Task 9: Wire time budget into `StdProcessSpawner`
 File: `src/spawn/mod.rs`
-- Add `kill(&self, pid: Option<u32>) -> Result<()>` that calls `std::process::Command::new(...).kill()` on the child pid if stored.
+- Add `fn kill(&mut self) -> Result<()>` that calls `self.child.as_mut().ok_or(...)?.kill()` on the stored `std::process::Child` (or keep the `pid` and kill via a platform signal API), and call it from `engine.rs` when the budget is exceeded.
 - In `engine.rs`, if budget exceeded and worker still alive, call `spawner.kill(pid)`.
 
 Verification:
