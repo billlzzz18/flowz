@@ -39,6 +39,6 @@
   ],
   "cards": [
     { "dot": "emerald", "title": "Implemented", "items": ["MCP/Service/Orchestration/Cron/Adapters อยู่ใน crate", "Canvas + subagent tools รวมจาก merge main", "Budgets + CronDefinition + spawn timeout"] },
-    { "dot": "rose", "title": "Planned (c้าง)", "items": ["Event bus + Supervisor: ADR-0009 / 0010 / 0011", "Context compression: ADR-0016 (required)", "Worker protocol + CLI"] }
+    { "dot": "rose", "title": "Planned (ค้าง)", "items": ["Event bus + Supervisor: ADR-0009 / 0010 / 0011", "Context compression: ADR-0016 (required)", "Worker protocol + CLI"] }
   ]
 }
