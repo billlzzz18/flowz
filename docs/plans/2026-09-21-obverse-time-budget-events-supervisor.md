@@ -35,7 +35,7 @@ Files: `src/orchestration/state.rs`, `src/orchestration/engine.rs`
 - In `JobState`, add `time_budget: Option<TimeBudget>` and `timeout_events: Vec<SubagentTimeout>`.
 - In `engine.rs`, before spawning each item, set `time_budget.started_at = Some(Utc::now())`.
 - After worker returns or fails, compute `elapsed_secs`. If `elapsed > max_duration`, append a `SubagentTimeout` to `timeout_events` and mark the item `Failed` with reason `"time_budget_exceeded"`.
-- Retain a kill-capable child handle from the spawner while the worker runs, and terminate it when the budget expires before awaiting completion.
+- If the worker is still running after budget, call `spawner.kill()` — this requires `StdProcessSpawner` to store the child `pid` and expose a `kill` method (see Task 9).
 
 Verification:
 ```bash
@@ -44,7 +44,12 @@ cargo test orchestration::tests
 
 ### Task 3: Add minimal event bus + types
 File: `src/events/mod.rs` (new)
-- `ObservedEvent` enum with variants carrying `InvocationSource`, `request_id`, and optional `session_id` alongside the existing MCP, Worker, Client, and Cron data.
+- `ObservedEvent` enum with variants carrying `InvocationSource`, `request_id`, and optional `session_id` alongside the existing MCP, Worker, Client, and Cron data:
+  - `Mcp { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, tool_name: String, args: serde_json::Value, ok: bool }`
+  - `Worker { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, item_id: String, ok: bool, elapsed_secs: u64 }`
+  - `Client { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, event_kind: String }`
+  - `Cron { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, job_id: String, fired: chrono::DateTime<chrono::Utc> }`
+- `InvocationSource` enum: `Mcp`, `Cli`, `Cron`.
 - `EventBus` struct with `tx: broadcast::Sender<ObservedEvent>` and `rx: broadcast::Receiver`.
 - `publish(event)` and `subscribe()` methods.
 
@@ -116,8 +121,9 @@ Verification:
 
 ### Task 9: Wire time budget into `StdProcessSpawner`
 File: `src/spawn/mod.rs`
-- Add `fn kill(&mut self) -> Result<()>` that calls `self.child.as_mut().ok_or(...)?.kill()` on the stored `std::process::Child` (or keep the `pid` and kill via a platform signal API), and call it from `engine.rs` when the budget is exceeded.
-- In `engine.rs`, if budget exceeded and worker still alive, call `spawner.kill(pid)`.
+- Add `pid: Option<u32>` field to `StdProcessSpawner` to store the child process pid.
+- Add `fn kill(&mut self) -> Result<()>` that calls `self.child.as_mut().ok_or(...)?.kill()` on the stored `std::process::Child` (using the pid), and call it from `engine.rs` when the budget is exceeded.
+- In `engine.rs`, if budget exceeded and worker still alive, call `spawner.kill()` (no pid argument — spawner owns the child handle).
 
 Verification:
 ```bash
