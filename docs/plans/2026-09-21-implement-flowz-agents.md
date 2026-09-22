@@ -149,7 +149,16 @@ impl InvocationContext {
 use async_trait::async_trait;
 use serde_json::Value;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde_repr::Ser_repr, serde_repr::De_repr)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde_repr::Serialize_repr,
+    serde_repr::Deserialize_repr,
+)]
 #[repr(u8)]
 pub enum Toolset {
     Workflow = 1,
