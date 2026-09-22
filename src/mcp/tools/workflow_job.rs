@@ -1,4 +1,4 @@
-use crate::domain::{JobResult, JobStatus};
+use crate::domain::{JobResult, JobStatus, job_result_to_value};
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
@@ -134,29 +134,4 @@ Use this tool after flowz_workflow_run returns a job_id, especially when the job
             }
         }
     }
-}
-
-fn job_result_to_value(job_result: JobResult) -> Value {
-    let status_str = match job_result.status {
-        JobStatus::Pending => "pending",
-        JobStatus::PendingConfirmation => "pending_confirmation",
-        JobStatus::Running => "running",
-        JobStatus::Completed => "completed",
-        JobStatus::Failed => "failed",
-        JobStatus::Cancelled => "cancelled",
-    };
-
-    let mut content = json!({
-        "job_id": job_result.job_id,
-        "status": status_str,
-        "total": job_result.total,
-        "completed": job_result.completed,
-        "failed": job_result.failed,
-    });
-
-    if let Some(result) = job_result.result {
-        content["result"] = result;
-    }
-
-    content
 }

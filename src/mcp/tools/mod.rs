@@ -9,6 +9,7 @@ pub mod subagent_stop;
 pub mod workflow_cancel;
 pub mod workflow_job;
 pub mod workflow_run;
+pub mod canvas;
 
 // Re-export the trait and enum for external use
 pub use inner::{McpTool, Toolset};
@@ -23,3 +24,4 @@ pub use subagent_stop::SubagentStopTool;
 pub use workflow_cancel::WorkflowCancelTool;
 pub use workflow_job::WorkflowJobTool;
 pub use workflow_run::WorkflowRunTool;
+pub use canvas::CanvasTool;

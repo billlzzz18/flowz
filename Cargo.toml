@@ -28,6 +28,9 @@ notify-rust = "4"
 which = "6"
 dirs = "5"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+notify-rust = "4"
+
 [[bin]]
 name = "flowz-mcp"
 path = "src/main.rs"
