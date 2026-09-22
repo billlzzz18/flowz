@@ -150,7 +150,7 @@ pub fn compile(def: &MarkdownDefinition, timezone: &str) -> Result<CronDefinitio
             path: skill_path,
             body: def.body.clone(),
         }
-    } else if fm.no_agent || fm.execution_mode == Some(CronExecutionMode::NoAgent) {
+    } else if fm.execution_mode == Some(CronExecutionMode::NoAgent) || (fm.execution_mode.is_none() && fm.no_agent) {
         ResolvedCommand::Shell {
             command: def.body.clone(),
             args: Vec::new(),
