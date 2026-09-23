@@ -215,6 +215,19 @@ pub trait SubagentService: Send + Sync {
     ) -> Result<(), FlowzError>;
 }
 
+
+```rust
+// Verified Subagent Lifecycle Request Structure (aligning with Hermes/Flowz contract)
+pub struct SubagentLaunchRequest {
+    pub goal: String,
+    pub context: String,
+    pub role: SubagentRole,          // Leaf vs Orchestrator
+    pub correlation_id: String,
+    pub allowed_toolsets: Vec<String>, // e.g. ["file", "web", "skills"]
+    pub timeout_seconds: Option<u64>,
+}
+```
+
 pub struct DelegateRequest {
     pub action: DelegateAction,
 }

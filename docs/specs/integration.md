@@ -170,3 +170,46 @@ SubagentLaunchRequest(
 result = svc.result(handle)
 text = getattr(result, "text", None) or getattr(result, "output", None) or str(result)
 ```
+
+## G.6 Verified Skill Runtime Implementations: Plugin vs MCP Server
+
+Reference source: Verified, executable implementations of Skill Store and Subagent Lifecycle (`store.py`, `prompt.py`).
+
+### Shared Core: `store.py` (Stdlib-only Skill Store)
+- Zero Hermes/MCP imports; uses only `pathlib`, `shutil`, `re`.
+- Discovers SKILL.md across `~/.hermes/skills` and git project roots (`.hermes/skills`, `.agents/skills`).
+- Provides 3 atomic operations: `list_skills()`, `view(name, path)`, and `manage(action, name, **kw)` (`create`, `patch`, `delete`, `write_file`, `remove_file`).
+
+### Shared Prompt: `prompt.py` (`build_learn_prompt`)
+- Used as subagent goal in Hermes plugin and as `@mcp.prompt()` in FastMCP.
+- Decoupled from tool return values — passes directly as leaf subagent task goal.
+
+### Variant 1: Hermes Plugin (`~/.hermes/plugins/hermes-learn/`)
+- **Tool Registration Contract:** `ctx.register_tool(name, toolset="hermes_learn", schema, handler)`
+- **Subagent Spawning Contract:**
+  ```python
+  svc = ctx.subagent_lifecycle
+  handle = svc.launch(SubagentLaunchRequest(
+      goal=build_learn_prompt(args),
+      context="You own file, web, and skill access for this job.",
+      role="leaf",
+      correlation_id="learn",
+      allowed_toolsets=("file", "web", "skills"),
+  ))
+  if svc.wait(handle, timeout_seconds=600).timed_out:
+      return f"still running: {handle.to_dict()}"
+  return str(svc.result(handle))[:32_000]
+  ```
+- **Command Contract:** `ctx.register_command("learn", _handle_learn, "Author a reusable skill from any source.")`
+
+### Variant 2: Universal MCP Server (`~/mcp-learn/server.py` via FastMCP)
+- Uses `from mcp.server.fastmcp import FastMCP`.
+- Exposes:
+  - Tools: `skills_list()`, `skill_view(name, path)`, `skill_manage(action, name, ...)`
+  - Prompt: `@mcp.prompt() def learn(request: str = "") -> str`
+- Works cross-client via standard stdio: Hermes, Claude Desktop, Cursor, VS Code.
+
+### Architectural Mapping for Flowz
+1. **Flowz Subagent Lifecycle Trait:** Flowz adopts the `SubagentLaunchRequest(goal, context, role, correlation_id, allowed_toolsets)` parameter structure verbatim in `src/service/subagent.rs`.
+2. **Universal Interop:** Flowz MCP server exposes both tools and prompt definitions mirroring FastMCP standard stdio protocol.
+3. **Decoupled Evo Worker:** Background Evolver spawns subagents using `build_learn_prompt` as goal, ensuring zero pollution of primary agent context.
