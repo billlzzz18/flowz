@@ -216,7 +216,6 @@ fn parse_codex_line(line: &str) -> Option<ParsedRecord> {
 #[derive(Debug, Default)]
 struct TurnState {
     user_text: String,
-    user_images: Vec<String>,
     assistant_text: String,
     thinking_text: String,
     tool_calls: Vec<ToolCallInfo>,
@@ -443,8 +442,10 @@ fn process_event_msg(
             if let Some(t) = turn.take() {
                 flush_turn(t, messages, msg_index);
             }
-            let mut new_turn = TurnState::default();
-            new_turn.timestamp = timestamp;
+            let mut new_turn = TurnState {
+                timestamp,
+                ..Default::default()
+            };
             new_turn.server_turn_id = payload
                 .get("turn_id")
                 .and_then(|v| v.as_str())
@@ -508,8 +509,10 @@ fn process_response_item(
                 if let Some(t) = turn.take() {
                     flush_turn(t, messages, msg_index);
                 }
-                let mut new_turn = TurnState::default();
-                new_turn.timestamp = timestamp;
+                let mut new_turn = TurnState {
+                    timestamp,
+                    ..Default::default()
+                };
                 if let Some(content) = content {
                     for part in content {
                         if let Some(text) = part.get("text").and_then(|v| v.as_str()) {

@@ -1,7 +1,10 @@
 // Simple test worker that reads JSON from stdin and writes JSON to stdout
+// Fields are the serde contract for the workflow request; not all are read
+// by this stub, hence the allow.
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct WorkerRequest {
     item_id: String,
@@ -15,6 +18,7 @@ struct WorkerRequest {
     effort_level: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct InputFile {
     name: String,

@@ -73,6 +73,9 @@ pub struct SessionInfo {
     pub message_count: usize,
 }
 
+// async fn in trait: impls are concrete-only (never used as `dyn`), so native
+// AFIT is fine; silence the lint that recommends #[async_trait] boxing.
+#[allow(async_fn_in_trait)]
 pub trait AgentAdapter: Send + Sync {
     fn adapter_type(&self) -> AdapterType;
     async fn list_sessions(&self) -> anyhow::Result<Vec<SessionInfo>>;

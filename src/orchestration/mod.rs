@@ -236,8 +236,10 @@ mod tests {
 
     #[tokio::test]
     async fn run_workflow_pending_confirmation_when_over_threshold() {
-        let mut policy = WorkflowPolicy::default();
-        policy.confirmation_threshold = 1;
+        let policy = WorkflowPolicy {
+            confirmation_threshold: 1,
+            ..Default::default()
+        };
         let ctx = OrchestrationContext::with_spawner(policy, mock_spawner());
         let req = test_request();
 
@@ -258,8 +260,10 @@ mod tests {
 
     #[tokio::test]
     async fn approve_job_works() {
-        let mut policy = WorkflowPolicy::default();
-        policy.confirmation_threshold = 1;
+        let policy = WorkflowPolicy {
+            confirmation_threshold: 1,
+            ..Default::default()
+        };
         let ctx = OrchestrationContext::with_spawner(policy, mock_spawner());
         let req = test_request();
 
@@ -286,8 +290,10 @@ mod tests {
 
     #[tokio::test]
     async fn reject_job_works() {
-        let mut policy = WorkflowPolicy::default();
-        policy.confirmation_threshold = 1;
+        let policy = WorkflowPolicy {
+            confirmation_threshold: 1,
+            ..Default::default()
+        };
         let ctx = OrchestrationContext::with_spawner(policy, mock_spawner());
         let req = test_request();
 
@@ -304,8 +310,10 @@ mod tests {
     #[tokio::test]
     async fn cancel_job_works() {
         // Use confirmation threshold to keep job in cancellable state
-        let mut policy = WorkflowPolicy::default();
-        policy.confirmation_threshold = 1;
+        let policy = WorkflowPolicy {
+            confirmation_threshold: 1,
+            ..Default::default()
+        };
         let ctx = OrchestrationContext::with_spawner(policy, mock_spawner());
         let req = test_request();
 
