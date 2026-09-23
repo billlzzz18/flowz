@@ -33,6 +33,17 @@
 
 ---
 
+
+### สถาปัตยกรรมโครงสร้างโมดูล (Module Topology Alignment)
+
+ความสัมพันธ์ระหว่างโมดูลเดิมที่มีอยู่ในระบบ (Legacy/Current) กับโมดูลตามสเปกใหม่ (New Architecture):
+| New Architecture Path (สเปก & plans.csv) | Current / Legacy Module Path | บทบาทและความสัมพันธ์ (Relationship) |
+|---|---|---|
+| `src/worker/protocol.rs` | `src/spawn/mod.rs::protocol` | โปรโตคอล stdio serialization เดิมใน spawn จะถูกยกขึ้นมาเป็น `src/worker/protocol.rs` เพื่อรองรับ Typed Worker Event Bus ตาม ADR-0007 |
+| `src/supervisor/findings.rs` | `src/service/supervisor.rs` | โครงสร้าง Findings เดิมที่เป็น Stub จะถูกย้ายและขยายเป็น Rule-based Heuristic Engine ตาม ADR-0008 |
+| `src/orchestration/` | `src/orchestration/` | โครงสร้างเดิมทำหน้าที่เป็น Orchestrator Core (Engine, Policy, Scheduler) ประสานงานร่วมกับ New Worker/Supervisor |
+| `src/harness/`, `src/evolution/` | (โมดูลใหม่) | สร้างขึ้นใหม่สำหรับ Gene Bank, Dual-Track Evolution, และ 4-Gate Screening ตาม ADR-0029 ถึง ADR-0034 |
+
 ## 3. ลำดับขั้นการพัฒนาระบบ (Implementation Phases)
 
 ### ระยะที่ 1: Data Models & Service Layer (H1 - H4)
