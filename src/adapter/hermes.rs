@@ -60,7 +60,7 @@ impl HermesAdapter {
                     updated_at: row
                         .get::<_, Option<f64>>(2)?
                         .map(|v| (v * 1000.0) as i64)
-                        .unwrap_or(0),
+                        .unwrap_or((row.get::<_, f64>(1)? * 1000.0) as i64),
                     message_count: row.get::<_, i64>(3)? as usize,
                 })
             })?;
