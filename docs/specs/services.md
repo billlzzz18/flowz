@@ -363,3 +363,81 @@ pub trait TrajectoryService: Send + Sync {
     async fn get(&self, id: TrajectoryId) -> Result<Trajectory, FlowzError>;
 }
 ```
+
+## D.11 Hermes Public Subagent Lifecycle API Specification
+
+Source: `https://hermes-agent.nousresearch.com/docs/developer-guide/subagent-lifecycle-api`
+
+### Core Architecture & Invariants
+- **Parent Session Dependency:** Can only launch while an active agent turn is running (`ctx.subagent_lifecycle`). Launching outside an active turn fails closed with `No active Hermes parent session`.
+- **Capability Handle (`SubagentHandle`):**
+  - Serializable (`handle.to_dict()`), carries a versioned opaque capability token.
+  - Passed to `status`, `wait`, `cancel`, `result`, or `reconnect`. Malformed or forged handles yield `UNKNOWN` / `UNKNOWN_HANDLE`.
+- **Stable States:**
+  `PENDING`, `STARTING`, `RUNNING`, `SUCCEEDED`, `FAILED`, `INTERRUPTED`, `CANCEL_REQUESTED`, `CANCELLED`, `UNKNOWN`.
+- **Cooperative Cancellation:**
+  `cancel(handle, reason=...)` signals the child agent to interrupt at the next safe boundary and returns `CANCEL_REQUESTED`. It does not claim completion until `wait` or `result` observes a terminal state.
+- **Terminal Result Guarantees:**
+  - Immutable, idempotent, bounded to 32,000 characters.
+  - Omits internal transcripts and hidden reasoning tokens; includes a stable result hash.
+- **Retention & Reconnection:**
+  - Retains metadata and terminal results in-process for 1 hour.
+  - After process restart, `reconnect` returns `RECONNECT_UNAVAILABLE` and never spawns duplicate replacements.
+- **Fail-Closed Isolation Constraints:**
+  - Goal, context, and metadata sizes are strictly capped.
+  - Toolsets can only be narrowed (`allowed_toolsets`), never broadened beyond parent capabilities.
+  - Rejects per-tool overrides or unisolated working directory escapes.
+
+### Rust Service Signature Mapping
+```rust
+// src/service/subagent.rs
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
+use crate::error::FlowzError;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubagentHandle {
+    pub id: String,
+    pub capability_token: String,
+    pub correlation_id: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SubagentState {
+    Pending,
+    Starting,
+    Running,
+    Succeeded,
+    Failed,
+    Interrupted,
+    CancelRequested,
+    Cancelled,
+    Unknown,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TerminalResult {
+    pub handle_id: String,
+    pub status: SubagentState,
+    pub output_text: String, // capped at 32k
+    pub result_hash: String,
+    pub cost_rollup: Option<crate::evolution::model::Cost>,
+}
+
+#[async_trait]
+pub trait SubagentLifecycleService: Send + Sync {
+    async fn launch(&self, req: SubagentLaunchRequest) -> Result<SubagentHandle, FlowzError>;
+    async fn status(&self, handle: &SubagentHandle) -> Result<SubagentState, FlowzError>;
+    async fn wait(&self, handle: &SubagentHandle, timeout: Duration) -> Result<WaitResult, FlowzError>;
+    async fn cancel(&self, handle: &SubagentHandle, reason: Option<&str>) -> Result<SubagentState, FlowzError>;
+    async fn result(&self, handle: &SubagentHandle) -> Result<TerminalResult, FlowzError>;
+}
+
+pub struct WaitResult {
+    pub timed_out: bool,
+    pub current_state: SubagentState,
+}
+```
