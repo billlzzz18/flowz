@@ -48,7 +48,8 @@ impl ClaudeAdapter {
                 if let Some(found) = Self::find_session_file_recursive(&path, session_id) {
                     return Some(found);
                 }
-            } else if path.extension().is_some_and(|e| e == "jsonl")
+            } else if file_type.is_file()
+                && path.extension().is_some_and(|e| e == "jsonl")
                 && path
                     .file_stem()
                     .is_some_and(|s| s.to_string_lossy() == session_id)
@@ -116,7 +117,7 @@ impl ClaudeAdapter {
             }
             if file_type.is_dir() {
                 Self::collect_sessions_recursive(&path, result);
-            } else if path.extension().is_some_and(|e| e == "jsonl") {
+            } else if file_type.is_file() && path.extension().is_some_and(|e| e == "jsonl") {
                 let metadata = match entry.metadata() {
                     Ok(m) => m,
                     Err(e) => {
