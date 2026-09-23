@@ -2,6 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(default)]
 pub struct RunBudget {
     /// Wall-clock limit for the entire workflow.
     pub max_wall_clock_seconds: Option<u64>,
@@ -57,6 +58,14 @@ mod tests {
 
         assert_eq!(budget.max_wall_clock_seconds, Some(120));
         assert_eq!(budget.max_total_agent_calls, 50);
+        assert!(budget.enable_pressure_warnings);
+    }
+    #[test]
+    fn empty_object_deserializes_to_default() {
+        let budget: RunBudget = serde_json::from_value(json!({})).unwrap();
+
+        assert_eq!(budget.max_wall_clock_seconds, None);
+        assert_eq!(budget.max_total_agent_calls, 10_000);
         assert!(budget.enable_pressure_warnings);
     }
 }

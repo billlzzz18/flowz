@@ -1,0 +1,38 @@
+id,status,task,path,done_when,verify_at,adr
+H1,⬜,Harness types,src/harness/patch.rs,serialize + hash deterministic,src/harness/patch.rs::test_hash,0030 0033 0037
+H2,⬜,Trajectory types,src/trajectory/model.rs,JSONL roundtrip,src/trajectory/model.rs::test_roundtrip,0030
+H3,⬜,Skill types,src/skill/model.rs,parse SKILL.md,src/skill/model.rs::test_parse,0031
+H4,⬜,Discovery types,src/discovery/model.rs,serialize,src/discovery/model.rs::test_serialize,0029
+H5,⬜,Service traits,src/service/,mock test,src/service/mod.rs::test_traits,0007
+H6,⬜,TrajectoryCollector,src/trajectory/collector.rs,event→step ครบ,src/trajectory/collector.rs::test_mapping,0030
+H7,⬜,Cron 1 learning,src/cron/learning.rs,4 gates + misfire,src/cron/learning.rs::test_round,0030 0036
+H8,⬜,Cron 2 skill-reuse,src/cron/skill_reuse.rs,creator=flowz + ≥3 sessions,src/cron/skill_reuse.rs::test_synth,0031
+H9,⬜,4 gates,src/harness/gates.rs,เรียงลำดับ + z-test,src/harness/gates.rs::test_sequential,0034 0035
+H10,⬜,PairedTest,src/harness/stats.rs,z=5.0 ที่ mean=.5 std=1 n=100,src/harness/stats.rs::test_z,0035
+H11,⬜,GeneBank,src/harness/gene_bank.rs,z สูงสุดชนะ,src/harness/gene_bank.rs::test_competitive,0033
+H12,⬜,VersionStore,src/harness/version_store.rs,rollback ได้,src/harness/version_store.rs::test_rollback,0037
+H13,⬜,Evolver backend,src/evolution/,tier check,src/evolution/mod.rs::test_tier,0032
+H14,⬜,Skill synthesis,src/evolution/skill_synth.rs,เขียน ~/.flowz/skills/,src/evolution/skill_synth.rs::test_write,0031
+H15,⬜,Profile format,src/profile/,install→update ไม่แตะ user,src/profile/mod.rs::test_ownership,0026
+H16,⬜,Adapters,src/adapter/,roundtrip + ไม่มี credential,src/adapter/mod.rs::test_roundtrip,0027
+H17,⬜,Backends,src/execution/,dispatch→collect,src/execution/mod.rs::test_dispatch,0028
+H18,⬜,Discovery,src/discovery/,flowz init ไม่ถาม,src/discovery/mod.rs::test_init,0029
+H19,⬜,flowz doctor,src/cli/doctor.rs,check backend + tier,src/cli/doctor.rs::test_doctor,0029
+H20,⬜,harness_* skill_* evolution_* tools,src/mcp/tools/,register + schema,src/mcp/tools/mod.rs::test_register,0006 0031 0033
+H21,⬜,Fixtures,tests/fixtures/,coverage ≥ 80%,tests/mod.rs::test_coverage,0015
+H22,⬜,Skills,skills/,flowz_* จริง + negative example,skills/_test,0012 0013
+OB1,⬜,TimeBudget,src/workflow/time_budget.rs,reject 0 + heartbeat ≥ max,src/workflow/time_budget.rs::test,0002
+OB2,⬜,IterationBudget,src/workflow/iteration_budget.rs,reject 0 + pressure 0-1,src/workflow/iteration_budget.rs::test,0002
+OB3,⬜,RunBudget,src/workflow/run_budget.rs,serialize,src/workflow/run_budget.rs::test,0020
+OB4,⬜,WorkerEvent JSONL,src/worker/protocol.rs,parse ทุก variant,src/worker/protocol.rs::test,0009
+OB5,⬜,WorkerSupervisor,src/worker/supervisor.rs,timeout + grace + kill,src/worker/supervisor.rs::test,0002
+OB6,⬜,EventBus,src/supervisor/bus.rs,broadcast + lagged,src/supervisor/bus.rs::test,0009
+OB7,⬜,Rules 7 ข้อ,src/supervisor/rules.rs,ทุก rule pass,src/supervisor/rules.rs::test,0010
+OB8,⬜,Finding,src/supervisor/findings.rs,severity + evidence,src/supervisor/findings.rs::test,0009
+OB9,⬜,ProcessRegistry,src/supervisor/process_registry.rs,list + poll + kill,src/supervisor/process_registry.rs::test,0022
+OB10,⬜,PreCompact hook,src/workflow/compression.rs,dump state,src/workflow/compression.rs::test,0016
+MF1,✅,Frontmatter parser,src/adapter/markdown/frontmatter.rs,parse YAML + body,src/adapter/markdown/frontmatter.rs::test,0023
+MF2,✅,Wikilink extractor,src/adapter/markdown/links.rs,extract 3 ชนิด,src/adapter/markdown/links.rs::test,0023
+MF3,✅,MarkdownCompiler,src/adapter/markdown/compiler.rs,merge defaults,src/adapter/markdown/compiler.rs::test,0024
+MF4,✅,MarkdownRegistry,src/adapter/markdown/registry.rs,recursive + ignore,src/adapter/markdown/registry.rs::test,0024
+MF5,✅,ADR 0023-0025,docs/decisions/,3 ไฟล์มี,docs/decisions/,0023 0024 0025

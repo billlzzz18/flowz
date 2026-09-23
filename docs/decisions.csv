@@ -1,0 +1,38 @@
+id,status,topic,decision,rationale
+0001,✅,TimeBudget กับ Cron,แยกคนละ type/field/validation,subagent งานสั้นมี deadline — cron ปลุก client ตามเวลา
+0002,✅,บังคับ Budget,ทุก item/reducer มี TimeBudget + IterationBudget,กัน agent วน loop
+0003,✅,ห้าม cron ใน workflow,RunRequest ห้ามมี schedule/cron/run_at,ป้องกันปนกัน
+0004,✅,Cron แยกโมดูล,src/cron/ แยกจาก workflow,ClientDispatcher ≠ WorkerSpawner
+0005,✅,Cron user เท่านั้น,agent ปกติไม่มี cron tool,ผู้ใช้ควบคุมเอง
+0006,✅,ตั้งชื่อ tool,prefix flowz_ ทุก tool,กัน collision MCP อื่น
+0007,✅,Service layer,MCP/CLI เป็นแค่ adapter,logic อยู่ที่เดียว
+0008,✅,Invocation context,source Mcp/Cli/Cron/Evolution,output/permission/log ต่างกัน
+0009,✅,Typed events,struct ไม่อ่าน log,อ่าน log เปลือง + ไม่ deterministic
+0010,✅,Rule ก่อน LLM,rule engine ชั้นแรก,LLM แพง/ช้า/ไม่แน่นอน
+0011,✅,ขอบเขต supervisor,เห็นเฉพาะ flowz traffic,ทางเทคนิคเห็นได้แค่นั้น
+0012,✅,Skills เขียนเมื่อไหร่,หลัง API freeze,ชื่อ tool เปลี่ยนได้
+0013,✅,อ้างชื่อใน skill,flowz_* จริง ห้าม generic,ไม่งั้นหยิบ system cron
+0014,✅,Prompts per mode,cron/subagent แยก,context window ไม่บวม
+0015,✅,ลำดับ phase,15 phases ห้ามข้าม,checkpoint ก่อน
+0016,✅,Context compression,two-layer 50% + micro,context window ไม่พอ
+0017,✅,Toolsets,จัดกลุ่มตาม mode,โหลดเฉพาะที่ใช้
+0018,✅,Live orchestration,spawn/list/steer/stop,4 action เดียว
+0019,✅,Role subagent,Leaf vs Orchestrator,กัน recursive
+0020,✅,Wall-clock budget,RunBudget แยก TimeBudget,งานรวมมี deadline
+0021,✅,Tool register ตัวเอง,แต่ละ file register เอง,ลด coupling
+0022,✅,Process registry,แยกจาก WorkerHandle,เห็น OS process จริง
+0023,✅,Markdown-first,md + frontmatter,เขียน JSON มือง่ายพัง
+0024,✅,Source tracking,Markdown/Api/Imported/Generated,regenerate ถูกตัว
+0025,✅,Adapter layer,src/adapter/ แยก,core ไม่รู้จัก client
+0026,✅,Hermes profile,git + distribution.yaml,git มี versioning แล้ว
+0027,✅,Client interop,แปลง 4 client ↔ flowz,ผู้ใช้มี client ต่างกัน
+0028,✅,Remote execution,ExecutionBackend trait,แยก "ทำอะไร" กับ "รันที่ไหน"
+0029,✅,Zero-config,flowz init ครั้งเดียว,ผู้ใช้ไม่ต้องรู้ backend
+0030,✅,Learning cron,Cron 1 ทุกวัน 03:00 misfire run_once,evolution round
+0031,✅,Skill-reuse cron,Cron 2 success → SKILL.md,เก็บกระบวนการดี
+0032,✅,Model tier,Evolver ≥ Task + 1,self-eval bias
+0033,✅,Gene bank,cell=(component,pathology),ไม่ collapse
+0034,✅,4 gates,Validity→Activation→Significance→Gain,กรองตามลำดับ
+0035,✅,Statistical rigor,z≥1.96 n≥26,กัน admit noise
+0036,✅,Misfire run_once,last_run_at + startup,ไม่ thundering herd
+0037,✅,Rollback,SemVer + content_hash + 1 cmd,ย้อนได้ทุก patch
