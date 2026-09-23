@@ -261,7 +261,6 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         let request = self.item_to_request(item);
         let item_id = request.item_id.clone();
         let brief = request.brief.clone();
-        let _notifier = self.notifier.clone();
         let store = self.store.clone();
         let job_id = job_id.to_string();
 

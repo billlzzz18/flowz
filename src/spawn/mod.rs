@@ -206,7 +206,6 @@ pub mod protocol {
 pub mod test_utils {
     use super::*;
     use async_trait::async_trait;
-    use std::sync::Arc;
 
     #[derive(Default)]
     pub struct MockProcessSpawner {

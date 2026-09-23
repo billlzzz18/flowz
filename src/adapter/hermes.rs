@@ -147,7 +147,19 @@ impl HermesAdapter {
                                 })
                                 .collect();
                             if !tool_calls.is_empty() {
-                                msg.tool_calls = Some(tool_calls);
+                                msg.tool_calls = Some(tool_calls.clone());
+                                // Emit one tool_use block per parsed call (correct shape for multi-call)
+                                msg.content_blocks = Some(
+                                    tool_calls
+                                        .iter()
+                                        .map(|tc| ContentBlock {
+                                            r#type: "tool_use".to_string(),
+                                            tool_id: Some(tc.id.clone()),
+                                            content: Some(tc.name.clone()),
+                                            citations: None,
+                                        })
+                                        .collect(),
+                                );
                             }
                         }
 
@@ -161,8 +173,10 @@ impl HermesAdapter {
                             citations: None,
                         }]);
                     }
-                } else if let Some(name) = tool_name {
-                    // Assistant message with tool_name (first tool call) - emit tool_use block
+                } else if msg.content_blocks.is_none()
+                    && let Some(name) = tool_name
+                {
+                    // Fallback: legacy rows without tool_calls JSON
                     msg.content_blocks = Some(vec![ContentBlock {
                         r#type: "tool_use".to_string(),
                         tool_id: None,
