@@ -44,12 +44,12 @@ cargo test orchestration::tests
 
 ### Task 3: Add minimal event bus + types
 File: `src/events/mod.rs` (new)
-- `ObservedEvent` enum with variants carrying `InvocationSource`, `request_id`, and optional `session_id` alongside the existing MCP, Worker, Client, and Cron data:
+- `ObservedEvent` enum with variants carrying `InvocationSource` (from `crate::invocation::InvocationSource`), `request_id`, and optional `session_id` alongside the existing MCP, Worker, Client, and Cron data:
   - `Mcp { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, tool_name: String, args: serde_json::Value, ok: bool }`
   - `Worker { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, item_id: String, ok: bool, elapsed_secs: u64 }`
   - `Client { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, event_kind: String }`
   - `Cron { invocation_source: InvocationSource, request_id: String, session_id: Option<String>, job_id: String, fired: chrono::DateTime<chrono::Utc> }`
-- `InvocationSource` enum: `Mcp`, `Cli`, `Cron`.
+- Use the existing `crate::invocation::InvocationSource` (add `Cron` variant there in `src/invocation/context.rs`).
 - `EventBus` struct with `tx: broadcast::Sender<ObservedEvent>` and `rx: broadcast::Receiver`.
 - `publish(event)` and `subscribe()` methods.
 
