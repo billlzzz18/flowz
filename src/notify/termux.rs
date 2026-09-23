@@ -1,42 +1,20 @@
+//! Termux notifier: signals subagent completion via `termux-vibrate`.
+//! Termux has no toast daemon wired here, so vibration duration is the
+//! signal; `event.title` is unused on this platform.
+
 use crate::notify::{NotificationError, NotificationEvent, Notifier};
 use async_trait::async_trait;
-use std::time::Duration;
 use tokio::process::Command;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RuntimeEnvironment {
-    Termux,
-    Windows,
-    Linux,
-    Unknown,
-}
-
-pub fn detect_environment() -> RuntimeEnvironment {
-    if std::env::var_os("TERMUX_VERSION").is_some()
-        || std::env::var_os("PREFIX")
-            .map(|v| v.to_string_lossy().contains("com.termux"))
-            .unwrap_or(false)
-    {
-        return RuntimeEnvironment::Termux;
-    }
-
-    if cfg!(target_os = "windows") {
-        return RuntimeEnvironment::Windows;
-    }
-
-    if cfg!(target_os = "linux") {
-        return RuntimeEnvironment::Linux;
-    }
-
-    RuntimeEnvironment::Unknown
-}
-
+/// Vibrates the device on subagent completion.
+/// `force` passes `-f` to vibrate even in vibrate-only mode.
 pub struct TermuxNotifier {
     pub force: bool,
 }
 
 #[async_trait]
 impl Notifier for TermuxNotifier {
+    /// Runs `termux-vibrate -d <ms>`; duration is clamped to 100..=10000 ms.
     async fn notify(&self, event: NotificationEvent) -> Result<(), NotificationError> {
         let milliseconds = event.duration.as_millis().clamp(100, 10_000);
 
@@ -62,6 +40,7 @@ impl Notifier for TermuxNotifier {
     }
 }
 
+/// Convenience constructor with vibration-only (non-forced) mode.
 pub fn termux_notifier() -> TermuxNotifier {
     TermuxNotifier { force: false }
 }

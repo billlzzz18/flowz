@@ -1,9 +1,8 @@
-use crate::domain::{JobResult, JobStatus, job_result_to_value};
+use crate::domain::job_result_to_value;
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
 use async_trait::async_trait;
-use pmcp::{Error, RequestHandlerExtra, Result as McpResult};
 use serde_json::{Value, json};
 use std::sync::Arc;
 
@@ -123,7 +122,7 @@ Use this tool after flowz_workflow_run returns a job_id, especially when the job
                 let todos = self.orch.get_todos(&job_id).await.ok_or_else(|| {
                     crate::error::FlowzError::NotFound(format!("job not found: {}", job_id))
                 })?;
-                let mut content = json!({
+                let content = json!({
                     "job_id": job_id,
                     "todos": todos,
                 });

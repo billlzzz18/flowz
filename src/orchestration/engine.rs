@@ -1,18 +1,19 @@
 use crate::domain::{
-    ExecutionMode, FailurePolicy, JobResult, JobStatus, RunRequest, SandboxMode, SubagentStatus,
-    SubagentTimeout, SubagentTodo, TimeBudget, WorkflowItem, generate_id,
+    ExecutionMode, FailurePolicy, RunRequest, SubagentStatus, SubagentTimeout, SubagentTodo,
+    TimeBudget, WorkflowItem, generate_id,
 };
 use crate::notify::{NotificationEvent, NotificationLevel, Notifier, notify_safely};
 use crate::spawn::{ProcessSpawner, SpawnError, WorkerRequest, WorkerResponse};
 use anyhow::Result;
 use chrono::Utc;
-use futures::stream::{self, StreamExt, TryStreamExt};
-use std::collections::HashMap;
+use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::RwLock;
 use tracing::{Instrument, info_span};
 
+/// Executes workflow items as subagent processes and notifies on completion.
+/// Notifications fire ONLY after an actual subagent run — plain background
+/// work with no subagent never notifies.
 pub struct WorkflowEngine<S: ProcessSpawner> {
     spawner: Arc<S>,
     policy: Arc<crate::orchestration::policy::WorkflowPolicy>,
@@ -35,6 +36,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         }
     }
 
+    /// Runs all items (sequential or parallel), enforcing failure policy and
+    /// time budgets, and returns the aggregated execution result.
     pub async fn run(&self, request: RunRequest) -> WorkflowExecutionResult {
         let concurrency = request
             .max_concurrency
@@ -144,7 +147,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                     let item_id = request.item_id.clone();
                     let brief = request.brief.clone();
                     let budget_secs = request.max_duration_secs.unwrap_or(spawner.timeout_secs());
-                    let started_at = Utc::now();
+                    let _started_at = Utc::now();
 
                     // Update todo to InProgress and set time budget
                     if let Some(state) = store.get_state(&job_id).await {
@@ -161,7 +164,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
 
                     let start_instant = Instant::now();
                     let span = info_span!("subagent", job_id = %job_id, item_id = %item_id, brief = %brief);
-                    let mut result = async move {
+
+                    async move {
                         let result = spawner.run(request).await;
                         let elapsed = start_instant.elapsed().as_secs();
                         let success = result.as_ref().map(|r| r.ok).unwrap_or(false);
@@ -190,11 +194,11 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                             NotificationEvent {
                                 job_id: job_id.clone(),
                                 item_id: Some(item_id.clone()),
-                                title: if success {
-                                    "Subagent completed".to_string()
-                                } else {
-                                    "Subagent failed".to_string()
-                                },
+                    title: if success {
+                        format!("Subagent completed: {}", item_id)
+                    } else {
+                        format!("Subagent failed: {}", item_id)
+                    },
                                 body: brief,
                                 level,
                                 duration: Duration::from_millis(if success { 250 } else { 700 }),
@@ -232,9 +236,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                         result
                     }
                     .instrument(span)
-                    .await;
-
-                    result
+                    .await
                 }
             })
             .buffered(max_concurrency)
@@ -264,7 +266,6 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         let request = self.item_to_request(item);
         let item_id = request.item_id.clone();
         let brief = request.brief.clone();
-        let notifier = self.notifier.clone();
         let store = self.store.clone();
         let job_id = job_id.to_string();
 
@@ -289,7 +290,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         let start_instant = Instant::now();
         let span =
             info_span!("subagent", job_id = %job_id, item_id = %item_id, brief = %request.brief);
-        let mut result = async {
+        let result = async {
             let result = self.spawner.run(request).await;
             let elapsed = start_instant.elapsed().as_secs();
             let success = result.as_ref().map(|r| r.ok).unwrap_or(false);
@@ -319,9 +320,9 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                     job_id: job_id.clone(),
                     item_id: Some(item_id.clone()),
                     title: if success {
-                        "Subagent completed".to_string()
+                        format!("Subagent completed: {}", item_id)
                     } else {
-                        "Subagent failed".to_string()
+                        format!("Subagent failed: {}", item_id)
                     },
                     body: brief,
                     level,
@@ -367,6 +368,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
     }
 }
 
+/// Aggregated outcome of a workflow run.
 #[derive(Debug, Default)]
 pub struct WorkflowExecutionResult {
     pub successful: Vec<WorkerResponse>,

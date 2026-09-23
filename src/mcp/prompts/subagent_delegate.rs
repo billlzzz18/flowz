@@ -68,13 +68,12 @@ Rules:
 Return a flowz_subagent_delegate request with action=spawn.
 "#
         ),
-        "list" => format!(
-            r#"
+        "list" => r#"
 List running subagents in flowz-mcp.
 
 Use flowz_subagent_list tool.
 "#
-        ),
+        .to_string(),
         "steer" => format!(
             r#"
 Steer a running subagent in flowz-mcp.

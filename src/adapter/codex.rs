@@ -1,5 +1,4 @@
 use super::{AdapterType, AgentAdapter, ChatMessage, ContentBlock, SessionInfo, ToolCallInfo};
-use anyhow::Result;
 use std::path::{Path, PathBuf};
 use tokio::fs;
 
@@ -44,14 +43,13 @@ impl CodexAdapter {
                 if let Some(found) = self.find_session_recursive(&path, session_id) {
                     return Some(found);
                 }
-            } else if entry.file_type().ok()?.is_file() {
-                if path
+            } else if entry.file_type().ok()?.is_file()
+                && path
                     .file_name()?
                     .to_str()?
                     .ends_with(&format!("-{}.jsonl", session_id))
-                {
-                    return Some(path);
-                }
+            {
+                return Some(path);
             }
         }
         None
@@ -93,28 +91,27 @@ impl AgentAdapter for CodexAdapter {
         while let Some(entry) = read_dir.next_entry().await? {
             let path = entry.path();
             if entry.file_type().await?.is_file()
-                && path.extension().map_or(false, |e| e == "jsonl")
+                && path.extension().is_some_and(|e| e == "jsonl")
+                && let Some(name) = path.file_stem().and_then(|s| s.to_str())
             {
-                if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
-                    let metadata = entry.metadata().await?;
-                    sessions.push(SessionInfo {
-                        id: name.to_string(),
-                        path: path.clone(),
-                        created_at: metadata
-                            .created()
-                            .ok()
-                            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                            .map(|d| d.as_millis() as i64)
-                            .unwrap_or(0),
-                        updated_at: metadata
-                            .modified()
-                            .ok()
-                            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                            .map(|d| d.as_millis() as i64)
-                            .unwrap_or(0),
-                        message_count: 0,
-                    });
-                }
+                let metadata = entry.metadata().await?;
+                sessions.push(SessionInfo {
+                    id: name.to_string(),
+                    path: path.clone(),
+                    created_at: metadata
+                        .created()
+                        .ok()
+                        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                        .map(|d| d.as_millis() as i64)
+                        .unwrap_or(0),
+                    updated_at: metadata
+                        .modified()
+                        .ok()
+                        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                        .map(|d| d.as_millis() as i64)
+                        .unwrap_or(0),
+                    message_count: 0,
+                });
             }
         }
         Ok(sessions)
@@ -276,24 +273,24 @@ fn process_legacy_item(
     event_type: &str,
     item: &serde_json::Value,
     turn: &mut TurnState,
-    timestamp: i64,
+    _timestamp: i64,
 ) {
     let item_type = item.get("type").and_then(|v| v.as_str()).unwrap_or("");
     let item_id = item.get("id").and_then(|v| v.as_str()).unwrap_or("");
 
     match item_type {
         "agent_message" => {
-            if matches!(event_type, "item.updated" | "item.completed") {
-                if let Some(text) = item.get("text").and_then(|v| v.as_str()) {
-                    turn.assistant_text = strip_citation_markup(text).to_string();
-                }
+            if matches!(event_type, "item.updated" | "item.completed")
+                && let Some(text) = item.get("text").and_then(|v| v.as_str())
+            {
+                turn.assistant_text = strip_citation_markup(text).to_string();
             }
         }
         "reasoning" => {
-            if matches!(event_type, "item.updated" | "item.completed") {
-                if let Some(text) = item.get("text").and_then(|v| v.as_str()) {
-                    turn.thinking_text = text.to_string();
-                }
+            if matches!(event_type, "item.updated" | "item.completed")
+                && let Some(text) = item.get("text").and_then(|v| v.as_str())
+            {
+                turn.thinking_text = text.to_string();
             }
         }
         "command_execution" => {
@@ -312,17 +309,16 @@ fn process_legacy_item(
                     content: None,
                     citations: None,
                 });
-            } else if event_type == "item.completed" {
-                if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                    let raw = item
-                        .get("aggregated_output")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("");
-                    tc.result = Some(raw.to_string());
-                    let exit_code = item.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1);
-                    tc.status =
-                        Some(if exit_code == 0 { "completed" } else { "error" }.to_string());
-                }
+            } else if event_type == "item.completed"
+                && let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id)
+            {
+                let raw = item
+                    .get("aggregated_output")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                tc.result = Some(raw.to_string());
+                let exit_code = item.get("exit_code").and_then(|v| v.as_i64()).unwrap_or(-1);
+                tc.status = Some(if exit_code == 0 { "completed" } else { "error" }.to_string());
             }
         }
         "file_change" => {
@@ -354,17 +350,17 @@ fn process_legacy_item(
                         content: None,
                         citations: None,
                     });
-                } else if event_type == "item.completed" {
-                    if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                        tc.status = Some(
-                            if item.get("status").and_then(|v| v.as_str()) == Some("completed") {
-                                "completed"
-                            } else {
-                                "error"
-                            }
-                            .to_string(),
-                        );
-                    }
+                } else if event_type == "item.completed"
+                    && let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id)
+                {
+                    tc.status = Some(
+                        if item.get("status").and_then(|v| v.as_str()) == Some("completed") {
+                            "completed"
+                        } else {
+                            "error"
+                        }
+                        .to_string(),
+                    );
                 }
             }
         }
@@ -383,11 +379,11 @@ fn process_legacy_item(
                     content: None,
                     citations: None,
                 });
-            } else if event_type == "item.completed" {
-                if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                    tc.result = Some("Search complete".to_string());
-                    tc.status = Some("completed".to_string());
-                }
+            } else if event_type == "item.completed"
+                && let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id)
+            {
+                tc.result = Some("Search complete".to_string());
+                tc.status = Some("completed".to_string());
             }
         }
         "mcp_tool_call" => {
@@ -407,26 +403,26 @@ fn process_legacy_item(
                     content: None,
                     citations: None,
                 });
-            } else if event_type == "item.completed" {
-                if let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id) {
-                    let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("");
-                    tc.status = Some(
-                        if status == "completed" {
-                            "completed"
-                        } else {
-                            "error"
-                        }
-                        .to_string(),
-                    );
-                    tc.result = Some(
-                        if status == "completed" {
-                            "Completed"
-                        } else {
-                            "Failed"
-                        }
-                        .to_string(),
-                    );
-                }
+            } else if event_type == "item.completed"
+                && let Some(tc) = turn.tool_calls.iter_mut().find(|tc| tc.id == item_id)
+            {
+                let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("");
+                tc.status = Some(
+                    if status == "completed" {
+                        "completed"
+                    } else {
+                        "error"
+                    }
+                    .to_string(),
+                );
+                tc.result = Some(
+                    if status == "completed" {
+                        "Completed"
+                    } else {
+                        "Failed"
+                    }
+                    .to_string(),
+                );
             }
         }
         _ => {}

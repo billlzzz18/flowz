@@ -1,12 +1,7 @@
-use crate::domain::{
-    ExecutionMode, FailurePolicy, JobResult, JobStatus, RunRequest, SandboxMode, SubagentTodo,
-    WorkflowItem, generate_id,
-};
+use crate::domain::{JobResult, JobStatus, RunRequest, SubagentTodo, generate_id};
 use crate::notify::Notifier;
 use anyhow::Result;
-use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 pub mod engine;
 pub mod policy;
@@ -97,7 +92,7 @@ impl<S: crate::spawn::ProcessSpawner + Default + 'static> OrchestrationContext<S
             JobStatus::Running
         };
 
-        let mut job_result = JobResult::new(job_id.clone(), status, request.items.len());
+        let job_result = JobResult::new(job_id.clone(), status, request.items.len());
         self.store.insert(job_id.clone(), job_result.clone()).await;
 
         // Always store the request so it can be retrieved for approval

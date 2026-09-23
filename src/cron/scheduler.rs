@@ -50,10 +50,10 @@ pub fn is_due(cron: &CronDefinition, now: chrono::DateTime<chrono::Utc>) -> bool
     }
     let tz: chrono_tz::Tz = cron.timezone.parse().unwrap_or(chrono_tz::UTC);
     let now_tz = now.with_timezone(&tz);
-    if let Ok(schedule) = Schedule::from_str(&cron.expression) {
-        if let Some(next) = schedule.upcoming(tz).next() {
-            return next <= now_tz;
-        }
+    if let Ok(schedule) = Schedule::from_str(&cron.expression)
+        && let Some(next) = schedule.upcoming(tz).next()
+    {
+        return next <= now_tz;
     }
     false
 }

@@ -1,6 +1,4 @@
-use crate::domain::{
-    ExecutionMode, FailurePolicy, JobStatus, RunRequest, SandboxMode, WorkflowItem,
-};
+use crate::domain::RunRequest;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -42,14 +40,14 @@ impl WorkflowPolicy {
             }
         }
 
-        if let Some(max_concurrency) = request.max_concurrency {
-            if max_concurrency as usize > self.max_concurrency {
-                anyhow::bail!(
-                    "max_concurrency {} exceeds policy limit {}",
-                    max_concurrency,
-                    self.max_concurrency
-                );
-            }
+        if let Some(max_concurrency) = request.max_concurrency
+            && max_concurrency as usize > self.max_concurrency
+        {
+            anyhow::bail!(
+                "max_concurrency {} exceeds policy limit {}",
+                max_concurrency,
+                self.max_concurrency
+            );
         }
 
         Ok(())

@@ -28,68 +28,48 @@ impl From<FindingSeverity> for String {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum ExecutionMode {
     Sequential,
+    #[default]
     Parallel,
-}
-
-impl Default for ExecutionMode {
-    fn default() -> Self {
-        Self::Parallel
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum FailurePolicy {
+    #[default]
     Collect,
     FailFast,
 }
 
-impl Default for FailurePolicy {
-    fn default() -> Self {
-        Self::Collect
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum SandboxMode {
+    #[default]
     Isolated,
     Shared,
 }
 
-impl Default for SandboxMode {
-    fn default() -> Self {
-        Self::Isolated
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum EffortLevel {
     Lite,
+    #[default]
     Standard,
     Deep,
 }
 
-impl Default for EffortLevel {
-    fn default() -> Self {
-        Self::Standard
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum SubagentRole {
+    #[default]
     Leaf,
     Orchestrator,
-}
-
-impl Default for SubagentRole {
-    fn default() -> Self {
-        Self::Leaf
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -363,14 +343,11 @@ pub struct CronDefinition {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum CronExecutionMode {
+    #[default]
     WithAgent,
     NoAgent,
-}
-impl Default for CronExecutionMode {
-    fn default() -> Self {
-        Self::WithAgent
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]

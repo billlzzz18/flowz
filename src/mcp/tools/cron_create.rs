@@ -6,7 +6,6 @@ use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::service::FlowzService;
 use async_trait::async_trait;
-use pmcp::Error;
 use serde_json::{Value, json};
 use std::sync::Arc;
 

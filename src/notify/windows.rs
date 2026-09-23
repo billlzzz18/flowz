@@ -4,9 +4,11 @@ use std::path::PathBuf;
 use tokio::process::Command;
 
 pub struct WindowsNotifier {
+    /// Path to the PowerShell executable used to raise the toast.
     pub powershell: PathBuf,
 }
 
+/// Escapes XML-special characters for embedding in the toast template.
 fn escape_xml(value: &str) -> String {
     let mut result = String::with_capacity(value.len() + 32);
     for ch in value.chars() {
@@ -37,6 +39,8 @@ fn escape_xml(value: &str) -> String {
     result
 }
 
+/// Toast XML template; `{title}` is the headline ("Subagent completed: <id>"),
+/// `{body}` the detail. Both values are XML-escaped before substitution.
 const TOAST_TEMPLATE: &str = r#"<toast>
   <visual>
     <binding template="ToastGeneric">
@@ -87,8 +91,12 @@ fn build_script(toast_xml: &str) -> String {
     script
 }
 
+/// PowerShell toast notifier for Windows. Raises a Windows toast with the
+/// event title as headline, so subagent notifications are distinguishable
+/// from any other toast by the "Subagent completed/failed: <item_id>" prefix.
 #[async_trait]
 impl Notifier for WindowsNotifier {
+    /// Builds the toast XML and runs it through PowerShell WinRT APIs.
     async fn notify(&self, event: NotificationEvent) -> Result<(), NotificationError> {
         let title = escape_xml(&event.title);
         let body = escape_xml(&event.body);

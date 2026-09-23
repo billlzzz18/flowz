@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "flowz-mcp: Agent Orchestration Architecture",
+    "output": "docs/architect/flowz-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/billlzzz18/flowz",
+      "revision": "f3d9156d74af3618582abd0d486bb6cc3b722581"
+    }
+  },
+  "components": [
+    { "id": "mcp", "type": "backend", "label": "MCP Interface", "sublabel": "src/mcp", "pos": [40, 60], "size": [150, 56], "sources": [{ "path": "src/mcp/mod.rs" }] },
+    { "id": "service", "type": "backend", "label": "Service Layer", "sublabel": "src/service", "pos": [260, 60], "size": [150, 56], "sources": [{ "path": "src/service/mod.rs" }] },
+    { "id": "oracle", "type": "backend", "label": "Orchestration", "sublabel": "src/orchestration", "pos": [480, 60], "size": [160, 56], "sources": [{ "path": "src/orchestration/engine.rs" }] },
+    { "id": "spawn", "type": "backend", "label": "Worker Spawner", "sublabel": "src/spawn", "pos": [720, 60], "size": [140, 56], "sources": [{ "path": "src/spawn/mod.rs" }] },
+    { "id": "worker", "type": "external", "label": "Python Worker", "sublabel": "scripts/worker.py", "pos": [940, 60], "size": [150, 56], "sources": [{ "path": "scripts/worker.py" }] },
+    { "id": "cron", "type": "backend", "label": "Cron Subsystem", "sublabel": "src/cron", "pos": [480, 200], "size": [160, 56], "sources": [{ "path": "src/cron/mod.rs" }] },
+    { "id": "adapter", "type": "backend", "label": "Markdown Adapters", "sublabel": "src/adapter", "pos": [260, 200], "size": [150, 56], "sources": [{ "path": "src/adapter/mod.rs" }] },
+    { "id": "domain", "type": "database", "label": "Domain Model", "sublabel": "src/domain", "pos": [260, 340], "size": [150, 56], "sources": [{ "path": "src/domain/mod.rs" }] },
+    { "id": "events", "type": "messagebus", "label": "Event Bus", "sublabel": "src/events · planned", "pos": [720, 200], "size": [140, 56], "tag": "planned" },
+    { "id": "super", "type": "security", "label": "Supervisor", "sublabel": "src/supervisor · planned", "pos": [940, 200], "size": [150, 56], "tag": "planned" },
+    { "id": "comp", "type": "backend", "label": "Context Compression", "sublabel": "src/workflow · planned", "pos": [720, 340], "size": [150, 56], "tag": "planned" }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "flowz-mcp (Rust crate)", "wraps": ["mcp", "service", "oracle", "spawn", "cron", "adapter", "domain", "events", "super", "comp"] }
+  ],
+  "connections": [
+    { "id": "mcp-service", "from": "mcp", "to": "service", "label": "tool calls", "variant": "emphasis" },
+    { "id": "service-oracle", "from": "service", "to": "oracle", "label": "start workflow", "labelDy": -15 },
+    { "id": "oracle-spawn", "from": "oracle", "to": "spawn", "label": "spawn worker" },
+    { "id": "spawn-worker", "from": "spawn", "to": "worker", "label": "JSONL stdio" },
+    { "id": "service-cron", "from": "service", "to": "cron", "label": "cron ops" },
+    { "id": "service-adapter", "from": "service", "to": "adapter", "label": "resolve defs", "labelDy": 24 },
+    { "id": "adapter-domain", "from": "adapter", "to": "domain", "label": "compile", "labelDy": 24 },
+    { "id": "oracle-events", "from": "oracle", "to": "events", "label": "publish Worker", "variant": "dashed" },
+    { "id": "events-super", "from": "events", "to": "super", "label": "typed events", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Implemented", "items": ["MCP/Service/Orchestration/Cron/Adapters อยู่ใน crate", "Canvas + subagent tools รวมจาก merge main", "Budgets + CronDefinition + spawn timeout"] },
+    { "dot": "rose", "title": "Planned (ค้าง)", "items": ["Event bus + Supervisor: ADR-0009 / 0010 / 0011", "Context compression: ADR-0016 (required)", "Worker protocol + CLI"] }
+  ]
+}

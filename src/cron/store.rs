@@ -43,7 +43,7 @@ impl CronStore for MemoryCronStore {
     }
 
     async fn cancel(&self, cron_id: &str) -> anyhow::Result<()> {
-        if let Some(mut cron) = self.crons.write().await.get_mut(cron_id) {
+        if let Some(cron) = self.crons.write().await.get_mut(cron_id) {
             cron.enabled = false;
         }
         Ok(())
