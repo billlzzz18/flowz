@@ -342,3 +342,64 @@ distribution_owned:
   - agents/
   - backends/builtin/
 ```
+
+## C.10 Hermes ShareGPT Trajectory Specification (Official Spec Reference)
+
+Source: `https://hermes-agent.nousresearch.com/docs/developer-guide/trajectory-format`
+
+### File Naming Convention
+- `trajectory_samples.jsonl`: Conversations that completed successfully (`completed=True`).
+- `failed_trajectories.jsonl`: Conversations that failed or were interrupted (`completed=False`).
+- Batch Runner: `<batch_id>_output.jsonl` with additional metadata.
+
+### ShareGPT JSONL Schema
+```json
+{
+  "prompt_index": 42,
+  "conversations": [
+    {
+      "from": "system",
+      "value": "You are a function calling AI model... Available tools: [...]"
+    },
+    {
+      "from": "human",
+      "value": "What Python version is installed?"
+    },
+    {
+      "from": "gpt",
+      "value": "<think>\nNeed to run python3 --version\n</think>\n<tool_call>\n{\"name\": \"terminal\", \"arguments\": {\"command\": \"python3 --version\"}}\n</tool_call>"
+    },
+    {
+      "from": "tool",
+      "value": "<tool_response>\n{\"tool_call_id\": \"call_abc123\", \"name\": \"terminal\", \"content\": \"Python 3.11.6\"}\n</tool_response>"
+    },
+    {
+      "from": "gpt",
+      "value": "<think>\nGot the version.\n</think>\nPython 3.11.6 is installed on this system."
+    }
+  ],
+  "timestamp": "2026-03-30T14:22:31.456789",
+  "model": "anthropic/claude-sonnet-4.6",
+  "completed": true,
+  "api_calls": 7,
+  "toolsets_used": ["code_tools", "file_tools"],
+  "tool_stats": {
+    "terminal": {"count": 3, "success": 3, "failure": 0},
+    "read_file": {"count": 2, "success": 2, "failure": 0},
+    "write_file": {"count": 0, "success": 0, "failure": 0}
+  },
+  "tool_error_counts": {
+    "terminal": 0,
+    "read_file": 0,
+    "write_file": 0
+  }
+}
+```
+
+### Invariant Rules
+1. **ShareGPT Role Mapping:** system -> `"system"`, user -> `"human"`, assistant -> `"gpt"`, tool -> `"tool"`.
+2. **Reasoning Markup:** All reasoning normalized into `<think> ... </think>` tags. Empty think block inserted if model produced no reasoning.
+3. **Tool Call & Response Normalization:**
+   - Tool calls wrapped in `<tool_call>{"name": ..., "arguments": ...}</tool_call>`.
+   - Tool responses grouped into a single `tool` turn with `<tool_response>{"tool_call_id": ..., "name": ..., "content": ...}</tool_response>`.
+4. **HuggingFace Schema Alignment:** `tool_stats` and `tool_error_counts` include all available tools with zero defaults to prevent Arrow schema mismatch.

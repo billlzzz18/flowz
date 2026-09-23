@@ -213,3 +213,29 @@ Reference source: Verified, executable implementations of Skill Store and Subage
 1. **Flowz Subagent Lifecycle Trait:** Flowz adopts the `SubagentLaunchRequest(goal, context, role, correlation_id, allowed_toolsets)` parameter structure verbatim in `src/service/subagent.rs`.
 2. **Universal Interop:** Flowz MCP server exposes both tools and prompt definitions mirroring FastMCP standard stdio protocol.
 3. **Decoupled Evo Worker:** Background Evolver spawns subagents using `build_learn_prompt` as goal, ensuring zero pollution of primary agent context.
+
+## G.7 ACP Internals & Flowz Agent Control Protocol Bridge
+
+Source: `https://hermes-agent.nousresearch.com/docs/developer-guide/acp-internals`
+
+### Core Architecture
+- **Transport:** Async JSON-RPC stdio server wrapping synchronous / async agent execution.
+- **Stdout Protocol:** Stdout is reserved exclusively for ACP JSON-RPC transport; all logs must route to stderr.
+- **Session Manager (`SessionManager`):**
+  - Thread-safe session tracking: `session_id`, `agent`, `cwd`, `model`, `history`, `cancel_event`.
+  - Supports: create, get, remove, fork, list, cleanup, and editor-scoped `cwd` updates.
+- **Event Bridge:**
+  - Converts agent callbacks (`tool_progress`, `step_callback`) into ACP `session_update` events.
+  - Bridge uses `asyncio.run_coroutine_threadsafe` to bridge worker threads with the main event loop.
+  - FIFO tracking for duplicate/parallel same-name tool calls (prevents completion event collisions).
+- **Permission Bridge:**
+  - Maps tool execution approvals into editor prompts (`allow_once` -> `once`, `allow_always` -> `always`, timeout/failure -> `deny`).
+- **Tool Rendering Helpers:**
+  - `patch` / `write_file` -> file diffs.
+  - `terminal` -> shell command text.
+  - `read_file` / `search_files` -> text previews with truncation safety.
+
+### Mapping to Flowz Execution & Live Observer
+1. **Flowz ACP Mode:** Flowz implements an ACP compatibility bridge to allow external IDEs (VS Code, Zed, JetBrains) or background orchestrators to drive Flowz agents via stdio JSON-RPC.
+2. **FIFO Event Handling:** Flowz Event Bus adopts FIFO queues per tool name to handle concurrent leaf subagents invoking the same tool simultaneously.
+3. **Session Forking:** Flowz supports branching trajectories via deep-copying conversation histories into new session IDs with independent working directories.
