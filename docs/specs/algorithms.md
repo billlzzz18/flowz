@@ -487,3 +487,49 @@ Source: `~/.hermes/plugins/hermes-learn/` (Architecture Reference for Flowz Evol
 3. **Execution Fallback & Error Handling:**
    - Plugin handles API signature divergence (`TypeError` fallback on tool registration).
    - Subagent result retrieval falls back across `text`, `output`, or `str(result)`.
+
+## F.11 Dual-Track Evolution: Live Concurrent Observer & Background Evolver
+
+Source: Architectural Decision on Self-Evolution Runtime Strategy
+
+### Architectural Principle
+Self-Evolution (Evo) **ไม่ได้จำกัดอยู่แค่การเรียกผ่านคำสั่ง /learn หรือ cron job ครั้งคราว** แต่ทำงานในรูปแบบ **Dual-Track Runtime**:
+1. **Live Concurrent Observer (รันควบคู่ Agent หลัก):**
+   - ในขณะที่ Primary Task Agent กำลังทำงาน Live Observer (Evo Tracker) จะดักจับ Trajectory Steps, Tool Calls, Errors และ Decision Points แบบ non-blocking เบื้องหลัง
+   - ไม่รบกวน Context Window ของ Agent หลัก
+2. **Background Evolver Loop (ประมวลผลการเรียนรู้เบื้องหลัง):**
+   - นำพรอมป์ต์และ Goal Template จาก `hermes-learn` มาใช้เป็น **Background Worker Goal**
+   - เมื่อตรวจพบรูปแบบความล้มเหลว (Pathology) หรือความสำเร็จซ้ำๆ (Success Pattern $ge 3$) ระบบจะ Spawn Subagent ระดับ Evolver (Tier $ge$ Task Tier + 1) ในโหมด Isolated Leaf เพื่อทำการ:
+     - วินิจฉัยข้อผิดพลาด (Diagnose)
+     - สร้าง Patch หรือสังเคราะห์ Skill ใหม่ (Synthesize)
+     - ผ่าน 4 Gates (Validity $	o$ Activation $	o$ Significance $	o$ Gain)
+   - ไม่ต้องรอให้ผู้ใช้สั่ง `/learn` เอง แต่รันแบบ Autonomous Evolution ใน Background ทันที
+
+```
+┌────────────────────────────────────────────────────────┐
+│                   Flowz Runtime Engine                 │
+│                                                        │
+│  [ Primary Task Agent ] (User-facing Session)          │
+│            │                                           │
+│            ▼ (Emits execution steps / telemetry)       │
+│  [ Live Concurrent Observer ] (Non-blocking Tap)       │
+│            │                                           │
+│            ▼ (Buffers Trajectory JSONL)                │
+│  [ Background Evolver Daemon ]                         │
+│            │                                           │
+│            ├─► Trigger: Pathology or Recurring Success │
+│            │                                           │
+│            ▼                                           │
+│  [ Evolver Subagent (Leaf) ]                           │
+│     • Goal: Injected Learner/Synthesizer Prompt        │
+│     • Toolsets: ("file", "web", "skills")              │
+│     • Tier: Task Tier + 1                              │
+│     • Output: Candidate Patch or SKILL.md              │
+│            │                                           │
+│            ▼                                           │
+│  [ 4-Gate Statistical Verification (z >= 1.96) ]        │
+│            │                                           │
+│            ▼                                           │
+│  [ Admit to Gene Bank / ~/.flowz/skills/ ]             │
+└────────────────────────────────────────────────────────┘
+```

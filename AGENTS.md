@@ -16,6 +16,7 @@
 - Maintain strict ownership split: distribution-owned vs config-override vs user-owned.
 - Exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
 - Learning loop requires 4 gates: Validity, Activation (beacon), Significance ($z \ge 1.96, n \ge 26$), Gain.
+- Dual-Track Evolution: Live concurrent observer tracks primary agent; background evolver synthesizes autonomously (not just user /learn).
 - Model tier rule: Evolver tier must be $\ge$ Task tier + 1; never run evolution when tier condition fails.
 - Cron misfire policy is `run_once` on startup to avoid thundering herd.
 - Rollback and SemVer versioning for harness patches must preserve parent links.
