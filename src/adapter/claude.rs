@@ -89,7 +89,7 @@ impl ClaudeAdapter {
             {
                 let metadata = entry.metadata()?;
                 // Parse the file to count actual user/assistant messages
-                let message_count = Self::count_messages_in_file(&path)?;
+                let message_count = 0;
                 result.push(SessionInfo {
                     id: name.to_string(),
                     path: path.clone(),
