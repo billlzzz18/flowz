@@ -1,102 +1,75 @@
-# แผนแม่บทการพัฒนา Flowz: MCP Agent Orchestration & Self-Evolution Server
+# แผนแม่บทการพัฒนา Flowz: MCP Agent Orchestrator (ฉบับสมบูรณ์)
 
-**วันที่จัดทำ:** 2026-09-24  
-**อ้างอิง:** ADR-0001 ถึง ADR-0037, `docs/README.md`, `docs/specs.csv`, `docs/plans.csv`  
-**สถานะ:** Ready for Implementation (TDD Enforced)
-
----
-
-## 1. เป้าหมายและขอบเขต (Goal & Scope)
-สร้าง Rust MCP Server สำหรับควบคุมและประสานงาน Multi-Agent Workflow:
-- กำกับ Time/Iteration/Run Budget แบบเคร่งครัด
-- ควบคุม Subagent แบบสด (Spawn/List/Steer/Stop)
-- จัดคิวงานอัตโนมัติด้วย Cron Subsystem (User-initiated, Misfire Run-Once)
-- ตรวจสอบความปลอดภัยด้วย Rule-based Supervisor & Typed Event Bus
-- ระบบเรียนรู้และพัฒนาอัตโนมัติ (HarnessBank, 4 Screening Gates, Statistical Rigor z >= 1.96, n >= 26)
+**วันที่ปรับปรุง:** 2026-09-24  
+**สถานะ:** แผนงานหลักสำหรับดำเนินการ (Actionable Master Plan)  
+**เอกสารอ้างอิง:** ADR-0001 ถึง ADR-0037, `docs/specs/*.md`, `docs/decisions.csv`, `docs/plans.csv`, `docs/specs.csv`
 
 ---
 
-## 2. ตรวจสอบสถานะโค้ดปัจจุบัน (Gap Analysis)
-
-| หมวดหมู่ | โค้ดที่มีอยู่แล้ว | สิ่งที่ต้องทำเพิ่มตาม ADR-0026 ถึง 0037 |
-|---|---|---|
-| **Invocation & Registry** | `src/invocation/context.rs`, `src/mcp/registry.rs` | เพิ่ม `InvocationSource::Cron`, `InvocationSource::Evolution` |
-| **Budgets & Domain** | `src/domain/mod.rs`, `src/workflow/run_budget.rs` | แยก `time_budget.rs`, `iteration_budget.rs` พร้อม validation trait |
-| **Cron Subsystem** | `src/cron/` (store, scheduler, dispatcher) | เชื่อม Cron 1 (Learning) และ Cron 2 (Skill-reuse) พร้อม misfire store |
-| **Supervisor & Events** | `src/service/supervisor.rs` (stub) | สร้าง `src/events/`, `src/supervisor/bus.rs`, rules engine, process registry |
-| **Worker Subsystem** | `scripts/worker.py` | สร้าง `src/worker/protocol.rs`, typed JSONL parser, heartbeat supervisor |
-| **Self-Evolution** | ยังไม่มี | สร้าง `src/harness/`, `src/trajectory/`, `src/evolution/`, 4 Gates, Paired z-test |
-| **Adapters & Backends** | `src/adapter/` (markdown parser) | สร้าง `src/adapter/claude.rs`, `codex.rs`, `hermes.rs`, `ExecutionBackend` (Local/Docker/Modal/Daytona) |
-| **CLI & Tools** | MCP server mode ใน `main.rs` | สร้างคำสั่ง CLI ใน `src/cli/` (`doctor`, `harness`, `cron`) และ MCP tools ครบตาม Part E |
-
----
-
-## 3. ลำดับงานแบบละเอียด (Implementation Roadmap — TDD Enforced)
-
-### ระยะที่ 1: Data Models & Service Layer (H1 - H5)
-- **H1: Harness Types & Serializer**
-  - ไฟล์: `src/harness/patch.rs`, `version.rs`, `knowledge.rs`, `runtime.rs`
-  - เงื่อนไขผ่าน: Canonical JSON serialization และ SHA-256 hash deterministic
-- **H2: Trajectory Data Model**
-  - ไฟล์: `src/trajectory/model.rs`
-  - เงื่อนไขผ่าน: รองรับบันทึกและอ่าน JSONL ครบทุก step และ outcome
-- **H3: Skill Model & Frontmatter Parser**
-  - ไฟล์: `src/skill/model.rs`
-  - เงื่อนไขผ่าน: อ่าน/เขียน `SKILL.md` พร้อม frontmatter `creator: flowz`
-- **H4: Discovery Model**
-  - ไฟล์: `src/discovery/model.rs`
-  - เงื่อนไขผ่าน: โครงสร้างความสามารถของเครื่อง (CPU, RAM, GPU, CLI Agents, Providers)
-- **H5: Unified Service Traits**
-  - ไฟล์: `src/service/mod.rs`
-  - เงื่อนไขผ่าน: trait ครบ 8 service (`Workflow`, `Cron`, `Supervisor`, `Subagent`, `Harness`, `Skill`, `Evolution`, `Trajectory`)
-
-### ระยะที่ 2: Observation & Supervisor Subsystem (OB4 - OB9)
-- **OB4: Typed Worker Protocol**
-  - ไฟล์: `src/worker/protocol.rs` (JSONL WorkerEvent และ WorkerOutput)
-- **OB5: Worker Lifecycle Supervisor**
-  - ไฟล์: `src/worker/supervisor.rs` (คุม heartbeat deadline, grace period, force kill)
-- **OB6: EventBus Broadcast**
-  - ไฟล์: `src/supervisor/bus.rs` (Tokio broadcast channel, รองรับ lagged subscriber)
-- **OB7: Rule-Based Supervisor Engine**
-  - ไฟล์: `src/supervisor/rules.rs` (ตรวจสอบ 7 กฎความปลอดภัยโดยไม่ใช้ LLM)
-- **OB8: Finding Registry**
-  - ไฟล์: `src/supervisor/findings.rs` (บันทึก severity, evidence, acknowledgement)
-- **OB9: OS Process Registry**
-  - ไฟล์: `src/supervisor/process_registry.rs` (ตรวจและจัดการ process IDs จริง)
-
-### ระยะที่ 3: Self-Evolution & Harness Bank Engine (H6 - H14)
-- **H9 - H10: 4 Screening Gates & Paired Z-Test**
-  - ไฟล์: `src/harness/gates.rs`, `src/harness/stats.rs`
-  - Gate 1: Validity -> Gate 2: Activation -> Gate 3: Significance (z >= 1.96, n >= 26) -> Gate 4: Gain (> 0.0)
-- **H11: Semantic Cell Gene Bank**
-  - ไฟล์: `src/harness/gene_bank.rs` (Competitive selection: z-score สูงสุดชนะและบันทึกใน cell)
-- **H12: Version Store & Rollback**
-  - ไฟล์: `src/harness/version_store.rs` (Rollback 1 คำสั่ง, เก็บใน `~/.flowz/harness/versions/`)
-- **H7 - H8: System Cron Tasks**
-  - Cron 1 (`flowz-learning-cron` 03:00, misfire run_once)
-  - Cron 2 (`flowz-skill-reuse-cron` 04:00, trajectories >= 3 sessions)
-
-### ระยะที่ 4: Adapters, Backends & Discovery (H15 - H19)
-- **H15: Hermes Profile Hub Format** (`distribution.yaml`, แยก ownership ชัดเจน)
-- **H16: Client Interop Adapters** (Claude, Codex, Antigravity, Hermes -> กรอง credentials ทิ้ง 100%)
-- **H17: Remote Execution Backends** (Local, Docker, Modal, Daytona ผ่าน `ExecutionBackend` trait)
-- **H18 - H19: Zero-Config Discovery & `flowz doctor`** (ตรวจหาเครื่องมือและตรวจสอบ Evolver Tier >= Task Tier + 1)
-
-### ระยะที่ 5: MCP Tools, CLI Commands & End-to-End Verification (H20 - H22)
-- ลงทะเบียน MCP Tools ทั้ง 17 ตัวตามมาตรฐาน prefix `flowz_`
-- สร้างชุดคำสั่ง CLI ใน `src/cli/`
-- สร้าง Fixtures และทดสอบ End-to-End (`cargo test --workspace --all-features`)
+## 1. วัตถุประสงค์และสาระสำคัญของแผน
+1. **เติมเต็ม ADR 0026–0037 ครบถ้วน:** นำข้อกำหนดด้าน Hub Format, Adapter Layer, Remote Execution, Discovery, Learning Cron, Skill-Reuse Cron, Model Tier, Gene Bank, 4 Gates, Statistical Rigor, Misfire Run-Once และ Harness Versioning มาเป็นแกนหลัก
+2. **โครงสร้างเอกสารแยก 4 ไฟล์จริง:** 
+   - `docs/README.md` (สารบัญหลัก)
+   - `docs/decisions.csv` (สารบัญ ADR 0001–0037 พร้อมคอลัมน์ date และ source_path)
+   - `docs/plans.csv` (บัญชีสถานะงานและ path เป้าหมาย)
+   - `docs/specs.csv` (สารบัญไฟล์สเปก 7 เล่ม)
+3. **การตรวจสอบ Path จริงเทียบกับ Source Code:** 
+   - จำแนกระหว่าง **โค้ดที่มีอยู่จริง** กับ **Specification Gap**
+   - ใน `docs/plans.csv` มี path เป้าหมายที่ยังไม่ได้สร้างจริง 29 รายการ (เช่น `src/harness/`, `src/trajectory/`, `src/skill/`, `src/discovery/`, `src/evolution/`, `src/profile/`, `src/execution/`, `src/worker/`, `src/supervisor/`, `skills/`, `tests/fixtures/`) ห้ามถือว่างานเหล่านี้เสร็จแล้วจนกว่าจะมีโค้ดและการทดสอบรองรับ
+4. **การรายงานข้อจำกัด Toolchain ตามจริง:** รายงานสถานะของ Rust compiler และข้อจำกัดของสภาพแวดล้อมอย่างตรงไปตรงมา ไม่เคลมว่าผ่านการทดสอบหากยังไม่ได้รันคำสั่งจริง
 
 ---
 
-## 4. มาตรการควบคุมความถูกต้อง (Verification Gates)
-1. **Compilation & Strict Lint:**
-   - `cargo fmt --all -- --check`
-   - `cargo clippy --all-targets --all-features -- -D warnings`
-2. **Deterministic & Statistical Tests:**
-   - ทดสอบค่า z-score ของ `PairedTest` ต้องได้ 5.0 ที่ sample=100, mean=0.5, std=1.0
-   - ทดสอบ sample size < 26 ต้องถูก reject ที่ Gate 3
-3. **Security Invariant:**
-   - Adapter ห้าม import credential ใดๆ เด็ดขาด (ตรวจสอบว่าไม่มีการบันทึก .env หรือ auth tokens ลง profile)
-4. **ADR Ledger Automation:**
-   - ใช้ `python scripts/register_adr.py` ในการลงทะเบียน ADR เท่านั้น ป้องกัน CSV corruption
+## 2. ผลการตรวจสอบแผนเดิมและสถานะจริงใน Repository
+
+| ส่วนประกอบ | สถานะเดิม | สถานะจริงใน Codebase | สิ่งที่ต้องทำในแผนใหม่ |
+|---|---|---|---|
+| **ADR Registry** | 0001–0025 | บันทึกครบ 0001–0037 (37 รายการ) | ใช้ `scripts/register_decision.py` ซิงค์อัตโนมัติ |
+| **RunBudget** | บั๊ก deserialize | แก้ไข `#[serde(default)]` แล้ว | ผ่าน unit test แล้ว |
+| **Domain Types** | กระจายตัว | มีบางส่วนใน `src/domain/` | เติมเต็มตาม `docs/specs/data-dictionary.md` |
+| **Service Layer** | ยังไม่มี trait | ยังไม่ได้ implement | สร้างตาม `docs/specs/services.md` |
+| **Supervisor/Worker** | ระบุเป็นไฟล์เสร็จ | ยังไม่มีโมดูลจริง (29 paths gap) | วางเป็นงานในระยะถัดไป (Planned) |
+| **Adapters** | ระบุ mod.rs | มีไฟล์แยก `markdown.rs`, `compiler.rs` | ปรับ path ใน `plans.csv` ให้ตรงโค้ดจริง |
+
+---
+
+## 3. ลำดับขั้นการพัฒนาระบบ (Implementation Phases)
+
+### ระยะที่ 1: Data Models & Service Layer (H1 - H4)
+- เติมเต็ม struct/enum ตาม `docs/specs/data-dictionary.md` เข้าสู่ `src/domain/`
+- สร้าง trait signatures ใน `src/service/` ตาม `docs/specs/services.md`
+- ขยาย MCP Tools ใน `src/mcp/tools/` ให้รองรับ schema 17 ตัว
+
+### ระยะที่ 2: Supervision, Bus & Worker Lifecycle (H5 - H10)
+- สร้าง Typed Event Bus (`src/supervisor/bus.rs`)
+- พัฒนา Rule-based screening ก่อนส่งให้ LLM (`src/supervisor/rules.rs`)
+- พัฒนา Worker Protocol (JSONL) และ Heartbeat monitoring (`src/worker/`)
+
+### ระยะที่ 3: Harness Gene Bank & Self-Evolution (H11 - H16, OB2)
+- สร้างโครงสร้าง Gene Bank (`src/harness/`) และเก็บ Semantic Cells (`~/.flowz/harness/bank/`)
+- พัฒนา Screening 4 Gates (Validity, Activation, Significance, Gain)
+- ติดตั้งสูตร Paired z-test ($z \ge 1.96, n \ge 26$)
+- บังคับใช้กฎ Model Tier ($Task < Evolver$)
+
+### ระยะที่ 4: Adapters & Remote Execution (H17 - H22)
+- สร้าง `src/adapter/markdown.rs`, `compiler.rs`, `registry.rs`
+- พัฒนา ExecutionBackend สำหรับ `local`, `docker`, `modal`, `daytona`
+- บังคับ Invariant: ห้ามนำเข้า credentials หรือ runtime data
+
+### ระยะที่ 5: Discovery, Cron & CLI Interface (OB1, OB3 - OB10)
+- พัฒนา Zero-Config Discovery (`src/discovery/engine.rs`)
+- ติดตั้ง Cron 1 (Learning Cron) และ Cron 2 (Skill-Reuse Cron)
+- บังคับนโยบาย Misfire Run-Once
+- สร้างคำสั่ง CLI (`flowz doctor`, `flowz harness`, `flowz cron`)
+
+### ระยะที่ 6: Verification & Test Suite (MF1 - MF5)
+- สร้าง Test Fixtures ใน `tests/fixtures/`
+- ทดสอบ Workflow validation, 4 Gates screening, Paired z-test, Misfire policy
+- เชื่อมต่อ GitHub Actions CI Pipeline
+
+---
+
+## 4. เกณฑ์การตรวจสอบคุณภาพ (Verification Gate)
+- การตัดสินใจทุกข้อต้องมีไฟล์ใน `docs/decisions/` และซิงค์ลง `docs/decisions.csv` ผ่าน `register_decision.py`
+- ทุกโมดูลที่เคลมว่าเสร็จ ต้องมีไฟล์อยู่จริงใต้ `src/` และผ่านการ compile/test จริง
+- ห้ามแก้โค้ดโดยไม่อ่านสเปกและ ADR ที่เกี่ยวข้อง

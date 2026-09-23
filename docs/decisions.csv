@@ -1,38 +1,38 @@
-id,status,topic,decision,rationale
-0001,✅,TimeBudget กับ Cron,แยกคนละ type/field/validation,subagent งานสั้นมี deadline — cron ปลุก client ตามเวลา
-0002,✅,บังคับ Budget,ทุก item/reducer มี TimeBudget + IterationBudget,กัน agent วน loop
-0003,✅,ห้าม cron ใน workflow,RunRequest ห้ามมี schedule/cron/run_at,ป้องกันปนกัน
-0004,✅,Cron แยกโมดูล,src/cron/ แยกจาก workflow,ClientDispatcher ≠ WorkerSpawner
-0005,✅,Cron user เท่านั้น,agent ปกติไม่มี cron tool,ผู้ใช้ควบคุมเอง
-0006,✅,ตั้งชื่อ tool,prefix flowz_ ทุก tool,กัน collision MCP อื่น
-0007,✅,Service layer,MCP/CLI เป็นแค่ adapter,logic อยู่ที่เดียว
-0008,✅,Invocation context,source Mcp/Cli/Cron/Evolution,output/permission/log ต่างกัน
-0009,✅,Typed events,struct ไม่อ่าน log,อ่าน log เปลือง + ไม่ deterministic
-0010,✅,Rule ก่อน LLM,rule engine ชั้นแรก,LLM แพง/ช้า/ไม่แน่นอน
-0011,✅,ขอบเขต supervisor,เห็นเฉพาะ flowz traffic,ทางเทคนิคเห็นได้แค่นั้น
-0012,✅,Skills เขียนเมื่อไหร่,หลัง API freeze,ชื่อ tool เปลี่ยนได้
-0013,✅,อ้างชื่อใน skill,flowz_* จริง ห้าม generic,ไม่งั้นหยิบ system cron
-0014,✅,Prompts per mode,cron/subagent แยก,context window ไม่บวม
-0015,✅,ลำดับ phase,15 phases ห้ามข้าม,checkpoint ก่อน
-0016,✅,Context compression,two-layer 50% + micro,context window ไม่พอ
-0017,✅,Toolsets,จัดกลุ่มตาม mode,โหลดเฉพาะที่ใช้
-0018,✅,Live orchestration,spawn/list/steer/stop,4 action เดียว
-0019,✅,Role subagent,Leaf vs Orchestrator,กัน recursive
-0020,✅,Wall-clock budget,RunBudget แยก TimeBudget,งานรวมมี deadline
-0021,✅,Tool register ตัวเอง,แต่ละ file register เอง,ลด coupling
-0022,✅,Process registry,แยกจาก WorkerHandle,เห็น OS process จริง
-0023,✅,Markdown-first,md + frontmatter,เขียน JSON มือง่ายพัง
-0024,✅,Source tracking,Markdown/Api/Imported/Generated,regenerate ถูกตัว
-0025,✅,Adapter layer,src/adapter/ แยก,core ไม่รู้จัก client
-0026,✅,Hermes profile,git + distribution.yaml,git มี versioning แล้ว
-0027,✅,Client interop,แปลง 4 client ↔ flowz,ผู้ใช้มี client ต่างกัน
-0028,✅,Remote execution,ExecutionBackend trait,แยก "ทำอะไร" กับ "รันที่ไหน"
-0029,✅,Zero-config,flowz init ครั้งเดียว,ผู้ใช้ไม่ต้องรู้ backend
-0030,✅,Learning cron,Cron 1 ทุกวัน 03:00 misfire run_once,evolution round
-0031,✅,Skill-reuse cron,Cron 2 success → SKILL.md,เก็บกระบวนการดี
-0032,✅,Model tier,Evolver ≥ Task + 1,self-eval bias
-0033,✅,Gene bank,cell=(component,pathology),ไม่ collapse
-0034,✅,4 gates,Validity→Activation→Significance→Gain,กรองตามลำดับ
-0035,✅,Statistical rigor,z≥1.96 n≥26,กัน admit noise
-0036,✅,Misfire run_once,last_run_at + startup,ไม่ thundering herd
-0037,✅,Rollback,SemVer + content_hash + 1 cmd,ย้อนได้ทุก patch
+id,status,date,topic,decision,rationale,source_path
+ADR-0001,Accepted,2026-09-23,Separate Timebudget From Cron,Separate Timebudget From Cron,,docs/decisions/0001-separate-timebudget-from-cron.md
+ADR-0002,Accepted,2026-09-23,Timebudget Required Field,Timebudget Required Field,,docs/decisions/0002-timebudget-required-field.md
+ADR-0003,Accepted,2026-09-23,Workflow Run No Cron Fields,Workflow Run No Cron Fields,,docs/decisions/0003-workflow-run-no-cron-fields.md
+ADR-0004,Accepted,2026-09-23,Cron Separate Subsystem,Cron Separate Subsystem,,docs/decisions/0004-cron-separate-subsystem.md
+ADR-0005,Accepted,2026-09-23,Cron User Initiated Only,Cron User Initiated Only,,docs/decisions/0005-cron-user-initiated-only.md
+ADR-0006,Accepted,2026-09-23,Mcp Namespace Flowz Prefix,Mcp Namespace Flowz Prefix,,docs/decisions/0006-mcp-namespace-flowz-prefix.md
+ADR-0007,Accepted,2026-09-23,Shared Service Layer,Shared Service Layer,,docs/decisions/0007-shared-service-layer.md
+ADR-0008,Accepted,2026-09-23,Invocation Context Source,Invocation Context Source,,docs/decisions/0008-invocation-context-source.md
+ADR-0009,Accepted,2026-09-23,Supervisor Typed Events,Supervisor Typed Events,,docs/decisions/0009-supervisor-typed-events.md
+ADR-0010,Accepted,2026-09-23,Supervisor Rule Based First,Supervisor Rule Based First,,docs/decisions/0010-supervisor-rule-based-first.md
+ADR-0011,Accepted,2026-09-23,Supervisor Scope Flowz Only,Supervisor Scope Flowz Only,,docs/decisions/0011-supervisor-scope-flowz-only.md
+ADR-0012,Accepted,2026-09-23,Skills After Implementation,Skills After Implementation,,docs/decisions/0012-skills-after-implementation.md
+ADR-0013,Accepted,2026-09-23,Skills Use Real Names,Skills Use Real Names,,docs/decisions/0013-skills-use-real-names.md
+ADR-0014,Accepted,2026-09-23,Prompts Separate By Mode,Prompts Separate By Mode,,docs/decisions/0014-prompts-separate-by-mode.md
+ADR-0015,Accepted,2026-09-23,Implementation Order Original,Implementation Order Original,,docs/decisions/0015-implementation-order-original.md
+ADR-0016,Accepted,2026-09-23,Context Compression Required,Context Compression Required,,docs/decisions/0016-context-compression-required.md
+ADR-0017,Accepted,2026-09-23,Toolsets By Mode,Toolsets By Mode,,docs/decisions/0017-toolsets-by-mode.md
+ADR-0018,Accepted,2026-09-23,Live Orchestration Subagent,Live Orchestration Subagent,,docs/decisions/0018-live-orchestration-subagent.md
+ADR-0019,Accepted,2026-09-23,Subagent Role Distinction,Subagent Role Distinction,,docs/decisions/0019-subagent-role-distinction.md
+ADR-0020,Accepted,2026-09-23,Wall Clock Run Budget,Wall Clock Run Budget,,docs/decisions/0020-wall-clock-run-budget.md
+ADR-0021,Accepted,2026-09-23,Self Registering Tool Registry,Self Registering Tool Registry,,docs/decisions/0021-self-registering-tool-registry.md
+ADR-0022,Accepted,2026-09-23,Implementation Order Updated,Implementation Order Updated,,docs/decisions/0022-implementation-order-updated.md
+ADR-0023,Accepted,2026-09-23,Markdown First Definition Authoring,Markdown First Definition Authoring,,docs/decisions/0023-markdown-first-definition-authoring.md
+ADR-0024,Accepted,2026-09-23,Definition Source Tracking,Definition Source Tracking,,docs/decisions/0024-definition-source-tracking.md
+ADR-0025,Accepted,2026-09-23,Adapter As Separate Layer,Adapter As Separate Layer,,docs/decisions/0025-adapter-as-separate-layer.md
+ADR-0026,Accepted,2026-09-23,Hermes Profile Format Hub,Hermes Profile Format Hub,,docs/decisions/0026-hermes-profile-format-hub.md
+ADR-0027,Accepted,2026-09-23,Client Interop Adapter Layer,Client Interop Adapter Layer,,docs/decisions/0027-client-interop-adapter-layer.md
+ADR-0028,Accepted,2026-09-23,Remote Execution Backend Layer,Remote Execution Backend Layer,,docs/decisions/0028-remote-execution-backend-layer.md
+ADR-0029,Accepted,2026-09-23,Zero Config Discovery,Zero Config Discovery,,docs/decisions/0029-zero-config-discovery.md
+ADR-0030,Accepted,2026-09-23,Learning Cron Harnessbank,Learning Cron Harnessbank,,docs/decisions/0030-learning-cron-harnessbank.md
+ADR-0031,Accepted,2026-09-23,Skill Reuse Cron,Skill Reuse Cron,,docs/decisions/0031-skill-reuse-cron.md
+ADR-0032,Accepted,2026-09-23,Model Tier Separation,Model Tier Separation,,docs/decisions/0032-model-tier-separation.md
+ADR-0033,Accepted,2026-09-23,Harness Gene Bank Semantic Cells,Harness Gene Bank Semantic Cells,,docs/decisions/0033-harness-gene-bank-semantic-cells.md
+ADR-0034,Accepted,2026-09-23,Gated Harness Screening 4 Gates,Gated Harness Screening 4 Gates,,docs/decisions/0034-gated-harness-screening-4-gates.md
+ADR-0035,Accepted,2026-09-23,Statistical Rigor,Statistical Rigor,,docs/decisions/0035-statistical-rigor.md
+ADR-0036,Accepted,2026-09-23,Cron Misfire Run Once,Cron Misfire Run Once,,docs/decisions/0036-cron-misfire-run-once.md
+ADR-0037,Accepted,2026-09-23,Rollback Versioning Harness,Rollback Versioning Harness,,docs/decisions/0037-rollback-versioning-harness.md

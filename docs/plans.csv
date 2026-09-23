@@ -1,38 +1,38 @@
-id,status,task,path,done_when,verify_at,adr
-H1,⬜,Harness types,src/harness/patch.rs,serialize + hash deterministic,src/harness/patch.rs::test_hash,0030 0033 0037
-H2,⬜,Trajectory types,src/trajectory/model.rs,JSONL roundtrip,src/trajectory/model.rs::test_roundtrip,0030
-H3,⬜,Skill types,src/skill/model.rs,parse SKILL.md,src/skill/model.rs::test_parse,0031
-H4,⬜,Discovery types,src/discovery/model.rs,serialize,src/discovery/model.rs::test_serialize,0029
-H5,⬜,Service traits,src/service/,mock test,src/service/mod.rs::test_traits,0007
-H6,⬜,TrajectoryCollector,src/trajectory/collector.rs,event→step ครบ,src/trajectory/collector.rs::test_mapping,0030
-H7,⬜,Cron 1 learning,src/cron/learning.rs,4 gates + misfire,src/cron/learning.rs::test_round,0030 0036
-H8,⬜,Cron 2 skill-reuse,src/cron/skill_reuse.rs,creator=flowz + ≥3 sessions,src/cron/skill_reuse.rs::test_synth,0031
-H9,⬜,4 gates,src/harness/gates.rs,เรียงลำดับ + z-test,src/harness/gates.rs::test_sequential,0034 0035
-H10,⬜,PairedTest,src/harness/stats.rs,z=5.0 ที่ mean=.5 std=1 n=100,src/harness/stats.rs::test_z,0035
-H11,⬜,GeneBank,src/harness/gene_bank.rs,z สูงสุดชนะ,src/harness/gene_bank.rs::test_competitive,0033
-H12,⬜,VersionStore,src/harness/version_store.rs,rollback ได้,src/harness/version_store.rs::test_rollback,0037
-H13,⬜,Evolver backend,src/evolution/,tier check,src/evolution/mod.rs::test_tier,0032
-H14,⬜,Skill synthesis,src/evolution/skill_synth.rs,เขียน ~/.flowz/skills/,src/evolution/skill_synth.rs::test_write,0031
-H15,⬜,Profile format,src/profile/,install→update ไม่แตะ user,src/profile/mod.rs::test_ownership,0026
-H16,⬜,Adapters,src/adapter/,roundtrip + ไม่มี credential,src/adapter/mod.rs::test_roundtrip,0027
-H17,⬜,Backends,src/execution/,dispatch→collect,src/execution/mod.rs::test_dispatch,0028
-H18,⬜,Discovery,src/discovery/,flowz init ไม่ถาม,src/discovery/mod.rs::test_init,0029
-H19,⬜,flowz doctor,src/cli/doctor.rs,check backend + tier,src/cli/doctor.rs::test_doctor,0029
-H20,⬜,harness_* skill_* evolution_* tools,src/mcp/tools/,register + schema,src/mcp/tools/mod.rs::test_register,0006 0031 0033
-H21,⬜,Fixtures,tests/fixtures/,coverage ≥ 80%,tests/mod.rs::test_coverage,0015
-H22,⬜,Skills,skills/,flowz_* จริง + negative example,skills/_test,0012 0013
-OB1,⬜,TimeBudget,src/workflow/time_budget.rs,reject 0 + heartbeat ≥ max,src/workflow/time_budget.rs::test,0002
-OB2,⬜,IterationBudget,src/workflow/iteration_budget.rs,reject 0 + pressure 0-1,src/workflow/iteration_budget.rs::test,0002
-OB3,⬜,RunBudget,src/workflow/run_budget.rs,serialize,src/workflow/run_budget.rs::test,0020
-OB4,⬜,WorkerEvent JSONL,src/worker/protocol.rs,parse ทุก variant,src/worker/protocol.rs::test,0009
-OB5,⬜,WorkerSupervisor,src/worker/supervisor.rs,timeout + grace + kill,src/worker/supervisor.rs::test,0002
-OB6,⬜,EventBus,src/supervisor/bus.rs,broadcast + lagged,src/supervisor/bus.rs::test,0009
-OB7,⬜,Rules 7 ข้อ,src/supervisor/rules.rs,ทุก rule pass,src/supervisor/rules.rs::test,0010
-OB8,⬜,Finding,src/supervisor/findings.rs,severity + evidence,src/supervisor/findings.rs::test,0009
-OB9,⬜,ProcessRegistry,src/supervisor/process_registry.rs,list + poll + kill,src/supervisor/process_registry.rs::test,0022
-OB10,⬜,PreCompact hook,src/workflow/compression.rs,dump state,src/workflow/compression.rs::test,0016
-MF1,✅,Frontmatter parser,src/adapter/markdown/frontmatter.rs,parse YAML + body,src/adapter/markdown/frontmatter.rs::test,0023
-MF2,✅,Wikilink extractor,src/adapter/markdown/links.rs,extract 3 ชนิด,src/adapter/markdown/links.rs::test,0023
-MF3,✅,MarkdownCompiler,src/adapter/markdown/compiler.rs,merge defaults,src/adapter/markdown/compiler.rs::test,0024
-MF4,✅,MarkdownRegistry,src/adapter/markdown/registry.rs,recursive + ignore,src/adapter/markdown/registry.rs::test,0024
-MF5,✅,ADR 0023-0025,docs/decisions/,3 ไฟล์มี,docs/decisions/,0023 0024 0025
+id,phase,task,target_path,status,spec_ref
+H1,Phase 1,Data Dictionary Types,src/domain/mod.rs,Partial,B.1-B.8
+H2,Phase 1,Service Traits,src/service/mod.rs,Planned,D.1-D.10
+H3,Phase 1,Tool Schemas,src/mcp/tools/,Partial,E.1-E.14
+H4,Phase 1,Tool Registry,src/mcp/registry.rs,Partial,G.1
+H5,Phase 2,Supervisor Event Bus,src/supervisor/bus.rs,Planned,D.4
+H6,Phase 2,Supervisor Rules Engine,src/supervisor/rules.rs,Planned,D.4
+H7,Phase 2,Supervisor Findings Store,src/supervisor/findings.rs,Planned,D.4
+H8,Phase 2,Worker Protocol,src/worker/protocol.rs,Planned,C.4
+H9,Phase 2,Worker Heartbeat,src/worker/heartbeat.rs,Planned,B.1
+H10,Phase 2,Worker Lifecycle Supervisor,src/worker/supervisor.rs,Planned,D.4
+H11,Phase 3,Harness Gene Bank,src/harness/gene_bank.rs,Planned,B.3
+H12,Phase 3,Harness Semantic Cells,src/harness/bank/,Planned,C.3
+H13,Phase 3,4 Gates Screening,src/evolution/screening.rs,Planned,F.3-F.6
+H14,Phase 3,Paired Z-Test Rigor,src/evolution/statistics.rs,Planned,F.5
+H15,Phase 3,Harness Versioning,src/harness/version.rs,Planned,B.3
+H16,Phase 3,Rollback Engine,src/harness/rollback.rs,Planned,D.6
+H17,Phase 4,Execution Backend Trait,src/execution/backend.rs,Planned,G.2-G.3
+H18,Phase 4,Modal Backend,src/execution/modal.rs,Planned,G.2
+H19,Phase 4,Daytona Backend,src/execution/daytona.rs,Planned,G.3
+H20,Phase 4,Markdown Adapter,src/adapter/markdown.rs,Planned,ADR-0027
+H21,Phase 4,Adapter Compiler,src/adapter/compiler.rs,Planned,ADR-0027
+H22,Phase 4,Adapter Registry,src/adapter/registry.rs,Planned,ADR-0027
+OB1,Phase 5,Zero-Config Discovery,src/discovery/engine.rs,Planned,F.7
+OB2,Phase 5,Model Tier Separation,src/evolution/tier.rs,Planned,ADR-0032
+OB3,Phase 5,Learning Cron Algorithm,src/cron/learning.rs,Planned,F.1
+OB4,Phase 5,Skill Reuse Cron,src/cron/skill_reuse.rs,Planned,F.2
+OB5,Phase 5,Cron Misfire Run-Once,src/cron/scheduler.rs,Planned,ADR-0036
+OB6,Phase 5,SQLite State Storage,src/storage/sqlite.rs,Planned,C.6-C.7
+OB7,Phase 5,Profile Distribution,src/profile/distribution.rs,Planned,ADR-0026
+OB8,Phase 5,Security Invariant Guard,src/profile/guard.rs,Planned,ADR-0026
+OB9,Phase 5,Doctor Command,src/cli/doctor.rs,Planned,ADR-0029
+OB10,Phase 5,CLI Management Interface,src/cli/mod.rs,Planned,ADR-0037
+MF1,Phase 6,Workflow Validation Tests,tests/workflow_validation.rs,Planned,H.2
+MF2,Phase 6,Screening Gates Tests,tests/gate_screening.rs,Planned,H.3
+MF3,Phase 6,Statistics Formulas Tests,tests/statistical_rigor.rs,Planned,H.4
+MF4,Phase 6,Cron Misfire Tests,tests/cron_misfire.rs,Planned,H.5
+MF5,Phase 6,CI Pipeline Workflow,.github/workflows/ci.yml,Planned,H.6

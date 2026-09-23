@@ -1,52 +1,39 @@
-# AGENTS.md — Flowz Repository Instructions for AI Coding Agents
+# AGENTS.md — Instructions for AI Coding Agents
 
-## 1. Project Overview & Identity
-- **Repository:** `billlzzz18/flowz`
-- **Goal:** Rust-based MCP server & orchestrator for multi-agent workflows (time/iteration budgets, context compression, cron scheduling, subagent live control, self-evolving harness bank).
-- **Core Standard:** Zero-defect implementation, YAGNI, TDD (Red-Green-Refactor), strict adherence to ADRs (0001–0037).
+## 1. Architecture Guidelines
+- Read `docs/README.md`, `docs/plans.csv`, `docs/specs.csv`, and ADRs before modifying code.
+- Check actual module paths under `src/` before assuming component structure.
+- Distinguish specification gaps from existing implementation; do not treat unwritten modules as completed.
+- Service layer (`src/service/`) owns business logic; MCP tools and CLI are thin wrappers.
+- Adapter boundary (`src/adapter/`) isolates external formats (Claude, Codex, Antigravity, Hermes).
+- MCP namespace: all tool names must use `flowz_` prefix. Cron is user-initiated only.
+- Supervisor uses typed events and rule-based screening before LLM evaluation.
+- Execution backends (`local`, `docker`, `modal`, `daytona`) adhere to capability discovery.
+- Keep domain entities isolated from transport layers and storage drivers.
 
----
+## 2. Invariants & Security (ADR-0026 to ADR-0037)
+- Hermes profile layout is the standard hub format for agent distribution.
+- Maintain strict ownership split: distribution-owned vs config-override vs user-owned.
+- Exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
+- Learning loop requires 4 gates: Validity, Activation (beacon), Significance ($z \ge 1.96, n \ge 26$), Gain.
+- Model tier rule: Evolver tier must be $\ge$ Task tier + 1; never run evolution when tier condition fails.
+- Cron misfire policy is `run_once` on startup to avoid thundering herd.
+- Rollback and SemVer versioning for harness patches must preserve parent links.
+- All admitted patches must pass statistical rigor before gene bank entry.
 
-## 2. Architecture & Design Rules (Enforced by ADRs)
-1. **Namespace & Tools (ADR-0006):**
-   - Every MCP tool MUST use the `flowz_` prefix (e.g., `flowz_workflow_run`, `flowz_cron_create`).
-   - Tools are self-registering via `McpTool` trait in their respective files (ADR-0021).
-2. **Budget Triple & Separation (ADR-0001, 0002, 0020):**
-   - `TimeBudget` (wall-clock timeout per item) is strictly separated from cron scheduling.
-   - Every workflow item requires `TimeBudget` and `IterationBudget`.
-   - `RunBudget` governs total workflow wall-clock limit and maximum total agent calls across reducers.
-3. **Cron Subsystem (ADR-0004, 0005, 0036):**
-   - Subsystem in `src/cron/` isolated from workflow runner. User-initiated only (regular agents cannot schedule cron).
-   - Cron misfire policy: `run_once` on startup (never thundering herd catch-up).
-4. **Service Layer (ADR-0007, 0008):**
-   - All business logic lives in `src/service/`. MCP and CLI are thin adapters passing `InvocationContext` (`Mcp`, `Cli`, `Cron`, `Evolution`).
-5. **Supervisor & Events (ADR-0009, 0010, 0011):**
-   - Typed events (`ObservedEvent` struct) only, never string log scraping.
-   - Rule-based first; LLM supervision is strictly optional with circuit breakers.
-   - Scope is restricted to flowz traffic only.
-6. **Self-Evolution & HarnessBank (ADR-0030, 0031, 0032, 0033, 0034, 0035, 0037):**
-   - 4 Gates for candidate patches: Validity -> Activation -> Significance (z >= 1.96, n >= 26) -> Gain.
-   - Evolver Tier MUST exceed Task Tier + 1 (prevent self-eval bias).
-   - Admitted patches versioned with SemVer and canonical JSON SHA-256 content hashes.
+## 3. Testing Guidelines
+- Never report work as passed without real execution output from tests or runtime checks.
+- Report toolchain constraints honestly (e.g. compiler unavailable, memory pressure, missing runtime).
+- Practice test-driven validation: ensure test vector covers edge cases and regression scenarios.
+- Run tests via cargo or python verification scripts with output logged to terminal.
+- Maintain regression assertions across all existing unit and integration suites.
+- Verify environment and dependencies before running test suites.
 
----
-
-## 3. Tooling & Development Workflow
-- **Build & Verification:**
-  - Format: `cargo fmt --all -- --check`
-  - Lint: `cargo clippy --all-targets --all-features -- -D warnings`
-  - Test: `cargo test --workspace --all-features`
-- **ADR Maintenance:**
-  - DO NOT edit `docs/decisions.csv` manually.
-  - Run: `python scripts/register_adr.py --id <ID> --topic "<Topic>" --decision "<Decision>" --rationale "<Rationale>"` or `--scan`.
-- **Plans & Tasks:**
-  - Always check `docs/plans.csv` and `docs/specs.csv` before implementing.
-  - Update status in `docs/plans.csv` upon completing tasks (⬜ -> 🔄 -> ✅).
-
----
-
-## 4. Coding Standards & Idioms
-- Native Rust stdlib first, minimal external dependencies.
-- Clear error handling with `thiserror` (`FlowzError` variants) and `anyhow` for internal pipelines.
-- Comments explaining *intent* and *why* in Thai or concise English.
-- No dummy/mock replacements in production paths.
+## 4. Documentation & Workflow Guidelines
+- Documentation is the sole lifeline of the project; never overwrite, truncate, or drop specs.
+- Use `scripts/register_decision.py` to register and audit ADRs into `docs/decisions.csv`.
+- All ledger modifications in `docs/*.csv` must use atomic operations and valid formatting.
+- Respect progressive disclosure: keep architecture, testing, docs, and workflow gates aligned.
+- Keep ledger state synchronized with actual disk paths and file trees.
+- Never delete or modify source ADRs without explicit direction.
+- Review diffs carefully prior to saving changes.
