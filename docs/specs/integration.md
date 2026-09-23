@@ -138,3 +138,35 @@ impl DaytonaBackend {
 - Codex: `~/.codex/config.toml` (profiles.*, model_providers.*)
 - Antigravity: `~/.gemini/config/sidecars/` (builtin=schedule)
 - Hermes: `~/.hermes/profiles/<name>/distribution.yaml` + `SOUL.md`
+
+## G.5 Hermes-Learn Plugin & Subagent Lifecycle Interface
+
+Integration with `~/.hermes/plugins/hermes-learn/` for skill extraction and evolutionary synthesis.
+
+### Plugin Manifest (`plugin.yaml`)
+```yaml
+name: hermes-learn
+version: 1.0.0
+description: Three self-contained skill tools plus a /learn command.
+author: Hermes
+entry_point: __init__:register
+```
+
+### Lifecycle & Toolset Contracts
+```python
+# Invocation contract for Evolution / Skill-Reuse Subagents
+SubagentLaunchRequest(
+    goal=synthesis_goal_prompt,
+    context="You own file and web access for this job. The parent turn has none.",
+    role="leaf",
+    correlation_id="learn",
+    allowed_toolsets=("file", "web", "skills"),
+)
+```
+
+### Subagent Result Resolution
+```python
+# Safe result extraction across Hermes core versions
+result = svc.result(handle)
+text = getattr(result, "text", None) or getattr(result, "output", None) or str(result)
+```

@@ -459,3 +459,31 @@ impl ImportAdapter for ClaudeAdapter {
     }
 }
 ```
+
+## F.10 Hermes-Learn Plugin Pattern (Self-Contained Subagent Skill Extraction)
+
+Source: `~/.hermes/plugins/hermes-learn/` (Architecture Reference for Flowz Evolution / Skill Synthesis)
+
+### Architecture
+- **Storage Layer (`skills.py`):** Standalone stdlib-only module (`pathlib`, `shutil`, `re`). Manages SKILL.md discover, list, view, create, patch, delete, write_file, remove_file without external dependencies.
+- **Dispatch Tools (`__init__.py`):** Registers `skills_list`, `skill_view`, `skill_manage` via `ctx.register_tool(name, toolset="skills", schema, handler, override=True)`.
+- **Slash Command (`/learn`):** Uses Hermes `subagent_lifecycle.launch(SubagentLaunchRequest(...))` to spawn an isolated leaf subagent.
+- **Prompt Isolation:** The synthesis prompt is passed directly as the subagent's `goal` with scoped toolsets (`allowed_toolsets=("file", "web", "skills")`), decoupling parent context from raw extraction noise.
+
+### Mapping to Flowz Evolution Layer (ADR-0030, ADR-0031)
+1. **Subagent Spawning:** Flowz uses the exact same pattern for Evolver Agent execution:
+   ```rust
+   // Flowz equivalent in src/service/evolution.rs / src/cron/skill_reuse.rs
+   let req = SubagentLaunchRequest {
+       goal: build_skill_synthesis_goal(&trajectories),
+       role: SubagentRole::Leaf,
+       allowed_toolsets: vec!["file", "skills"],
+       effort_level: EffortLevel::High,
+   };
+   ```
+2. **Skill Synthesis Criteria:**
+   - Frontmatter enforces: `name`, `description` (<=60 chars), `creator: "flowz"`, `source_trajectory`, `harness_version`, `verification`, `provenance`.
+   - File target: `~/.flowz/skills/<name>/SKILL.md` (or `$HERMES_HOME/skills/<cat>/<name>/SKILL.md`).
+3. **Execution Fallback & Error Handling:**
+   - Plugin handles API signature divergence (`TypeError` fallback on tool registration).
+   - Subagent result retrieval falls back across `text`, `output`, or `str(result)`.
