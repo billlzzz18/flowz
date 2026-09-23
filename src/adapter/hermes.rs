@@ -123,10 +123,16 @@ impl HermesAdapter {
                                 .iter()
                                 .filter_map(|v| {
                                     let func = v.get("function")?;
+                                    let raw_args = func.get("arguments")?;
+                                    let input = match raw_args.as_str() {
+                                        Some(s) => serde_json::from_str(s)
+                                            .unwrap_or_else(|_| serde_json::Value::String(s.to_string())),
+                                        None => raw_args.clone(),
+                                    };
                                     Some(ToolCallInfo {
                                         id: v.get("id")?.as_str()?.to_string(),
                                         name: func.get("name")?.as_str()?.to_string(),
-                                        input: func.get("arguments")?.clone(),
+                                        input,
                                         status: Some(
                                             v.get("status")
                                                 .and_then(|s| s.as_str())
