@@ -55,12 +55,12 @@ impl HermesAdapter {
                 Ok(SessionInfo {
                     id: row.get(0)?,
                     path: db_path.clone(),
-                    // Convert epoch seconds to milliseconds
+                    // epoch seconds -> ms; NULL ended_at falls back to started_at
                     created_at: (row.get::<_, f64>(1)? * 1000.0) as i64,
-                    updated_at: row
-                        .get::<_, Option<f64>>(2)?
-                        .map(|v| (v * 1000.0) as i64)
-.unwrap_or_else(|| (row.get::<_, f64>(1)? * 1000.0) as i64),
+                    updated_at: match row.get::<_, Option<f64>>(2)? {
+                        Some(v) => (v * 1000.0) as i64,
+                        None => (row.get::<_, f64>(1)? * 1000.0) as i64,
+                    },
                     message_count: row.get::<_, i64>(3)? as usize,
                 })
             })?;
