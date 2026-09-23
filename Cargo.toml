@@ -27,6 +27,7 @@ serde_repr = "0.1"
 notify-rust = "4"
 which = "6"
 dirs = "5"
+rusqlite = { version = "0.31", features = ["bundled"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 notify-rust = "4"
