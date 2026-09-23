@@ -132,7 +132,8 @@ Input:
 ```
 
 ## E.7 flowz_subagent_delegate
-Input:
+
+Input Schema (aligned with Hermes Public Subagent Lifecycle API):
 ```json
 {
   "type": "object",
@@ -140,10 +141,29 @@ Input:
   "properties": {
     "action": {
       "oneOf": [
-        { "type": "object", "required": ["spawn"], "properties": { "spawn": { "type": "array", "items": { "$ref": "#/$defs/WorkflowItem" } } } },
+        {
+          "type": "object",
+          "required": ["spawn"],
+          "properties": {
+            "spawn": {
+              "type": "object",
+              "required": ["goal"],
+              "properties": {
+                "goal": { "type": "string" },
+                "context": { "type": "string" },
+                "role": { "enum": ["leaf", "orchestrator"], "default": "leaf" },
+                "correlation_id": { "type": "string" },
+                "allowed_toolsets": { "type": "array", "items": { "type": "string" } },
+                "timeout_seconds": { "type": "integer" }
+              }
+            }
+          }
+        },
         { "type": "object", "required": ["list"], "properties": { "list": { "const": true } } },
-        { "type": "object", "required": ["steer"], "properties": { "steer": { "type": "object", "required": ["item_id", "instruction"], "properties": { "item_id": { "type": "string" }, "instruction": { "type": "string" } } } } },
-        { "type": "object", "required": ["stop"], "properties": { "stop": { "type": "object", "required": ["item_id"], "properties": { "item_id": { "type": "string" } } } } }
+        { "type": "object", "required": ["steer"], "properties": { "steer": { "type": "object", "required": ["handle_id", "instruction"], "properties": { "handle_id": { "type": "string" }, "instruction": { "type": "string" } } } } },
+        { "type": "object", "required": ["stop"], "properties": { "stop": { "type": "object", "required": ["handle_id"], "properties": { "handle_id": { "type": "string" }, "reason": { "type": "string" } } } } },
+        { "type": "object", "required": ["wait"], "properties": { "wait": { "type": "object", "required": ["handle_id"], "properties": { "handle_id": { "type": "string" }, "timeout_seconds": { "type": "integer" } } } } },
+        { "type": "object", "required": ["result"], "properties": { "result": { "type": "object", "required": ["handle_id"], "properties": { "handle_id": { "type": "string" } } } } }
       ]
     }
   }

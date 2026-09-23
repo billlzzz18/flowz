@@ -576,6 +576,16 @@ pub enum ArtifactKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+
+### B.4.1 Dual Representation: In-Memory vs ShareGPT JSONL Persistence
+
+Trajectory มี 2 รูปแบบที่ทำงานประสานกันอย่างชัดเจน ไม่ขัดแย้ง:
+1. **In-Memory Domain Model (`Trajectory` struct ด้านบน):**
+   - ใช้งานขณะรันไทม์ (Live Concurrent Observer) เพื่อความสะดวกในการประมวลผลทางสถิติ, คัดกรองตาม Steps, วินิจฉัย Pathology และตรวจ Duration/Error
+2. **On-Disk Persistence (`ShareGPT JSONL` format):**
+   - เมื่อ finalize บันทึกลง `~/.flowz/trajectory/` หรือส่งให้ Evolver Agent สังเคราะห์ จะแปลง (Serialize) เป็น ShareGPT format ตามมาตรฐาน Hermes (`conversations` array ที่มีบทบาท `system`, `human`, `gpt`, `tool` พร้อม `<think>`, `<tool_call>`, `<tool_response>` tags) เพื่อรองรับ training data และ LLM evaluator
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrajectoryGroup {
     pub intent_signature: String,
     pub trajectories: Vec<Trajectory>,
