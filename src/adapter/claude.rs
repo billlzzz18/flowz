@@ -331,12 +331,15 @@ fn parse_claude_session(content: &str) -> Vec<ChatMessage> {
                                 existing.result = Some(text.clone());
                             }
                             // Update content_blocks for tool_result
-                            assistant_msg.content_blocks = Some(vec![ContentBlock {
-                                r#type: "tool_result".to_string(),
-                                tool_id: Some(tool_use_id.to_string()),
-                                content: Some(text),
-                                citations: None,
-                            }]);
+                            assistant_msg
+                                .content_blocks
+                                .get_or_insert_with(Vec::new)
+                                .push(ContentBlock {
+                                    r#type: "tool_result".to_string(),
+                                    tool_id: Some(tool_use_id.to_string()),
+                                    content: Some(text),
+                                    citations: None,
+                                });
                         }
                     }
                 }
