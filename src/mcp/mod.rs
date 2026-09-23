@@ -1,13 +1,7 @@
 use crate::invocation::InvocationContext;
 use crate::orchestration::OrchestrationContext;
 use crate::service::FlowzService;
-use async_trait::async_trait;
-use pmcp::{
-    Error, PromptHandler, RequestHandlerExtra, Result as McpResult, ToolHandler,
-    types::{Content, GetPromptResult, PromptArgument, PromptInfo, PromptMessage, ToolInfo},
-};
-use serde_json::{Value, json};
-use std::collections::HashMap;
+use pmcp::{PromptHandler, ToolHandler};
 use std::sync::Arc;
 
 pub mod adapter;
@@ -35,10 +29,7 @@ pub fn register_all_tools(
         .collect()
 }
 
-pub fn build_registry(
-    orch: Arc<OrchestrationContext>,
-    service: Arc<FlowzService>,
-) -> ToolRegistry {
+pub fn build_registry(orch: Arc<OrchestrationContext>, service: Arc<FlowzService>) -> ToolRegistry {
     let mut registry = ToolRegistry::new();
 
     // Register workflow tools

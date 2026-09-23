@@ -1,9 +1,5 @@
-use crate::domain::{
-    JobResult, JobStatus, RunRequest, SubagentTimeout, SubagentTodo, TimeBudget, generate_id,
-};
-use anyhow::Result;
+use crate::domain::{JobResult, RunRequest, SubagentTimeout, SubagentTodo, TimeBudget};
 use std::collections::HashMap;
-use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Clone)]

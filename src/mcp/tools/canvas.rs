@@ -1,5 +1,5 @@
 use crate::canvas::CanvasDocument;
-use crate::domain::{JobResult, job_result_to_value};
+use crate::domain::job_result_to_value;
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;

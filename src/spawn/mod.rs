@@ -1,4 +1,4 @@
-use crate::domain::{EffortLevel, InputFile, SandboxMode, generate_id};
+use crate::domain::{EffortLevel, InputFile, SandboxMode};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -185,7 +185,7 @@ impl ProcessSpawner for StdProcessSpawner {
 
 pub mod protocol {
     use super::*;
-    use std::io::{self, BufRead, BufReader, Write};
+    use std::io::{BufRead, Write};
 
     pub fn read_request<R: BufRead>(reader: &mut R) -> Result<WorkerRequest, SpawnError> {
         let mut line = String::new();

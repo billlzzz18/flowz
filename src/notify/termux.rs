@@ -1,6 +1,5 @@
 use crate::notify::{NotificationError, NotificationEvent, Notifier};
 use async_trait::async_trait;
-use std::time::Duration;
 use tokio::process::Command;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

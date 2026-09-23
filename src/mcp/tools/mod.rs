@@ -1,3 +1,4 @@
+pub mod canvas;
 pub mod cron_cancel;
 pub mod cron_create;
 pub mod cron_list;
@@ -9,11 +10,11 @@ pub mod subagent_stop;
 pub mod workflow_cancel;
 pub mod workflow_job;
 pub mod workflow_run;
-pub mod canvas;
 
 // Re-export the trait and enum for external use
 pub use inner::{McpTool, Toolset};
 
+pub use canvas::CanvasTool;
 pub use cron_cancel::CronCancelTool;
 pub use cron_create::CronCreateTool;
 pub use cron_list::CronListTool;
@@ -24,4 +25,3 @@ pub use subagent_stop::SubagentStopTool;
 pub use workflow_cancel::WorkflowCancelTool;
 pub use workflow_job::WorkflowJobTool;
 pub use workflow_run::WorkflowRunTool;
-pub use canvas::CanvasTool;

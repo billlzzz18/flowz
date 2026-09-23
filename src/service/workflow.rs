@@ -3,6 +3,12 @@ use crate::invocation::InvocationContext;
 
 pub struct WorkflowService;
 
+impl Default for WorkflowService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WorkflowService {
     pub fn new() -> Self {
         Self

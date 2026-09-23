@@ -2,6 +2,12 @@ use crate::invocation::InvocationContext;
 
 pub struct SupervisorService;
 
+impl Default for SupervisorService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SupervisorService {
     pub fn new() -> Self {
         Self

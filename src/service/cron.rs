@@ -2,6 +2,12 @@ use crate::invocation::InvocationContext;
 
 pub struct CronService;
 
+impl Default for CronService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CronService {
     pub fn new() -> Self {
         Self

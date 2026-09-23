@@ -1,5 +1,4 @@
 use super::{AdapterType, AgentAdapter, ChatMessage, SessionInfo};
-use anyhow::Result;
 use std::path::PathBuf;
 
 pub struct AgyAdapter {

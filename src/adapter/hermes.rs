@@ -10,10 +10,23 @@ pub struct HermesAdapter {
 
 impl HermesAdapter {
     pub fn new() -> Self {
-        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        Self {
-            db_path: home.join(".hermes").join("state.db"),
+        let db_path = Self::resolve_db_path();
+        Self { db_path }
+    }
+
+    fn resolve_db_path() -> PathBuf {
+        // Honor HERMES_HOME first, then platform default
+        if let Ok(hermes_home) = std::env::var("HERMES_HOME") {
+            return PathBuf::from(hermes_home).join("state.db");
         }
+        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        #[cfg(target_os = "windows")]
+        {
+            if let Ok(local_appdata) = std::env::var("LOCALAPPDATA") {
+                return PathBuf::from(local_appdata).join("hermes").join("state.db");
+            }
+        }
+        home.join(".hermes").join("state.db")
     }
 
     pub fn with_db_path(db_path: PathBuf) -> Self {
@@ -35,7 +48,6 @@ impl HermesAdapter {
             let mut stmt = conn.prepare(
                 "SELECT id, started_at, ended_at, message_count, title
                  FROM sessions
-                 WHERE ended_at IS NOT NULL
                  ORDER BY started_at DESC
                  LIMIT ?",
             )?;
@@ -43,8 +55,12 @@ impl HermesAdapter {
                 Ok(SessionInfo {
                     id: row.get(0)?,
                     path: db_path.clone(),
-                    created_at: row.get::<_, f64>(1)? as i64,
-                    updated_at: row.get::<_, Option<f64>>(2)?.unwrap_or(0.0) as i64,
+                    // Convert epoch seconds to milliseconds
+                    created_at: (row.get::<_, f64>(1)? * 1000.0) as i64,
+                    updated_at: row
+                        .get::<_, Option<f64>>(2)?
+                        .map(|v| (v * 1000.0) as i64)
+                        .unwrap_or(0),
                     message_count: row.get::<_, i64>(3)? as usize,
                 })
             })?;
@@ -68,11 +84,12 @@ impl HermesAdapter {
         let session_id = session_id.to_string();
         let messages = task::spawn_blocking(move || -> Result<Vec<ChatMessage>> {
             let conn = Connection::open(&db_path)?;
+            // Order by AUTOINCREMENT id to preserve insertion order (tool calls before results)
             let mut stmt = conn.prepare(
-                "SELECT id, role, content, tool_calls, tool_name, timestamp, reasoning, finish_reason
+                "SELECT id, role, content, tool_calls, tool_name, tool_call_id, timestamp, reasoning, finish_reason
                  FROM messages
                  WHERE session_id = ? AND active = 1
-                 ORDER BY timestamp ASC",
+                 ORDER BY id ASC",
             )?;
             let rows = stmt.query_map(params![session_id], |row| {
                 let id: i64 = row.get(0)?;
@@ -80,15 +97,17 @@ impl HermesAdapter {
                 let content: Option<String> = row.get(2)?;
                 let tool_calls: Option<String> = row.get(3)?;
                 let tool_name: Option<String> = row.get(4)?;
-                let timestamp: f64 = row.get(5)?;
-                let reasoning: Option<String> = row.get(6)?;
-                let _finish_reason: Option<String> = row.get(7)?;
+                let tool_call_id: Option<String> = row.get(5)?;
+                let timestamp: f64 = row.get(6)?;
+                let reasoning: Option<String> = row.get(7)?;
+                let _finish_reason: Option<String> = row.get(8)?;
 
                 let mut msg = ChatMessage {
                     id: format!("hermes-msg-{}", id),
                     role: role.clone(),
                     content: content.unwrap_or_default(),
-                    timestamp: timestamp as i64,
+                    // Convert epoch seconds to milliseconds
+                    timestamp: (timestamp * 1000.0) as i64,
                     tool_calls: None,
                     content_blocks: None,
                     is_interrupt: None,
@@ -96,16 +115,18 @@ impl HermesAdapter {
                     duration_seconds: None,
                 };
 
-                if let Some(tc_json) = tool_calls {
-                    if let Ok(tc_value) = serde_json::from_str::<serde_json::Value>(&tc_json) {
-                        if let Some(arr) = tc_value.as_array() {
+                // Parse assistant tool_calls (OpenAI format: function.name, function.arguments)
+                if let Some(tc_json) = tool_calls
+                    && let Ok(tc_value) = serde_json::from_str::<serde_json::Value>(&tc_json)
+                        && let Some(arr) = tc_value.as_array() {
                             let tool_calls: Vec<ToolCallInfo> = arr
                                 .iter()
                                 .filter_map(|v| {
+                                    let func = v.get("function")?;
                                     Some(ToolCallInfo {
                                         id: v.get("id")?.as_str()?.to_string(),
-                                        name: v.get("name")?.as_str()?.to_string(),
-                                        input: v.get("arguments")?.clone(),
+                                        name: func.get("name")?.as_str()?.to_string(),
+                                        input: func.get("arguments")?.clone(),
                                         status: Some(
                                             v.get("status")
                                                 .and_then(|s| s.as_str())
@@ -123,10 +144,19 @@ impl HermesAdapter {
                                 msg.tool_calls = Some(tool_calls);
                             }
                         }
-                    }
-                }
 
-                if let Some(name) = tool_name {
+                // Handle tool result messages (role = 'tool')
+                if role == "tool" {
+                    if let Some(tc_id) = tool_call_id {
+                        msg.content_blocks = Some(vec![ContentBlock {
+                            r#type: "tool_result".to_string(),
+                            tool_id: Some(tc_id),
+                            content: Some(msg.content.clone()),
+                            citations: None,
+                        }]);
+                    }
+                } else if let Some(name) = tool_name {
+                    // Assistant message with tool_name (first tool call) - emit tool_use block
                     msg.content_blocks = Some(vec![ContentBlock {
                         r#type: "tool_use".to_string(),
                         tool_id: None,
@@ -135,16 +165,14 @@ impl HermesAdapter {
                     }]);
                 }
 
-                if role == "assistant" {
-                    if let Some(reasoning) = reasoning {
-                        if !reasoning.trim().is_empty() {
+                if role == "assistant"
+                    && let Some(reasoning) = reasoning
+                        && !reasoning.trim().is_empty() {
                             if !msg.content.is_empty() {
                                 msg.content.push_str("\n\n");
                             }
                             msg.content.push_str(&reasoning);
                         }
-                    }
-                }
 
                 Ok(msg)
             })?;

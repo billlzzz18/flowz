@@ -46,13 +46,13 @@ impl McpTool for SubagentListTool {
     ) -> Result<Value, crate::error::FlowzError> {
         let job_id = args.get("job_id").and_then(|v| v.as_str());
 
-        if let Some(job_id) = job_id {
-            if let Some(todos) = self.orch.get_todos(job_id).await {
-                return Ok(json!({
-                    "job_id": job_id,
-                    "subagents": todos,
-                }));
-            }
+        if let Some(job_id) = job_id
+            && let Some(todos) = self.orch.get_todos(job_id).await
+        {
+            return Ok(json!({
+                "job_id": job_id,
+                "subagents": todos,
+            }));
         }
 
         Ok(json!({

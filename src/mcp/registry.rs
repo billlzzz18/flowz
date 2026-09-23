@@ -1,9 +1,9 @@
-use crate::mcp::tools::{McpTool, Toolset};
-use std::collections::HashMap;
-use std::sync::Arc;
-use serde_json::Value;
 use crate::error::FlowzError;
 use crate::invocation::InvocationContext;
+use crate::mcp::tools::{McpTool, Toolset};
+use serde_json::Value;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct ToolRegistry {
     pub tools: HashMap<&'static str, Arc<dyn McpTool>>,
@@ -46,7 +46,9 @@ impl ToolRegistry {
 
     pub fn all_schemas(&self) -> serde_json::Value {
         use serde_json::json;
-        let mut tools: Vec<_> = self.tools.values()
+        let mut tools: Vec<_> = self
+            .tools
+            .values()
             .map(|t| {
                 json!({
                     "type": "function",

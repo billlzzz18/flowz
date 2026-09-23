@@ -1,12 +1,12 @@
 use crate::domain::{
     EffortLevel, ExecutionMode, FailurePolicy, InputFile, RunRequest, SandboxMode, WorkflowItem,
-    generate_id, job_result_to_value,
+    job_result_to_value,
 };
 use crate::invocation::InvocationContext;
 use crate::mcp::tools::{McpTool, Toolset};
 use crate::orchestration::OrchestrationContext;
 use async_trait::async_trait;
-use pmcp::{Error, RequestHandlerExtra, Result as McpResult};
+use pmcp::Error;
 use serde_json::{Value, json};
 use std::sync::Arc;
 
@@ -132,7 +132,7 @@ It spawns the configured worker process using a JSON stdin/stdout protocol and r
     async fn call(
         &self,
         args: Value,
-        ctx: &InvocationContext,
+        _ctx: &InvocationContext,
     ) -> Result<Value, crate::error::FlowzError> {
         let request = parse_run_request(args)?;
 

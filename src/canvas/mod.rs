@@ -50,6 +50,7 @@ pub struct CanvasEdge {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(Default)]
 pub struct CanvasRunPolicy {
     #[serde(default)]
     pub mode: ExecutionMode,
@@ -63,19 +64,6 @@ pub struct CanvasRunPolicy {
     pub confirmation_required: Option<bool>,
     #[serde(default)]
     pub run_budget: RunBudget,
-}
-
-impl Default for CanvasRunPolicy {
-    fn default() -> Self {
-        Self {
-            mode: ExecutionMode::default(),
-            failure_policy: FailurePolicy::default(),
-            max_concurrency: None,
-            max_agent_calls: None,
-            confirmation_required: None,
-            run_budget: RunBudget::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -116,7 +104,11 @@ impl CanvasDocument {
         let total_string_len: usize = self.id.len()
             + self.title.len()
             + self.nodes.iter().map(|n| n.id.len()).sum::<usize>()
-            + self.edges.iter().map(|e| e.id.len() + e.source.len() + e.target.len()).sum::<usize>();
+            + self
+                .edges
+                .iter()
+                .map(|e| e.id.len() + e.source.len() + e.target.len())
+                .sum::<usize>();
         if total_string_len > 1_000_000 {
             findings.push(finding(
                 "document_too_large",
@@ -240,10 +232,12 @@ impl CanvasDocument {
         }
 
         // Cycle detection for edges
-        if !findings.iter().any(|f| f.severity == FindingSeverity::Error) {
-            if let Some(cycle_finding) = detect_cycles(&self.nodes, &self.edges) {
-                findings.push(cycle_finding);
-            }
+        if !findings
+            .iter()
+            .any(|f| f.severity == FindingSeverity::Error)
+            && let Some(cycle_finding) = detect_cycles(&self.nodes, &self.edges)
+        {
+            findings.push(cycle_finding);
         }
 
         for edge in &self.edges {
@@ -370,7 +364,7 @@ fn detect_cycles(nodes: &[CanvasNode], edges: &[CanvasEdge]) -> Option<CanvasFin
 
         if let Some(neighbors) = adj.get(node) {
             for neighbor in neighbors {
-                if *visited.get(neighbor).unwrap_or(&false) == false {
+                if !*visited.get(neighbor).unwrap_or(&false) {
                     if dfs(neighbor, adj, visited, rec_stack) {
                         return true;
                     }
@@ -385,16 +379,14 @@ fn detect_cycles(nodes: &[CanvasNode], edges: &[CanvasEdge]) -> Option<CanvasFin
     }
 
     for node in &node_ids {
-        if *visited.get(*node).unwrap_or(&false) == false {
-            if dfs(node, &adj, &mut visited, &mut rec_stack) {
-                return Some(finding(
-                    "dependency_cycle",
-                    FindingSeverity::Error,
-                    "multi-node dependency cycle detected",
-                    None,
-                    None,
-                ));
-            }
+        if !*visited.get(*node).unwrap_or(&false) && dfs(node, &adj, &mut visited, &mut rec_stack) {
+            return Some(finding(
+                "dependency_cycle",
+                FindingSeverity::Error,
+                "multi-node dependency cycle detected",
+                None,
+                None,
+            ));
         }
     }
 
@@ -544,7 +536,9 @@ mod tests {
             item: Some(item("item-2")),
             reducer: None,
         });
-        let request = doc.to_run_request().expect("should bump max_agent_calls to item count");
+        let request = doc
+            .to_run_request()
+            .expect("should bump max_agent_calls to item count");
         assert_eq!(request.max_agent_calls, Some(2));
     }
 }
