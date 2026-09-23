@@ -11,6 +11,9 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{Instrument, info_span};
 
+/// Executes workflow items as subagent processes and notifies on completion.
+/// Notifications fire ONLY after an actual subagent run — plain background
+/// work with no subagent never notifies.
 pub struct WorkflowEngine<S: ProcessSpawner> {
     spawner: Arc<S>,
     policy: Arc<crate::orchestration::policy::WorkflowPolicy>,
@@ -33,6 +36,8 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         }
     }
 
+    /// Runs all items (sequential or parallel), enforcing failure policy and
+    /// time budgets, and returns the aggregated execution result.
     pub async fn run(&self, request: RunRequest) -> WorkflowExecutionResult {
         let concurrency = request
             .max_concurrency
@@ -189,11 +194,11 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                             NotificationEvent {
                                 job_id: job_id.clone(),
                                 item_id: Some(item_id.clone()),
-                                title: if success {
-                                    "Subagent completed".to_string()
-                                } else {
-                                    "Subagent failed".to_string()
-                                },
+                    title: if success {
+                        format!("Subagent completed: {}", item_id)
+                    } else {
+                        format!("Subagent failed: {}", item_id)
+                    },
                                 body: brief,
                                 level,
                                 duration: Duration::from_millis(if success { 250 } else { 700 }),
@@ -315,9 +320,9 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
                     job_id: job_id.clone(),
                     item_id: Some(item_id.clone()),
                     title: if success {
-                        "Subagent completed".to_string()
+                        format!("Subagent completed: {}", item_id)
                     } else {
-                        "Subagent failed".to_string()
+                        format!("Subagent failed: {}", item_id)
                     },
                     body: brief,
                     level,
@@ -363,6 +368,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
     }
 }
 
+/// Aggregated outcome of a workflow run.
 #[derive(Debug, Default)]
 pub struct WorkflowExecutionResult {
     pub successful: Vec<WorkerResponse>,

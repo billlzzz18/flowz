@@ -4,11 +4,13 @@ use rusqlite::{Connection, params};
 use std::path::PathBuf;
 use tokio::task;
 
+/// Adapter reading Hermes sessions from the Hermes SQLite state database.
 pub struct HermesAdapter {
     db_path: PathBuf,
 }
 
 impl HermesAdapter {
+    /// Resolves the database path via `HERMES_HOME` or the platform default.
     pub fn new() -> Self {
         let db_path = Self::resolve_db_path();
         Self { db_path }
@@ -29,6 +31,7 @@ impl HermesAdapter {
         home.join(".hermes").join("state.db")
     }
 
+    /// Uses a custom database path (tests, alternate installs).
     pub fn with_db_path(db_path: PathBuf) -> Self {
         Self { db_path }
     }

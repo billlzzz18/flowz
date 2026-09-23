@@ -5,11 +5,13 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use tokio::task;
 
+/// Adapter reading Claude Code sessions from `~/.claude/projects/**/*.jsonl`.
 pub struct ClaudeAdapter {
     projects_dir: PathBuf,
 }
 
 impl ClaudeAdapter {
+    /// Uses the default Claude projects directory for the current user.
     pub fn new() -> Self {
         let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         Self {
@@ -17,6 +19,7 @@ impl ClaudeAdapter {
         }
     }
 
+    /// Uses a custom projects directory (tests, alternate installs).
     pub fn with_projects_dir(projects_dir: PathBuf) -> Self {
         Self { projects_dir }
     }
@@ -216,6 +219,9 @@ impl AgentAdapter for ClaudeAdapter {
     }
 }
 
+/// Parse Claude Code JSONL session content into chat messages.
+/// `tool_use` blocks are tracked as pending calls and completed when the
+/// matching `tool_result` appears inside a later user record.
 fn parse_claude_session(content: &str) -> Vec<ChatMessage> {
     let mut messages = Vec::new();
     let mut msg_index = 0;
