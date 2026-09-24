@@ -59,6 +59,12 @@ path = "tests/test_bin/test_spawn2.rs"
 [[test]]
 name = "test_flowz_langfuse_logging"
 path = "tests/test_flowz_langfuse_logging.rs"
+required-features = ["testing"]
+
+[[test]]
+name = "test_engine_tracing"
+path = "tests/test_engine_tracing.rs"
+required-features = ["testing"]
 
 [workspace]
 members = [
@@ -72,3 +78,7 @@ members = [
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+testing = []

@@ -213,6 +213,32 @@ impl RunRequest {
     pub fn estimated_agent_calls(&self) -> u32 {
         self.items.len() as u32
     }
+
+    /// Test-only fixture: single-item sequential RunRequest for tracing tests.
+    pub fn fixture_single_item() -> Self {
+        Self {
+            items: vec![crate::domain::WorkflowItem {
+                id: "test-item".to_string(),
+                prompt: "test prompt".to_string(),
+                brief: "test brief".to_string(),
+                schema: None,
+                input_files: vec![],
+                sandbox: crate::domain::SandboxMode::default(),
+                effort_level: crate::domain::EffortLevel::default(),
+                max_duration_secs: None,
+                time_budget: crate::domain::TimeBudget::default(),
+                iteration_budget: crate::domain::IterationBudget::default(),
+                role: crate::domain::SubagentRole::default(),
+            }],
+            reducer: None,
+            run_budget: RunBudget::default(),
+            mode: ExecutionMode::Sequential,
+            failure_policy: FailurePolicy::default(),
+            max_concurrency: None,
+            max_agent_calls: None,
+            confirmation_required: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
