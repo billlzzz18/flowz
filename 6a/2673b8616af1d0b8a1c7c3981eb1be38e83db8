@@ -1,0 +1,92 @@
+crates/guardian/Cargo.toml
+  h_a25ade2a4fe7aa 1-44
+crates/guardian/src/ai_behavior/intent_analyzer.rs
+  h_a25ade2a4fe7aa 1-144
+crates/guardian/src/ai_behavior/mod.rs
+  h_a25ade2a4fe7aa 1
+crates/guardian/src/bin/guardian.rs
+  h_a25ade2a4fe7aa 1-128
+crates/guardian/src/core/git_ai_extractor.rs
+  h_a25ade2a4fe7aa 1-219
+crates/guardian/src/core/metrics.rs
+  h_a25ade2a4fe7aa 1-79
+crates/guardian/src/core/metrics_db.rs
+  h_a25ade2a4fe7aa 1-240
+crates/guardian/src/core/mod.rs
+  h_a25ade2a4fe7aa 1-4
+crates/guardian/src/core/quality_gate.rs
+  h_a25ade2a4fe7aa 1-98
+crates/guardian/src/detectors/api_security_detector.rs
+  h_a25ade2a4fe7aa 1-117
+crates/guardian/src/detectors/command_log_detector.rs
+  h_a25ade2a4fe7aa 1-150
+crates/guardian/src/detectors/event_behavior_detector.rs
+  h_a25ade2a4fe7aa 1-244
+crates/guardian/src/detectors/frontend_detector.rs
+  h_a25ade2a4fe7aa 1-113
+crates/guardian/src/detectors/minimal_check_detector.rs
+  h_a25ade2a4fe7aa 1-111
+crates/guardian/src/detectors/mod.rs
+  h_a25ade2a4fe7aa 1-10
+crates/guardian/src/detectors/over_engineer_detector.rs
+  h_a25ade2a4fe7aa 1-194
+crates/guardian/src/detectors/ponytail_comment_detector.rs
+  h_a25ade2a4fe7aa 1-54
+crates/guardian/src/detectors/regex_cache.rs
+  h_a25ade2a4fe7aa 1-73
+crates/guardian/src/detectors/slop_detector.rs
+  h_a25ade2a4fe7aa 1-89
+crates/guardian/src/detectors/yagni_detector.rs
+  h_a25ade2a4fe7aa 1-200
+crates/guardian/src/guardian_grep.rs
+  h_a25ade2a4fe7aa 1-1299
+crates/guardian/src/integration/git_hooks.rs
+  h_a25ade2a4fe7aa 1-59
+crates/guardian/src/integration/langfuse.rs
+  h_a25ade2a4fe7aa 1-146
+crates/guardian/src/integration/mod.rs
+  h_a25ade2a4fe7aa 1-5
+crates/guardian/src/integration/playwright_qa.rs
+  h_a25ade2a4fe7aa 1-15
+crates/guardian/src/integration/sub_agent.rs
+  h_a25ade2a4fe7aa 1-21
+crates/guardian/src/integration/web_search.rs
+  h_a25ade2a4fe7aa 1-15
+crates/guardian/src/learning/baseline_builder.rs
+  h_a25ade2a4fe7aa 1-42
+crates/guardian/src/learning/feedback_processor.rs
+  h_a25ade2a4fe7aa 1-70
+crates/guardian/src/learning/mod.rs
+  h_a25ade2a4fe7aa 1-3
+crates/guardian/src/learning/pattern_library.rs
+  h_a25ade2a4fe7aa 1-30
+crates/guardian/src/lib.rs
+  h_a25ade2a4fe7aa 1-180
+crates/guardian/src/lsp.rs
+  h_a25ade2a4fe7aa 1-36
+crates/guardian/src/report/mod.rs
+  h_a25ade2a4fe7aa 1
+crates/guardian/src/report/report_generator.rs
+  h_a25ade2a4fe7aa 1-104
+crates/guardian/tests/event_behavior_tests.rs
+  h_a25ade2a4fe7aa 1-79
+crates/guardian/tests/guardian_tests.rs
+  h_a25ade2a4fe7aa 1-156
+crates/guardian/tests/integration_tests.rs
+  h_a25ade2a4fe7aa 1-63
+crates/guardian/tests/metrics_db_tests.rs
+  h_a25ade2a4fe7aa 1-85
+crates/guardian/tests/test_langfuse_client.rs
+  h_a25ade2a4fe7aa 1-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6a2673b8616af1d0b8a1c7c3981eb1be38e83db8",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
