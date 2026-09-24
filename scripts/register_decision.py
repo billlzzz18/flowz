@@ -28,7 +28,7 @@ def extract_adr_metadata(file_path):
     content = file_path.read_text(encoding="utf-8")
 
     # Match ID from filename or content
-    m_id = re.search(r"^#s*ADR-(\d{4})[:\s]+(.*)$", content, re.MULTILINE)
+    m_id = re.search(r"^#\s*ADR-(\d{4})[:\s]+(.*)$", content, re.MULTILINE)
     if m_id:
         adr_id = m_id.group(1)
         topic = m_id.group(2).strip()
@@ -42,15 +42,15 @@ def extract_adr_metadata(file_path):
         topic = raw_topic.title()
 
     # Status
-    m_status = re.search(r"^Status:s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
+    m_status = re.search(r"^Status:\s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
     status = m_status.group(1).strip() if m_status else "Accepted"
 
     # Date
-    m_date = re.search(r"^Date:s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
+    m_date = re.search(r"^Date:\s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
     date_val = m_date.group(1).strip() if m_date else "2026-09-23"
 
     # Decision
-    m_dec = re.search(r"^##s*Decisions*\n([\s\S]*?)(?=^##|\Z)", content, re.MULTILINE)
+    m_dec = re.search(r"^##\s*Decision\s*\n([\s\S]*?)(?=^##|\Z)", content, re.MULTILINE)
     if m_dec:
         decision = " ".join(m_dec.group(1).strip().split())
         decision = re.sub(r"[`#*]", "", decision)
@@ -59,7 +59,7 @@ def extract_adr_metadata(file_path):
         decision = topic
 
     # Rationale / Context
-    m_ctx = re.search(r"^##s*(?:Context|Rationale)s*\n([\s\S]*?)(?=^##|\Z)", content, re.MULTILINE)
+    m_ctx = re.search(r"^##\s*(?:Context|Rationale)\s*\n([\s\S]*?)(?=^##|\Z)", content, re.MULTILINE)
     if m_ctx:
         rationale = " ".join(m_ctx.group(1).strip().split())
         rationale = re.sub(r"[`#*]", "", rationale)
