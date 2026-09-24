@@ -1,0 +1,16 @@
+scripts/register_decision.py
+  h_a25ade2a4fe7aa 2-5,7,9-11,14,16-17,20-24,27-28,31-39,41-66,68-183,187
+tests/test_register_decision.py
+  h_a25ade2a4fe7aa 44-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "695183bb348e09d92efbc404607e5316b4a07a6a",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
