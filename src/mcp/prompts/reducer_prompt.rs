@@ -76,3 +76,43 @@ Rules:
 "#
     )
 }
+
+/// Async version: attempts to fetch from Langfuse prompt store, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn reducer_prompt_async(
+    brief: &str,
+    items_str: &str,
+    schema_str: &str,
+) -> String {
+    let mut vars = HashMap::new();
+    vars.insert("brief".to_string(), brief.to_string());
+    vars.insert("items_str".to_string(), items_str.to_string());
+    vars.insert("schema_str".to_string(), schema_str.to_string());
+
+    let fallback = r#"
+You are the reducer for a multi-agent workflow.
+
+Goal:
+Synthesize the successful worker results into the final answer.
+
+Brief:
+{{brief}}
+
+Input results:
+{{items_str}}
+
+Rules:
+- Use only the supplied worker results.
+- Do not invent missing facts.
+- Preserve uncertainty and failures.
+- Resolve conflicts explicitly.
+- Return one JSON object matching this schema:
+{{schema_str}}
+"#;
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_reducer_prompt",
+        &vars,
+        fallback,
+    )
+    .await
+}

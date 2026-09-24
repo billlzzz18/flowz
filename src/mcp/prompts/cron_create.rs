@@ -84,3 +84,46 @@ Return a flowz_cron_create request.
 "#
     )
 }
+
+/// Async version: attempts to fetch from Langfuse prompt store, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn cron_create_prompt_async(
+    name: &str,
+    expression: &str,
+    command: &str,
+    timezone: &str,
+    project_name: &str,
+) -> String {
+    let mut vars = HashMap::new();
+    vars.insert("name".to_string(), name.to_string());
+    vars.insert("expression".to_string(), expression.to_string());
+    vars.insert("command".to_string(), command.to_string());
+    vars.insert("timezone".to_string(), timezone.to_string());
+    vars.insert("project_name".to_string(), project_name.to_string());
+
+    let fallback = r#"
+Create a cron job definition for flowz-mcp.
+
+Project: {{project_name}}
+Name: {{name}}
+Schedule: {{expression}}
+Timezone: {{timezone}}
+Command: {{command}}
+
+Rules:
+1. Cron expression must be 5 or 6 fields (minute hour day month weekday [year])
+2. Timezone must be a valid IANA timezone
+3. Command must be a valid executable
+4. Arguments are passed as-is to the command
+5. This cron is user-initiated only - it does not spawn workers directly
+6. Use flowz_cron_create tool to register this definition
+
+Return a flowz_cron_create request.
+"#;
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_cron_create",
+        &vars,
+        fallback,
+    )
+    .await
+}

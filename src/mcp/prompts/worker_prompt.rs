@@ -96,3 +96,54 @@ Failure behavior:
 "#
     )
 }
+
+/// Async version: attempts to fetch from Langfuse prompt store, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn worker_prompt_async(
+    brief: &str,
+    prompt: &str,
+    schema_str: &str,
+    constraints: &str,
+) -> String {
+    let mut vars = HashMap::new();
+    vars.insert("brief".to_string(), brief.to_string());
+    vars.insert("prompt".to_string(), prompt.to_string());
+    vars.insert("schema_str".to_string(), schema_str.to_string());
+    vars.insert("constraints".to_string(), constraints.to_string());
+
+    let fallback = r#"
+You are a dedicated worker in a local multi-agent workflow.
+
+Task:
+{{prompt}}
+
+Scope:
+- Work only on item: {{brief}}
+- Do not research or process other items.
+- Do not call the workflow orchestrator recursively.
+- Do not rely on hidden parent conversation context.
+
+Requirements:
+{{constraints}}
+
+Output:
+- Return one JSON object only.
+- It must conform to this JSON Schema:
+{{schema_str}}
+
+Files:
+- Write requested files only inside the assigned workspace.
+- Report created files as artifacts.
+- Do not return local paths as plain prose.
+
+Failure behavior:
+- If the task cannot be completed, return a structured error.
+- Do not fabricate facts.
+"#;
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_worker_prompt",
+        &vars,
+        fallback,
+    )
+    .await
+}
