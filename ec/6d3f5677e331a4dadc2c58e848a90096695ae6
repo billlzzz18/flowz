@@ -1,0 +1,20 @@
+crates/guardian/Cargo.toml
+  h_a25ade2a4fe7aa 44-45
+crates/guardian/src/core/metrics.rs
+  h_a25ade2a4fe7aa 63-88
+crates/guardian/src/integration/langfuse.rs
+  h_a25ade2a4fe7aa 6,64-71,156-241
+crates/guardian/tests/test_score_bridge.rs
+  h_a25ade2a4fe7aa 1-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ec6d3f5677e331a4dadc2c58e848a90096695ae6",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
