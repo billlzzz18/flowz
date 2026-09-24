@@ -1,0 +1,22 @@
+src/mcp/prompts/cron_create.rs
+  h_a25ade2a4fe7aa 87-129
+src/mcp/prompts/mod.rs
+  h_a25ade2a4fe7aa 8-14
+src/mcp/prompts/reducer_prompt.rs
+  h_a25ade2a4fe7aa 79-118
+src/mcp/prompts/worker_prompt.rs
+  h_a25ade2a4fe7aa 99-149
+tests/test_workflow_compose_prompt.rs
+  h_a25ade2a4fe7aa 19-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1dd41790c2bd5ac7183febcf6853d21ca438de08",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
