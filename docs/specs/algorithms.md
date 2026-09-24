@@ -330,7 +330,7 @@ impl DiscoveryEngine {
                     path,
                     version: Self::probe_version(name).await,
                     subscription_tier: Self::probe_tier(name).await,
-                    model_tier: None,
+                    model_tier: Self::probe_model_tier(name, config_dir).await,
                 });
             }
         }
