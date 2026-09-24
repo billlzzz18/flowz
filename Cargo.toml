@@ -72,6 +72,11 @@ name = "test_prompt_fetcher"
 path = "tests/test_prompt_fetcher.rs"
 required-features = ["testing"]
 
+[[test]]
+name = "test_workflow_compose_prompt"
+path = "tests/test_workflow_compose_prompt.rs"
+required-features = ["testing"]
+
 [workspace]
 members = [
     ".",

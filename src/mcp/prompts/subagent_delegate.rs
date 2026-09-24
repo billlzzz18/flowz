@@ -105,3 +105,38 @@ Return a flowz_subagent_stop request.
         _ => "Unknown action. Use: spawn, list, steer, stop".to_string(),
     }
 }
+
+/// Async version: attempts to fetch from Langfuse, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn delegate_prompt_async(action: &str, items_str: &str) -> String {
+    let mut vars = HashMap::new();
+    vars.insert("action".to_string(), action.to_string());
+    vars.insert("items_str".to_string(), items_str.to_string());
+
+    let fallback = match action {
+        "spawn" => {
+            r#"
+Spawn subagents for parallel work in flowz-mcp.
+
+Items: {{items_str}}
+
+Rules:
+1. Each item must have: id, prompt, brief, schema
+2. Each item gets TimeBudget and IterationBudget
+3. Default role is Leaf (cannot spawn further subagents)
+4. Use Orchestrator role only for reducer that needs to spawn workers
+5. Include max_agent_calls for all workers + reducers
+6. Use flowz_subagent_delegate tool with action=spawn
+
+Return a flowz_subagent_delegate request with action=spawn.
+"#
+        }
+        _ => "Unknown action. Use: spawn, list, steer, stop",
+    };
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_subagent_delegate",
+        &vars,
+        fallback,
+    )
+    .await
+}
