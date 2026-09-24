@@ -1,4 +1,5 @@
 pub mod cron_create;
+pub mod langfuse_fetcher;
 pub mod reducer_prompt;
 pub mod subagent_delegate;
 pub mod worker_prompt;

@@ -32,6 +32,7 @@ which = "6"
 dirs = "5"
 rusqlite = { version = "0.31", features = ["bundled"] }
 guardian = { path = "crates/guardian" }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 notify-rust = "4"
@@ -64,6 +65,11 @@ required-features = ["testing"]
 [[test]]
 name = "test_engine_tracing"
 path = "tests/test_engine_tracing.rs"
+required-features = ["testing"]
+
+[[test]]
+name = "test_prompt_fetcher"
+path = "tests/test_prompt_fetcher.rs"
 required-features = ["testing"]
 
 [workspace]
