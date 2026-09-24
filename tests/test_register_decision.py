@@ -41,5 +41,36 @@ class TestRegisterDecision(unittest.TestCase):
             p = Path(r["source_path"])
             self.assertTrue(p.exists(), f"Source path {p} does not exist")
 
+    def test_check_command(self):
+        res = subprocess.run(["python", str(self.script_path), "check"], capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, f"Check failed: {res.stderr}")
+        self.assertIn("OK:", res.stdout)
+
+    def test_parse_decision_single_pass(self):
+        import sys
+        import tempfile
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from scripts.register_decision import parse_decision
+
+        with tempfile.TemporaryDirectory() as td:
+            sample = Path(td) / "0099-test-adr.md"
+            sample.write_text(
+                "# ADR-0099: Test Title\n\n"
+                "Status: Proposed\n\n"
+                "## Decision\n"
+                "We decide " + ("something " * 25) + "\n\n"
+                "## Context\n"
+                "Some context\n",
+                encoding="utf-8",
+            )
+            decision = parse_decision(sample)
+            self.assertEqual(decision.id, "ADR-0099")
+            self.assertEqual(decision.status, "Proposed")
+            self.assertEqual(decision.date, "2026-09-23")
+            self.assertEqual(decision.topic, "Test Title")
+            self.assertTrue(decision.decision.endswith("..."))
+            self.assertEqual(len(decision.decision), 153)
+            self.assertEqual(decision.rationale, "Some context")
+
 if __name__ == "__main__":
     unittest.main()
