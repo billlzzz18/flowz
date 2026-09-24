@@ -69,6 +69,22 @@ impl LangfuseEvent {
             _ => None,
         }
     }
+
+    /// ดึงอ้างอิงของ LangfuseSpan หากเป็น Span event
+    pub fn as_span(&self) -> Option<&LangfuseSpan> {
+        match self {
+            Self::Span(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// ดึงอ้างอิงของ LangfuseTrace หากเป็น Trace event
+    pub fn as_trace(&self) -> Option<&LangfuseTrace> {
+        match self {
+            Self::Trace(t) => Some(t),
+            _ => None,
+        }
+    }
 }
 
 /// ไคลเอนต์สำหรับเชื่อมต่อ Langfuse REST API
@@ -237,5 +253,371 @@ impl GuardianScoreBridge {
     ) {
         let value = if passed { 1.0 } else { 0.0 };
         self.emit_score(trace_id, gate_name, value, reason);
+    }
+}
+
+/// ตรวจสอบความถูกต้องของ SemVer รูปแบบ Major.Minor.Patch (ADR-0037)
+pub fn is_valid_semver(s: &str) -> bool {
+    let main_part = s.split(['-', '+']).next().unwrap_or(s);
+    let parts: Vec<&str> = main_part.split('.').collect();
+    if parts.len() != 3 {
+        return false;
+    }
+    parts.iter().all(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()))
+}
+
+/// ตัวช่วยสร้างข้อมูลโครงสร้าง LangfuseTrace ร่วมกัน
+fn build_trace(
+    id: &str,
+    name: Option<String>,
+    metadata: Option<serde_json::Value>,
+    version: Option<String>,
+) -> LangfuseTrace {
+    LangfuseTrace {
+        id: id.to_string(),
+        name,
+        user_id: None,
+        session_id: None,
+        metadata,
+        release: version.clone(),
+        version,
+    }
+}
+
+/// ตัวช่วยสร้างข้อมูลโครงสร้าง LangfuseSpan ร่วมกัน
+fn build_span(trace_id: &str, name: &str, metadata: serde_json::Value) -> LangfuseSpan {
+    LangfuseSpan {
+        id: uuid::Uuid::new_v4().to_string(),
+        trace_id: trace_id.to_string(),
+        name: name.to_string(),
+        start_time: Some(chrono::Utc::now()),
+        end_time: Some(chrono::Utc::now()),
+        metadata: Some(metadata),
+        input: None,
+        output: None,
+    }
+}
+
+/// ตัวช่วยสร้างข้อมูลโครงสร้าง LangfuseScore ร่วมกัน
+fn build_score(trace_id: &str, name: &str, value: f64, comment: Option<String>) -> LangfuseScore {
+    LangfuseScore {
+        id: Some(uuid::Uuid::new_v4().to_string()),
+        trace_id: trace_id.to_string(),
+        name: name.to_string(),
+        value,
+        comment,
+        observation_id: None,
+    }
+}
+
+/// เหตุการณ์ในวงจรชีวิตของ Gene Bank (ADR-0033, ADR-0034, ADR-0035, ADR-0037)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum GeneBankEvent {
+    AdmissionStart {
+        patch_id: String,
+        component: String,
+        pathology: String,
+        parent_version: Option<String>,
+    },
+    GateDecision {
+        patch_id: String,
+        gate_number: u8,
+        result: String,
+        reason: String,
+    },
+    SignificanceTest {
+        patch_id: String,
+        z_score: f64,
+        mean_delta: f64,
+        std_dev: f64,
+        sample_size: u64,
+        is_significant: bool,
+    },
+    CellCompetitiveSelection {
+        patch_id: String,
+        component: String,
+        pathology: String,
+        candidate_z: f64,
+        existing_z: Option<f64>,
+        replaced: bool,
+    },
+    Admitted {
+        patch_id: String,
+        component: String,
+        pathology: String,
+        semver: String,
+    },
+    Rollback {
+        patch_id: String,
+        from_version: String,
+        to_version: String,
+        reason: String,
+    },
+}
+
+impl GeneBankEvent {
+    /// ดึง `patch_id` ของเหตุการณ์ Gene Bank
+    pub fn patch_id(&self) -> &str {
+        match self {
+            Self::AdmissionStart { patch_id, .. } => patch_id,
+            Self::GateDecision { patch_id, .. } => patch_id,
+            Self::SignificanceTest { patch_id, .. } => patch_id,
+            Self::CellCompetitiveSelection { patch_id, .. } => patch_id,
+            Self::Admitted { patch_id, .. } => patch_id,
+            Self::Rollback { patch_id, .. } => patch_id,
+        }
+    }
+
+    /// แปลงเหตุการณ์ GeneBankEvent เป็น LangfuseEvent สำหรับส่งไปยัง Langfuse
+    pub fn to_langfuse_event(&self) -> LangfuseEvent {
+        match self {
+            Self::AdmissionStart {
+                patch_id,
+                component,
+                pathology,
+                parent_version,
+            } => {
+                let semver_valid = parent_version.as_deref().map(is_valid_semver);
+                let metadata = serde_json::json!({
+                    "component": component,
+                    "pathology": pathology,
+                    "parent_version": parent_version,
+                    "parent_semver_valid": semver_valid,
+                });
+                LangfuseEvent::Trace(build_trace(
+                    patch_id,
+                    Some(format!("admission:{}:{}", component, pathology)),
+                    Some(metadata),
+                    parent_version.clone(),
+                ))
+            }
+            Self::GateDecision {
+                patch_id,
+                gate_number,
+                result,
+                reason,
+            } => {
+                let value = if result.eq_ignore_ascii_case("Pass") {
+                    1.0
+                } else if result.eq_ignore_ascii_case("RepairAndRetry") {
+                    0.5
+                } else {
+                    0.0
+                };
+                LangfuseEvent::Score(build_score(
+                    patch_id,
+                    &format!("gate_{}_decision", gate_number),
+                    value,
+                    Some(reason.clone()),
+                ))
+            }
+            Self::SignificanceTest {
+                patch_id,
+                z_score,
+                mean_delta,
+                std_dev,
+                sample_size,
+                is_significant,
+            } => {
+                let rigor_met = *z_score >= 1.96 && *sample_size >= 26;
+                let metadata = serde_json::json!({
+                    "z_score": z_score,
+                    "mean_delta": mean_delta,
+                    "std_dev": std_dev,
+                    "sample_size": sample_size,
+                    "is_significant": is_significant,
+                    "statistical_rigor_met": rigor_met,
+                });
+                LangfuseEvent::Span(build_span(patch_id, "significance_test", metadata))
+            }
+            Self::CellCompetitiveSelection {
+                patch_id,
+                component,
+                pathology,
+                candidate_z,
+                existing_z,
+                replaced,
+            } => {
+                let metadata = serde_json::json!({
+                    "component": component,
+                    "pathology": pathology,
+                    "candidate_z": candidate_z,
+                    "existing_z": existing_z,
+                    "replaced": replaced,
+                });
+                LangfuseEvent::Span(build_span(patch_id, "cell_competitive_selection", metadata))
+            }
+            Self::Admitted {
+                patch_id,
+                component,
+                pathology,
+                semver,
+            } => {
+                let semver_valid = is_valid_semver(semver);
+                let metadata = serde_json::json!({
+                    "component": component,
+                    "pathology": pathology,
+                    "semver": semver,
+                    "semver_valid": semver_valid,
+                });
+                LangfuseEvent::Span(build_span(patch_id, "admitted", metadata))
+            }
+            Self::Rollback {
+                patch_id,
+                from_version,
+                to_version,
+                reason,
+            } => {
+                let from_valid = is_valid_semver(from_version);
+                let to_valid = is_valid_semver(to_version);
+                let metadata = serde_json::json!({
+                    "from_version": from_version,
+                    "to_version": to_version,
+                    "from_semver_valid": from_valid,
+                    "to_semver_valid": to_valid,
+                    "reason": reason,
+                });
+                LangfuseEvent::Span(build_span(patch_id, "rollback", metadata))
+            }
+        }
+    }
+}
+
+impl From<GeneBankEvent> for LangfuseEvent {
+    fn from(event: GeneBankEvent) -> Self {
+        event.to_langfuse_event()
+    }
+}
+
+/// สะพานเชื่อมการส่งข้อมูลวงจรชีวิต Gene Bank (ADR-0033, ADR-0034, ADR-0035, ADR-0037) ไปยัง Langfuse
+#[derive(Clone)]
+pub struct GeneBankLangfuseBridge {
+    client: LangfuseClient,
+}
+
+impl GeneBankLangfuseBridge {
+    /// สร้างอินสแตนซ์ GeneBankLangfuseBridge ใหม่
+    pub fn new(client: LangfuseClient) -> Self {
+        Self { client }
+    }
+
+    /// ดึงอ้างอิงของ LangfuseClient ภายใน
+    pub fn client(&self) -> &LangfuseClient {
+        &self.client
+    }
+
+    /// บันทึกจุดเริ่มต้นการยื่นขอคัดกรอง patch เข้า Gene Bank
+    pub fn emit_admission_start(
+        &self,
+        patch_id: &str,
+        component: &str,
+        pathology: &str,
+        parent_version: Option<&str>,
+    ) {
+        let event = GeneBankEvent::AdmissionStart {
+            patch_id: patch_id.to_string(),
+            component: component.to_string(),
+            pathology: pathology.to_string(),
+            parent_version: parent_version.map(ToString::to_string),
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// บันทึกผลการตัดสินของ Gate (Gate 1 ถึง 4 ตาม ADR-0034)
+    pub fn emit_gate_decision(
+        &self,
+        patch_id: &str,
+        gate_number: u8,
+        result: &str,
+        reason: &str,
+    ) {
+        let event = GeneBankEvent::GateDecision {
+            patch_id: patch_id.to_string(),
+            gate_number,
+            result: result.to_string(),
+            reason: reason.to_string(),
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// บันทึกผลการทดสอบนัยสำคัญทางสถิติ (Gate 3 ตาม ADR-0035)
+    pub fn emit_significance_test(
+        &self,
+        patch_id: &str,
+        z_score: f64,
+        mean_delta: f64,
+        std_dev: f64,
+        sample_size: u64,
+        is_significant: bool,
+    ) {
+        let event = GeneBankEvent::SignificanceTest {
+            patch_id: patch_id.to_string(),
+            z_score,
+            mean_delta,
+            std_dev,
+            sample_size,
+            is_significant,
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// บันทึกผลการคัดเลือกแบบแข่งขันระดับ Semantic Cell (ADR-0033)
+    pub fn emit_cell_competitive_selection(
+        &self,
+        patch_id: &str,
+        component: &str,
+        pathology: &str,
+        candidate_z: f64,
+        existing_z: Option<f64>,
+        replaced: bool,
+    ) {
+        let event = GeneBankEvent::CellCompetitiveSelection {
+            patch_id: patch_id.to_string(),
+            component: component.to_string(),
+            pathology: pathology.to_string(),
+            candidate_z,
+            existing_z,
+            replaced,
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// บันทึกเมื่อ patch ผ่านการคัดกรองทุกด่านและได้รับการยอมรับเข้า Gene Bank (ADR-0037)
+    pub fn emit_admitted(
+        &self,
+        patch_id: &str,
+        component: &str,
+        pathology: &str,
+        semver: &str,
+    ) {
+        let event = GeneBankEvent::Admitted {
+            patch_id: patch_id.to_string(),
+            component: component.to_string(),
+            pathology: pathology.to_string(),
+            semver: semver.to_string(),
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// บันทึกการย้อนคืนเวอร์ชัน (Rollback ตาม ADR-0037)
+    pub fn emit_rollback(
+        &self,
+        patch_id: &str,
+        from_version: &str,
+        to_version: &str,
+        reason: &str,
+    ) {
+        let event = GeneBankEvent::Rollback {
+            patch_id: patch_id.to_string(),
+            from_version: from_version.to_string(),
+            to_version: to_version.to_string(),
+            reason: reason.to_string(),
+        };
+        self.emit_gene_bank_event(event);
+    }
+
+    /// ส่งเหตุการณ์ GeneBankEvent ไปยัง LangfuseClient
+    pub fn emit_gene_bank_event(&self, event: GeneBankEvent) {
+        self.client.emit_event(event.to_langfuse_event());
     }
 }
