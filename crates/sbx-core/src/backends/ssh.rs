@@ -33,7 +33,7 @@ pub(crate) fn remote_line(spec: &ProcessSpec) -> String {
     if !spec.env.is_empty() {
         line.push_str("env");
         for (k, v) in &spec.env {
-            line.push_str(&format!(" {}={}", k, sh_quote(v)));
+            line.push_str(&format!(" {}={}", sh_quote(k), sh_quote(v)));
         }
         line.push(' ');
     }
