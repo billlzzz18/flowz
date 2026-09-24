@@ -31,6 +31,7 @@ notify-rust = "4"
 which = "6"
 dirs = "5"
 rusqlite = { version = "0.31", features = ["bundled"] }
+guardian = { path = "crates/guardian" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 notify-rust = "4"
@@ -54,6 +55,10 @@ path = "tests/test_bin/test_spawn.rs"
 [[bin]]
 name = "test_spawn2"
 path = "tests/test_bin/test_spawn2.rs"
+
+[[test]]
+name = "test_flowz_langfuse_logging"
+path = "tests/test_flowz_langfuse_logging.rs"
 
 [workspace]
 members = [
