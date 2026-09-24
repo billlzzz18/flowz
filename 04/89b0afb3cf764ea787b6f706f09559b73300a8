@@ -1,0 +1,20 @@
+Cargo.toml
+  h_a25ade2a4fe7aa 35,70-74
+src/mcp/prompts/langfuse_fetcher.rs
+  h_a25ade2a4fe7aa 1-68
+src/mcp/prompts/mod.rs
+  h_a25ade2a4fe7aa 2
+tests/test_prompt_fetcher.rs
+  h_a25ade2a4fe7aa 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0489b0afb3cf764ea787b6f706f09559b73300a8",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
