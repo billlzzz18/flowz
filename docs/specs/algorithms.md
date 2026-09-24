@@ -90,22 +90,20 @@ OUTPUT: EvolutionRoundResult
        })
 
 6. ADMIT
-   let mut current_harness = harness;
    for admitted in results.filter(Admitted):
-       version = bump_version(current_harness)
+       version = bump_version(harness, patch_id=admitted.patch.id)
        harness_version_store.save(version)
        gene_bank.admit(
            patch=admitted.patch,
            preserved=PreservedHarness{
                harness=version,
-               parent=current_harness.version,
+               parent=harness.version,
                z_score=admitted.z_score,
                sample_size=admitted.sample_size,
                verified_at=now(),
                source=Generated{by: LearningCron}
            }
        )
-       current_harness = harness_version_store.get(version)
 
 7. REPORT
    return EvolutionRoundResult{

@@ -42,11 +42,11 @@ def extract_adr_metadata(file_path):
         topic = raw_topic.title()
 
     # Status
-    m_status = re.search(r"^Status:\s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
+    m_status = re.search(r"^Status:[ \t]*(.+)$", content, re.MULTILINE | re.IGNORECASE)
     status = m_status.group(1).strip() if m_status else "Accepted"
 
     # Date
-    m_date = re.search(r"^Date:\s*(.+)$", content, re.MULTILINE | re.IGNORECASE)
+    m_date = re.search(r"^Date:[ \t]*(.+)$", content, re.MULTILINE | re.IGNORECASE)
     date_val = m_date.group(1).strip() if m_date else "2026-09-23"
 
     # Decision
