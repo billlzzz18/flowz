@@ -3,6 +3,7 @@
 //! โมดูลนี้ทำหน้าที่เชื่อมต่อไปยัง Langfuse REST API เพื่อส่งเหตุการณ์การทำงาน
 //! การสังเกตการณ์ระบบ (Observability) และผลการประเมินคุณภาพโค้ด
 
+use crate::core::metrics::{AIBehaviorMetrics, AIMetrics};
 use serde::{Deserialize, Serialize};
 use std::env;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel};
@@ -58,6 +59,14 @@ impl LangfuseEvent {
             Self::Trace(t) => &t.id,
             Self::Span(s) => &s.trace_id,
             Self::Score(sc) => &sc.trace_id,
+        }
+    }
+
+    /// ดึงอ้างอิงของ LangfuseScore หากเป็น Score event
+    pub fn as_score(&self) -> Option<&LangfuseScore> {
+        match self {
+            Self::Score(sc) => Some(sc),
+            _ => None,
         }
     }
 }
@@ -142,5 +151,91 @@ impl LangfuseClient {
         if let Some(ref tx) = self.mock_tx {
             let _ = tx.send(event);
         }
+    }
+}
+
+/// สะพานเชื่อมการส่งคะแนนการประเมินคุณภาพโค้ดและพฤติกรรม AI ไปยัง Langfuse
+#[derive(Clone)]
+pub struct GuardianScoreBridge {
+    client: LangfuseClient,
+}
+
+impl GuardianScoreBridge {
+    /// สร้างอินสแตนซ์ GuardianScoreBridge ใหม่
+    pub fn new(client: LangfuseClient) -> Self {
+        Self { client }
+    }
+
+    /// ดึงอ้างอิงของ LangfuseClient ภายใน
+    pub fn client(&self) -> &LangfuseClient {
+        &self.client
+    }
+
+    /// ส่งคะแนนเดี่ยวไปยัง Langfuse
+    pub fn emit_score(&self, trace_id: &str, name: &str, value: f64, comment: Option<&str>) {
+        let score = LangfuseScore {
+            id: Some(uuid::Uuid::new_v4().to_string()),
+            trace_id: trace_id.to_string(),
+            name: name.to_string(),
+            value,
+            comment: comment.map(ToString::to_string),
+            observation_id: None,
+        };
+        self.client.emit_event(LangfuseEvent::Score(score));
+    }
+
+    /// ส่งกลุ่มคะแนนผ่านตัววนซ้ำชื่อและค่า
+    pub fn emit_scores<'a>(
+        &self,
+        trace_id: &str,
+        scores: impl IntoIterator<Item = (&'a str, f64)>,
+    ) {
+        for (name, value) in scores {
+            self.emit_score(trace_id, name, value, None);
+        }
+    }
+
+    /// ส่งคะแนนการวิเคราะห์คุณภาพโค้ด (Analysis Scores) 8 รายการไปยัง Langfuse
+    pub fn emit_analysis_scores(&self, trace_id: &str, metrics: &AIMetrics) {
+        let scores: [(&str, f64); 8] = [
+            ("quality_score", metrics.quality_score),
+            ("slop_score", metrics.metrics.slop_score),
+            ("yagni_violations", metrics.metrics.yagni_violations as f64),
+            ("over_engineering_score", metrics.metrics.over_engineering_score),
+            ("idiomatic_score", metrics.metrics.idiomatic_score),
+            ("unsafe_blocks", metrics.metrics.unsafe_blocks as f64),
+            ("unwrap_count", metrics.metrics.unwrap_count as f64),
+            ("clone_count", metrics.metrics.clone_count as f64),
+        ];
+        self.emit_scores(trace_id, scores);
+    }
+
+    /// ส่งคะแนนพฤติกรรมของ AI (Behavior Scores) ไปยัง Langfuse
+    pub fn emit_behavior_scores(&self, trace_id: &str, behavior: &impl AsRef<AIBehaviorMetrics>) {
+        let b = behavior.as_ref();
+        let scores: [(&str, f64); 9] = [
+            ("repeated_tool_calls", b.repeated_tool_calls as f64),
+            ("panic_loops", b.panic_loops as f64),
+            ("useless_tool_chains", b.useless_tool_chains as f64),
+            ("intent_match_score", b.intent_match_score),
+            ("hallucination_score", b.hallucination_score),
+            ("context_drift_score", b.context_drift_score),
+            ("requirement_mismatch", b.requirement_mismatch as f64),
+            ("resource_waste_score", b.resource_waste_score),
+            ("error_recovery_quality", b.error_recovery_quality),
+        ];
+        self.emit_scores(trace_id, scores);
+    }
+
+    /// ส่งคะแนนการตัดสินของ Gate (เช่น ADR-0034 4-Gates) ไปยัง Langfuse
+    pub fn emit_gate_score(
+        &self,
+        trace_id: &str,
+        gate_name: &str,
+        passed: bool,
+        reason: Option<&str>,
+    ) {
+        let value = if passed { 1.0 } else { 0.0 };
+        self.emit_score(trace_id, gate_name, value, reason);
     }
 }

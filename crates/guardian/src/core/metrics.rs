@@ -60,6 +60,32 @@ impl AIMetrics {
     }
 }
 
+impl Default for AIMetrics {
+    fn default() -> Self {
+        Self {
+            commit_sha: String::new(),
+            file_path: String::new(),
+            ai_lines: Vec::new(),
+            timestamp: Utc::now(),
+            metrics: CodeMetrics::default(),
+            ai_behavior: AIBehaviorMetrics::default(),
+            quality_score: 0.0,
+        }
+    }
+}
+
+impl AsRef<AIBehaviorMetrics> for AIMetrics {
+    fn as_ref(&self) -> &AIBehaviorMetrics {
+        &self.ai_behavior
+    }
+}
+
+impl AsRef<AIBehaviorMetrics> for AIBehaviorMetrics {
+    fn as_ref(&self) -> &AIBehaviorMetrics {
+        self
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UIQualityMetrics {
     pub design_consistency: f64,
