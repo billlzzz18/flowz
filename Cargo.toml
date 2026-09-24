@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 autotests = false
 
 [dependencies]
+sbx-core = { path = "crates/sbx-core" }
 pmcp = { version = "2.9", features = ["macros", "schema-generation", "validation", "full"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -55,4 +56,13 @@ name = "test_spawn2"
 path = "tests/test_bin/test_spawn2.rs"
 
 [workspace]
-members = []
+members = [
+    ".",
+    "crates/sbx-core",
+    "crates/sbx",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
