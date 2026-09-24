@@ -83,6 +83,7 @@ OUTPUT: EvolutionRoundResult
 
        // All passed → Admitted
        results.push(Admitted{
+           patch=candidate.patch,
            delta=sig.delta,
            z_score=sig.z_score,
            sample_size=sig.sample_size
