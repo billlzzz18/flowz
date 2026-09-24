@@ -58,6 +58,7 @@ path = "tests/test_bin/test_spawn2.rs"
 [workspace]
 members = [
     ".",
+    "crates/guardian",
     "crates/sbx-core",
     "crates/sbx",
 ]
