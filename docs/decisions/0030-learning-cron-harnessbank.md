@@ -23,7 +23,7 @@ Cron 1: flowz-learning-cron — รันทุกวัน 03:00 (Asia/Bangkok)
 ระบบ Evolution ทำงาน 2 tracks ร่วมกันอย่างเป็นเอกภาพ:
 1. **Live Concurrent Observer (Real-Time Tap):** รันประกบ Agent หลัก ดักจับ Trajectory และ Telemetry แบบ non-blocking เบื้องหลังตลอดทุก Session
 2. **Background Evolver Daemon & Scheduled Cron:**
-   - **Autonomous Trigger:** ปลุก Evolver Agent ทันทีเมื่อ Observer ตรวจพบ Pathology ชัดเจน หรือพบความสำเร็จซ้ำ ($ge 3$ sessions)
+   - **Autonomous Trigger:** ปลุก Evolver Agent ทันทีเมื่อ Observer ตรวจพบ Pathology ชัดเจน หรือพบความสำเร็จซ้ำ (≥ 3 sessions)
    - **Scheduled Sweep (Cron 1):** รันทุกวัน 03:00 (Asia/Bangkok) เพื่อสรุปผลวิเคราะห์ภาพรวมรอบวัน (24h window) สำหรับ Trajectories ที่ยังไม่ได้ผ่านการ evaluate
 
 ### Scheduling
