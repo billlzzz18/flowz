@@ -228,6 +228,7 @@ pub struct SubagentLaunchRequest {
 }
 ```
 
+```rust
 pub struct DelegateRequest {
     pub action: DelegateAction,
 }
