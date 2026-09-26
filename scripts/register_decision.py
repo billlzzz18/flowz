@@ -34,7 +34,7 @@ def extract_adr_metadata(file_path):
         topic = m_id.group(2).strip()
     else:
         # Match from filename e.g. 0001-separate-timebudget-from-cron.md
-        m_fname = re.search(r"(\d{4})-(.*)\.md", file_path.name)
+        m_fname = re.fullmatch(r"(\d{4})-(.+)\.md", file_path.name)
         if not m_fname:
             raise ValueError(f"Cannot parse ADR filename: {file_path.name}")
         adr_id = m_fname.group(1)
