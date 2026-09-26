@@ -100,7 +100,7 @@ def sync_decisions():
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     with tempfile.NamedTemporaryFile("w", delete=False, dir=str(temp_dir), newline="", encoding="utf-8") as tf:
-        writer = csv.DictWriter(tf, fieldnames=EXPECTED_COLUMNS)
+        writer = csv.DictWriter(tf, fieldnames=EXPECTED_COLUMNS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
         temp_name = tf.name
