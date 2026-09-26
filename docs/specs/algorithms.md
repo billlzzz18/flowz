@@ -501,7 +501,7 @@ Self-Evolution (Evo) **ไม่ได้จำกัดอยู่แค่ก
    - ไม่รบกวน Context Window ของ Agent หลัก
 2. **Background Evolver Loop (ประมวลผลการเรียนรู้เบื้องหลัง):**
    - นำพรอมป์ต์และ Goal Template จาก `hermes-learn` มาใช้เป็น **Background Worker Goal**
-   - เมื่อตรวจพบรูปแบบความล้มเหลว (Pathology) หรือความสำเร็จซ้ำๆ (Success Pattern $ge 3$) ระบบจะ Spawn Subagent ระดับ Evolver (Tier $ge$ Task Tier + 1) ในโหมด Isolated Leaf เพื่อทำการ:
+   - เมื่อตรวจพบรูปแบบความล้มเหลว (Pathology) หรือความสำเร็จซ้ำๆ (Success Pattern ≥ 3) ระบบจะ Spawn Subagent ระดับ Evolver (Tier ≥ Task Tier + 1) ในโหมด Isolated Leaf เพื่อทำการ:
      - วินิจฉัยข้อผิดพลาด (Diagnose)
      - สร้าง Patch หรือสังเคราะห์ Skill ใหม่ (Synthesize)
      - ผ่าน 4 Gates (Validity $	o$ Activation $	o$ Significance $	o$ Gain)
