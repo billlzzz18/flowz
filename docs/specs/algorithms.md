@@ -306,6 +306,7 @@ impl DiscoveryEngine {
     }
 
     async fn probe_local() -> Result<LocalCapabilities, FlowzError> {
+   // Requires new deps not in Cargo.toml: sysinfo (system stats) + keyring (credentials)
         let sys = sysinfo::System::new_all();
         Ok(LocalCapabilities {
             cpu_cores: sys.cpus().len() as u32,
