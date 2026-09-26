@@ -53,7 +53,7 @@ def extract_adr_metadata(file_path):
     m_dec = re.search(r"^##\s*Decision\s*\n([\s\S]*?)(?=^##|\Z)", content, re.MULTILINE)
     if m_dec:
         decision = " ".join(m_dec.group(1).strip().split())
-        decision = re.sub(r"[`#*]", "", decision)
+        decision = re.sub(r"```[a-zA-Z]*\s*|[`#*]", "", decision)
         decision = (decision[:150] + "...") if len(decision) > 150 else decision
     else:
         decision = topic
