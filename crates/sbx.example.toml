@@ -1,0 +1,28 @@
+# สลับ backend ที่บรรทัดนี้ที่เดียว: local | docker | ssh | wsl
+backend = "docker"
+
+# --- agents (คำสั่งเปิดโหมด ACP ตามเอกสารของแต่ละตัว) ---
+[agents.claude]
+cmd = ["claude-code-acp"]
+pass_env = ["ANTHROPIC_API_KEY"]   # ถ้าใช้ subscription ห้ามส่งตัวนี้
+
+[agents.codex]
+cmd = ["npx", "@zed-industries/codex-acp"]
+pass_env = ["OPENAI_API_KEY"]      # login แบบ ChatGPT ใช้ใน remote ไม่ได้
+
+[agents.hermes]
+cmd = ["hermes", "acp"]            # บน Windows ต้องรันใน WSL2
+
+# --- backends ---
+[backends.docker]
+image = "ubuntu:24.04"             # หรือ container = "ชื่อ container ที่มีอยู่"
+workdir = "/work"
+binds = ["/home/me/proj:/work"]
+
+[backends.ssh]                     # ใช้กับ Coder ได้ผ่าน extra_args ProxyCommand
+host = "dev-box"
+user = "dev"
+extra_args = []
+
+[backends.wsl]
+distro = "Ubuntu"

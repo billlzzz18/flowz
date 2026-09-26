@@ -2,6 +2,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+pub use crate::workflow::RunBudget;
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum FindingSeverity {
@@ -146,28 +148,6 @@ pub enum BudgetExhaustedAction {
     StopAndSummarize,
     Terminate,
     Escalate,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RunBudget {
-    pub max_wall_clock_seconds: Option<u64>,
-    pub max_total_agent_calls: u64,
-    #[serde(default = "default_pressure_warnings")]
-    pub enable_pressure_warnings: bool,
-}
-
-fn default_pressure_warnings() -> bool {
-    true
-}
-
-impl Default for RunBudget {
-    fn default() -> Self {
-        Self {
-            max_wall_clock_seconds: None,
-            max_total_agent_calls: 10000,
-            enable_pressure_warnings: true,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
