@@ -475,7 +475,7 @@ Source: `~/.hermes/plugins/hermes-learn/` (Architecture Reference for Flowz Evol
 ### Mapping to Flowz Evolution Layer (ADR-0030, ADR-0031)
 1. **Subagent Spawning:** Flowz uses the exact same pattern for Evolver Agent execution:
    ```rust
-   // Flowz equivalent in src/service/evolution.rs / src/cron/skill_reuse.rs
+   // Planned Flowz equivalent: src/service/evolution.rs (Evolver) / src/cron/skill_reuse.rs (flowz-skill-reuse-cron)
    let req = SubagentLaunchRequest {
        goal: build_skill_synthesis_goal(&trajectories),
        role: SubagentRole::Leaf,
