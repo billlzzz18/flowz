@@ -1,0 +1,8 @@
+id,status,name,scope,path,adr
+data-dict,📝,Data Dictionary,type ทั้งหมด — Harness/Trajectory/Skill/Evolution/Discovery,docs/specs/data-dictionary.md,0009 0023 0029 0030 0031 0033
+algo,📝,Algorithms,Cron 1 + Cron 2 + 4 gates + discovery + backend select,docs/specs/algorithms.md,0030 0031 0034 0029 0028
+storage,📝,Storage,harness/versions + bank + skill + trajectory + cron.db + jobs.db,docs/specs/storage.md,0023 0024 0030 0031
+tools,📝,Tool Schemas,input/output/error ทุก tool,docs/specs/tools.md,0006 0017
+services,📝,Service Contracts,trait signature ทุก service,docs/specs/services.md,0007 0008
+integration,📝,Integration,pmcp + Modal + Daytona + Claude/Codex/AGY/Hermes,docs/specs/integration.md,0026 0027 0028
+tests,📝,Test Vectors,fixture + expected output + CI pipeline,docs/specs/tests.md,0015 0035

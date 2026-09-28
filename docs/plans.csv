@@ -1,0 +1,38 @@
+id,phase,task,target_path,status,spec_ref
+H1,Phase 1,Data Dictionary Types,src/domain/mod.rs,Partial,B.1-B.8
+H2,Phase 1,Service Traits,src/service/mod.rs,Planned,D.1-D.9
+H3,Phase 1,Tool Schemas,src/mcp/tools/,Partial,E.1-E.14
+H4,Phase 1,Tool Registry,src/mcp/registry.rs,Partial,G.1
+H5,Phase 2,Supervisor Event Bus,src/supervisor/bus.rs,Planned,D.4
+H6,Phase 2,Supervisor Rules Engine,src/supervisor/rules.rs,Planned,D.4
+H7,Phase 2,Supervisor Findings Store,src/supervisor/findings.rs,Planned,D.4
+H8,Phase 2,Worker Protocol,src/worker/protocol.rs,Planned,C.4
+H9,Phase 2,Worker Heartbeat,src/worker/heartbeat.rs,Planned,B.1
+H10,Phase 2,Worker Lifecycle Supervisor,src/worker/supervisor.rs,Planned,D.4
+H11,Phase 3,Harness Gene Bank,src/harness/gene_bank.rs,Planned,B.3
+H12,Phase 3,Harness Semantic Cells,src/harness/bank/,Planned,C.3
+H13,Phase 3,4 Gates Screening,src/evolution/screening.rs,Planned,F.3-F.6
+H14,Phase 3,Paired Z-Test Rigor,src/evolution/statistics.rs,Planned,F.5
+H15,Phase 3,Harness Versioning,src/harness/version.rs,Planned,B.3
+H16,Phase 3,Rollback Engine,src/harness/rollback.rs,Planned,D.6
+H17,Phase 4,Execution Backend Trait,src/execution/backend.rs,Planned,G.2-G.3
+H18,Phase 4,Modal Backend,src/execution/modal.rs,Planned,G.2
+H19,Phase 4,Daytona Backend,src/execution/daytona.rs,Planned,G.3
+H20,Phase 4,Markdown Adapter,src/adapter/markdown.rs,Planned,ADR-0027
+H21,Phase 4,Adapter Compiler,src/adapter/compiler.rs,Planned,ADR-0027
+H22,Phase 4,Adapter Registry,src/adapter/registry.rs,Planned,ADR-0027
+OB1,Phase 5,Zero-Config Discovery,src/discovery/engine.rs,Planned,F.7
+OB2,Phase 5,Model Tier Separation,src/evolution/tier.rs,Planned,ADR-0032
+OB3,Phase 5,Learning Cron Algorithm,src/cron/learning.rs,Planned,F.1
+OB4,Phase 5,Skill Reuse Cron,src/cron/skill_reuse.rs,Planned,F.2
+OB5,Phase 5,Cron Misfire Run-Once,src/cron/scheduler.rs,Planned,ADR-0036
+OB6,Phase 5,SQLite State Storage,src/storage/sqlite.rs,Planned,C.6-C.7
+OB7,Phase 5,Profile Distribution,src/profile/distribution.rs,Planned,ADR-0026
+OB8,Phase 5,Security Invariant Guard,src/profile/guard.rs,Planned,ADR-0026
+OB9,Phase 5,Doctor Command,src/cli/doctor.rs,Planned,ADR-0029
+OB10,Phase 5,CLI Management Interface,src/cli/mod.rs,Planned,ADR-0037
+MF1,Phase 6,Workflow Validation Tests,tests/workflow_validation.rs,Planned,H.2
+MF2,Phase 6,Screening Gates Tests,tests/gate_screening.rs,Planned,H.3
+MF3,Phase 6,Statistics Formulas Tests,tests/statistical_rigor.rs,Planned,H.4
+MF4,Phase 6,Cron Misfire Tests,tests/cron_misfire.rs,Planned,H.5
+MF5,Phase 6,CI Pipeline Workflow,.github/workflows/ci.yml,Planned,H.6

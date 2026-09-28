@@ -1,0 +1,15 @@
+[package]
+name = "sbx"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "sbx"
+path = "src/main.rs"
+
+[dependencies]
+sbx-core = { path = "../sbx-core" }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std", "io-util", "signal"] }

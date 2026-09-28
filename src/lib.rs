@@ -13,3 +13,4 @@ pub mod spawn;
 pub mod storage;
 pub mod tui;
 pub mod ui;
+pub mod workflow;
