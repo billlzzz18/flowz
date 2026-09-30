@@ -28,6 +28,7 @@
             pkgs.openssl            # for TLS (reqwest)
             pkgs.curl               # for install scripts
             pkgs.git
+            pkgs.nil                # Nix language server (LSP)
 
             # Android cross-compile (optional, via ANDROID_NDK)
             # pkgs.android-tools

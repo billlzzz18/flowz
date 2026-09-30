@@ -1,38 +1,47 @@
-# ADR-0014: Prompts แยกตาม Mode
+# ADR-0014: การบริหาร Context Window และ Mode Isolation (Prompts, Toolsets, Compression)
 
-**Status:** Accepted
-**Date:** 2026-09-21
+**Status:** Accepted (Consolidated)
+**Date:** 2026-09-21 (Updated: 2026-09-30)
 
 ## Context
 
-Cron prompt และ subagent prompt มีเนื้อหาต่างกัน ถ้ารวมไว้ prompt จะยาวและปนกัน ทำให้ context window เปลืองและสับสน
+การส่ง System Prompts ขนาดยาว, การโหลด Tool Schemas ทั้งหมดพร้อมกัน และการสะสมประวัติการทำงานใน multi-step workflows ส่งผลให้ Context Window บวมอย่างรวดเร็ว สิ้นเปลือง token สูง เพิ่ม latency และเพิ่มโอกาสที่ LLM จะเลือก tool ผิดพลาด
 
 ## Decision
 
-- Prompt registry แยกตาม mode:
-  - Workflow prompts: flowz_workflow_compose, flowz_workflow_worker_prompt, flowz_workflow_reducer_prompt
-  - Subagent prompt: flowz_subagent_delegate
-  - Cron prompt: flowz_cron_create
-- แต่ละ prompt content แยกเป็นไฟล์/module
-- Registration แยกจาก content
-- Cron prompt ห้ามพูดถึง TimeBudget
-- Subagent prompt ห้ามพูดถึง cron
+1. **Mode-Specific Toolsets:**
+   - จัดกลุ่ม Tools ออกเป็น Toolset ตามโดเมน:
+     - `workflow`: เครื่องมือกลุ่ม `flowz_workflow_*`
+     - `cron`: เครื่องมือกลุ่ม `flowz_cron_*`
+     - `subagent`: เครื่องมือกลุ่ม `flowz_subagent_*`
+     - `canvas`: เครื่องมือกลุ่ม `flowz_canvas_*` (supervisor ยังไม่มี tools ใน tools.json)
+   - แต่ละโหมดจะโหลดเฉพาะ Toolset ที่ตรงกับหน้าที่ของตนเข้าสู่ Context Window เท่านั้น
+
+2. **Dedicated Prompts per Mode:**
+   - แยกเนื้อหาของ Prompt ตามโหมดเด็ดขาด ไม่ใช้ Mega-prompt รวมศูนย์
+   - Workflow Prompt โฟกัสที่การแบ่งงานและ compose/reduce
+   - Subagent Prompt โฟกัสที่การทำงานเดี่ยวให้จบตาม deadline
+   - Cron Prompt โฟกัสที่การตั้งเวลาและเงื่อนไข trigger
+
+3. **Context Compression Pipeline:**
+   - กำหนดให้ Workflow Engine มีกลไก `ContextCompressor` สำหรับ workflow ที่มีขนาดยาว
+   - ใช้ Preflight compression เมื่อประวัติข้อความแตะเกณฑ์ที่กำหนด (เช่น 50% ของ Context) และ Micro-compaction เพื่อสรุปผลลัพธ์ของแต่ละ turn
 
 ## Consequences
 
 ### Positive
 
-- Context window ใช้เฉพาะ mode ที่เรียก
-- แต่ละ prompt โฟกัส
-- แก้ไขแยกได้
+- ประหยัดการใช้งาน Token และลด Latency อย่างมีนัยสำคัญ
+- LLM มีสมาธิกับเครื่องมือและคำสั่งที่เกี่ยวข้องกับโหมดนั้นๆ เท่านั้น (ลด Tool Hallucination)
+- รองรับงานที่ต้องรันต่อเนื่องหลายรอบได้โดยไม่ชน Context Limit
 
 ### Negative
 
-- มีหลาย prompt
-- ต้องจัดการ registration
+- ต้องมีกลไก Registry และ Dynamic Tool Loader ที่แม่นยำ
+- การส่งต่องานข้ามโหมดต้องผ่าน Interface ที่ชัดเจน
 
 ## Enforcement
 
-- Prompt content อยู่ในไฟล์/module แยก
-- Test: cron prompt ไม่มีคำว่า TimeBudget
-- Test: subagent prompt ไม่มีคำว่า cron
+- ห้าม Agent โหมดหนึ่งเข้าถึง Tool ของอีกโหมดหนึ่งโดยไม่ได้รับอนุญาต
+- Test: Cron prompt ห้ามมี `TimeBudget`; Subagent prompt ห้ามมี `cron`. ระบุ Prompt IDs (`flowz_workflow_compose`, `flowz_cron_create`, `flowz_subagent_delegate`) และแยก Registration ออกจาก content
+- Test: จำลองการรันหลาย turn แล้วตรวจสอบว่า Context Compressor ถูกเรียกทำงานตามเกณฑ์

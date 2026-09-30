@@ -1,0 +1,1 @@
+{"name":"Rust Best Practices","rules":[{"id":"idiomatic_iterators","severity":"medium","enabled":true},{"id":"error_handling","severity":"critical","enabled":true},{"id":"memory_safety","severity":"critical","enabled":true}]}

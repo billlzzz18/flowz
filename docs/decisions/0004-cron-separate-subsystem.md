@@ -39,6 +39,13 @@ pub struct CronDefinition {
 }
 ```
 
+### Misfire Policy: RunOnce on Startup
+- ค่าเริ่มต้นของ `misfire_policy` คือ `RunOnce`
+- พฤติกรรมเมื่อพลาดรอบการทำงาน (เช่น เครื่องปิดหรือ sleep อยู่):
+  - ตรวจสอบตอน startup: หาก `now - last_run_at > cron_interval` ให้ทริกเกอร์รันชดเชยทันที 1 ครั้ง
+  - ห้าม catch-up รันซ้ำย้อนหลังทุกรอบที่พลาด เพื่อป้องกันปัญหา CPU spike และ Thundering Herd
+  - อัปเดต `last_run_at = now` ลงใน State Store (SQLite) ทันทีหลัง dispatch
+
 `ResolvedCommand` มี `Shell`, `Tool` และ `Skill` variants ซึ่งเป็นคำสั่งหลังผ่าน adapter แล้ว ไม่ใช่ metadata สำหรับ authoring
 
 ## Consequences

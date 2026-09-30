@@ -23,7 +23,7 @@ impl PromptHandler for ReducerPrompt {
         let failures: Value = serde_json::from_str(&failures_str).unwrap_or(json!([]));
         let reducer_schema: Value = serde_json::from_str(&reducer_schema_str).unwrap_or(json!({}));
 
-        let prompt = reducer_prompt_template(&results, &failures, &reducer_schema);
+        let prompt = reducer_prompt_async(&results, &failures, &reducer_schema).await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],
@@ -75,4 +75,53 @@ Rules:
 {schema_str}
 "#
     )
+}
+
+/// Async version: attempts to fetch from Langfuse prompt store, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn reducer_prompt_async(
+    results: &Value,
+    failures: &Value,
+    reducer_schema: &Value,
+) -> String {
+    let results_str = serde_json::to_string_pretty(results).unwrap_or_default();
+    let failures_str = serde_json::to_string_pretty(failures).unwrap_or_default();
+    let schema_str = serde_json::to_string_pretty(reducer_schema).unwrap_or_default();
+
+    let mut vars = HashMap::new();
+    vars.insert("results_str".to_string(), results_str.clone());
+    vars.insert("failures_str".to_string(), failures_str.clone());
+    vars.insert("schema_str".to_string(), schema_str.clone());
+    vars.insert("items_str".to_string(), results_str);
+    vars.insert(
+        "brief".to_string(),
+        "Synthesize the successful worker results into the final answer.".to_string(),
+    );
+
+    let fallback = r#"
+You are the reducer for a multi-agent workflow.
+
+Goal:
+Synthesize the successful worker results into the final answer.
+
+Input results:
+{{results_str}}
+
+Failed items:
+{{failures_str}}
+
+Rules:
+- Use only the supplied worker results.
+- Do not invent missing facts.
+- Preserve uncertainty and failures.
+- Resolve conflicts explicitly.
+- Return one JSON object matching this schema:
+{{schema_str}}
+"#;
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_workflow_reducer_prompt",
+        &vars,
+        fallback,
+    )
+    .await
 }

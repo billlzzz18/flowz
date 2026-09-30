@@ -6,3 +6,7 @@ Cargo.lock
 .hermes/
 *.log
 target/
+__pycache__/
+*.py[cod]
+.scratch/
+*.trashed*

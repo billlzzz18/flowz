@@ -23,13 +23,14 @@ impl PromptHandler for WorkerPrompt {
 
         let output_schema: Value = serde_json::from_str(&output_schema_str).unwrap_or(json!({}));
 
-        let prompt = worker_prompt_template(
+        let prompt = worker_prompt_async(
             &item_id,
             &task,
             &requirements,
             &source_requirements,
             &output_schema,
-        );
+        )
+        .await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],
@@ -95,4 +96,64 @@ Failure behavior:
 - Do not fabricate facts.
 "#
     )
+}
+
+/// Async version: attempts to fetch from Langfuse prompt store, falls back to hardcoded template.
+/// Variables use {{var}} syntax and are substituted from the provided values.
+pub async fn worker_prompt_async(
+    item_id: &str,
+    task: &str,
+    requirements: &str,
+    source_requirements: &str,
+    output_schema: &Value,
+) -> String {
+    let schema_str = serde_json::to_string_pretty(output_schema).unwrap_or_default();
+    let mut vars = HashMap::new();
+    vars.insert("item_id".to_string(), item_id.to_string());
+    vars.insert("task".to_string(), task.to_string());
+    vars.insert("requirements".to_string(), requirements.to_string());
+    vars.insert("source_requirements".to_string(), source_requirements.to_string());
+    vars.insert("schema_str".to_string(), schema_str);
+    vars.insert("brief".to_string(), item_id.to_string());
+    vars.insert("prompt".to_string(), task.to_string());
+    vars.insert("constraints".to_string(), requirements.to_string());
+
+    let fallback = r#"
+You are a dedicated worker in a local multi-agent workflow.
+
+Task:
+{{task}}
+
+Scope:
+- Work only on item: {{item_id}}
+- Do not research or process other items.
+- Do not call the workflow orchestrator recursively.
+- Do not rely on hidden parent conversation context.
+
+Requirements:
+{{requirements}}
+
+Sources and verification:
+{{source_requirements}}
+
+Output:
+- Return one JSON object only.
+- It must conform to this JSON Schema:
+{{schema_str}}
+
+Files:
+- Write requested files only inside the assigned workspace.
+- Report created files as artifacts.
+- Do not return local paths as plain prose.
+
+Failure behavior:
+- If the task cannot be completed, return a structured error.
+- Do not fabricate facts.
+"#;
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
+        "flowz_workflow_worker_prompt",
+        &vars,
+        fallback,
+    )
+    .await
 }

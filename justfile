@@ -21,19 +21,19 @@ clippy:
 
 # Run all tests
 test:
-    cargo test --all --verbose
+    cargo test --all
 
 # Run fast check on all targets
 check:
     cargo check --all --all-targets
 
-# Run all local CI verification checks
-ci: fmt clippy check test
+# Run all local CI verification checks (including release build verification)
+ci: fmt clippy test build-release
     @echo "==> All CI checks passed!"
 
 # Build release binary
 build-release:
-    cargo build --release --locked
+    cargo build --release
 
 # Run benchmarks
 bench:

@@ -5,7 +5,7 @@ use tokio::process::Command;
 
 use super::process_from_command;
 use crate::backend::{Process, ProcessSpec, Sandbox};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 pub struct Local;
 

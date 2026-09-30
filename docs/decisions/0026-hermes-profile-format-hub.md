@@ -27,8 +27,6 @@ env_requires:
 
 backend_preference: [string]        # flowz extension
 execution_defaults: ExecutionDefaults  # flowz extension
-gated_screening: GatedScreeningConfig  # flowz extension
-evolution: EvolutionConfig             # flowz extension
 
 distribution_owned: [string]        # optional override
 ```

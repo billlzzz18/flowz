@@ -25,9 +25,8 @@ impl DiscoveryEngine {
         let providers = Self::scan_providers().await;
         let credentials = Self::scan_credentials().await;
         let docker = Self::check_docker().await;
-        let evolver_tier = Self::detect_evolver_tier(&cli_agents);
 
-        DiscoveryResult { local, cli_agents, providers, credentials, docker, evolver_tier }
+        DiscoveryResult { local, cli_agents, providers, credentials, docker }
     }
 }
 ```
@@ -35,12 +34,7 @@ impl DiscoveryEngine {
 ### Priority
 1. Local ถ้า resource พอ
 2. backend_preference จาก profile config
-3. cost-first (Lightweight), balanced (Medium), speed-first (Heavy)
-4. fallback chain
-
-### Invariant
-- Evolver tier >= Task tier + 1 (ตาม ADR-0032)
-- ถ้าไม่ผ่าน -> warn + ไม่รัน evolution
+3. fallback chain
 
 ## Consequences
 - ผู้ใช้ทำ flowz init ครั้งเดียว
@@ -48,6 +42,5 @@ impl DiscoveryEngine {
 - Self-healing เมื่อ backend ล่ม
 
 ## Enforcement
-- Test: flowz init zero questions
-- Test: flowz doctor ตรวจ evolver tier
-- Test: re-discovery เพิ่ม capability
+- Test: flowz doctor ตรวจ environment และ docker
+- Test: re-discovery ตรวจพบ tools ใหม่

@@ -5,11 +5,10 @@
 
 ## Context
 
-เดิมมีความเข้าใจผิดว่า "การตั้งเวลา" ของ subagent เป็นเรื่องเดียวกับ cron ทำให้เกิดการรวม ScheduleSpec เข้ากับ workflow/run ซึ่งผิด abstraction
-
-- Subagent = งานสั้น 3–10 นาที ต้องมี deadline/heartbeat/timeout
-- Cron = การปลุก main-agent/client ตามกำหนดเวลา เป็นเรื่องระยะยาว
-- ทั้งสองมี lifecycle, consumer, และ persistence ต่างกันโดยสิ้นเชิง
+ในการออกแบบเริ่มต้น มีการรวมตัวแปรการตั้งเวลาเข้ากับโมเดลการรัน workflow แต่เมื่อพิจารณาความต้องการเชิงระบบพบว่า:
+- Subagent เป็นงานระยะสั้น (in-flight execution 3–10 นาที) ต้องการ deadline, heartbeat, และ timeout ควบคุมแบบเรียลไทม์
+- Cron เป็นการตั้งเวลาปลุก agent/client ในอนาคต (future/recurring schedule) มีรอบการทำงานระยะยาว
+ทั้งสองส่วนมี lifecycle, consumer, และ state persistence ต่างกันโดยสิ้นเชิง จึงต้องแยก Subsystem เพื่อลด coupling และรักษา bounded context
 
 ## Decision
 
@@ -34,6 +33,6 @@
 
 ## Enforcement
 
-- ห้าม WorkflowItem มี field schedule, cron, run_at
-- ห้าม CronDefinition มี field max_duration, heartbeat
-- ตรวจสอบได้ด้วย lint rule หรือ schema test
+- ห้าม `WorkflowItem`, `RunRequest` และประเภทข้อมูลใน workflow execution มีฟิลด์เวลาในอนาคต: `schedule`, `cron`, `run_at`, `delay`, `recurring`, `next_run_at`
+- ห้าม `CronDefinition` มีฟิลด์ควบคุม in-flight execution: `max_duration`, `heartbeat`
+- ตรวจสอบความถูกต้องด้วย schema validation tests และ request validator deny-list

@@ -36,6 +36,18 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         }
     }
 
+    /// Test-only constructor that wires up a WorkflowEngine with mock dependencies.
+    /// Used by test_engine_tracing to verify Langfuse trace emission without real processes.
+    pub fn new_test(spawner: Arc<S>) -> Self {
+        use crate::notify::noop::NoopNotifier;
+        Self {
+            spawner,
+            policy: Arc::new(crate::orchestration::policy::WorkflowPolicy::default()),
+            notifier: Arc::new(NoopNotifier),
+            store: Arc::new(crate::orchestration::state::JobStore::new()),
+        }
+    }
+
     /// Runs all items (sequential or parallel), enforcing failure policy and
     /// time budgets, and returns the aggregated execution result.
     pub async fn run(&self, request: RunRequest) -> WorkflowExecutionResult {
@@ -74,6 +86,14 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         };
 
         let mut execution_result = WorkflowExecutionResult::new(total_items);
+        // Start Langfuse trace for this workflow run (ADR-0030 observability).
+        // Returns the job_id as trace_id; gracefully degrades if Langfuse not initialized.
+        let mode_str = match request.mode {
+            ExecutionMode::Sequential => "sequential",
+            ExecutionMode::Parallel => "parallel",
+        };
+        crate::logging::langfuse::trace_workflow_run(&job_id, total_items, mode_str);
+        execution_result.trace_recorded = crate::logging::langfuse::is_initialized();
 
         for result in results {
             match result {
@@ -377,6 +397,8 @@ pub struct WorkflowExecutionResult {
     pub completed: usize,
     pub failed: usize,
     pub results: Vec<WorkerResponse>,
+    /// True if a Langfuse trace was started for this run (ADR-0030 observability).
+    pub trace_recorded: bool,
 }
 
 impl WorkflowExecutionResult {
@@ -388,6 +410,7 @@ impl WorkflowExecutionResult {
             completed: 0,
             failed: 0,
             results: Vec::new(),
+            trace_recorded: false,
         }
     }
 }

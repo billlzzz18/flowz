@@ -202,7 +202,7 @@ pub mod protocol {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "testing"))]
 pub mod test_utils {
     use super::*;
     use async_trait::async_trait;

@@ -2,16 +2,16 @@
 
 use std::process::Stdio;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use futures_util::FutureExt;
 use tokio::process::Command;
 
 use crate::backend::{Process, Sandbox};
 use crate::config::Config;
 
-pub mod local;
 #[cfg(feature = "docker")]
 pub mod docker;
+pub mod local;
 #[cfg(feature = "ssh")]
 pub mod ssh;
 #[cfg(feature = "wsl")]
@@ -42,11 +42,11 @@ macro_rules! backend_fn {
     ($name:ident, $feat:literal, $module:ident, $field:ident, $ty:ident) => {
         #[cfg(feature = $feat)]
         fn $name(cfg: &Config) -> Result<Box<dyn Sandbox>> {
-            let c = cfg
-                .backends
-                .$field
-                .clone()
-                .context(concat!("ไม่มี [backends.", stringify!($field), "] ใน config"))?;
+            let c = cfg.backends.$field.clone().context(concat!(
+                "ไม่มี [backends.",
+                stringify!($field),
+                "] ใน config"
+            ))?;
             Ok(Box::new($module::$ty::new(c)))
         }
         #[cfg(not(feature = $feat))]
