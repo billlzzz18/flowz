@@ -48,6 +48,12 @@ exit 0
             return Err(io::Error::new(io::ErrorKind::NotFound, ".git/hooks directory not found"));
         }
         let p = dir.join(name);
+        if p.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                format!("hook already exists: {}", p.display()),
+            ));
+        }
         fs::write(&p, content)?;
         #[cfg(unix)]
         {
