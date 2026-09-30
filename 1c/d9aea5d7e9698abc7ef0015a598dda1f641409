@@ -1,0 +1,18 @@
+AGENTS.md
+  h_a25ade2a4fe7aa 22-23
+docs/decisions.csv
+  h_a25ade2a4fe7aa 15
+docs/decisions/0030-hybrid-local-client-cloud-sandbox-topology.md
+  h_a25ade2a4fe7aa 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1cd9aea5d7e9698abc7ef0015a598dda1f641409",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
