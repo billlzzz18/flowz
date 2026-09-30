@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 cargo build --release
-mkdir -p .guardian/{metrics,patterns,baseline,presets}
+mkdir -p .guardian/metrics .guardian/patterns .guardian/baseline .guardian/presets
 cp presets/*.json .guardian/presets/ 2>/dev/null || true
 if [ -d .git/hooks ]; then echo "Git repository detected; run guardian hook installation from the CLI."; fi
 cat > .guardian/config.json <<'JSON'
