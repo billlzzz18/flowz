@@ -26,8 +26,7 @@ impl MinimalCheckDetector {
     /// assert/assert_eq/debug_assert or a #[test] nearby.
     pub fn analyze(code: &str) -> MinimalCheckReport {
         let fn_re = Regex::new(
-            r"^\s*(?:pub\s+)?(?:fn|async\s+fn)\s+\
-              ([A-Za-z_]\w*)\s*[\(<]",
+            r"^\s*(?:pub\s+)?(?:fn|async\s+fn)\s+([A-Za-z_]\w*)\s*[\(<]",
         )
         .expect("built-in regex");
         let assert_re =
