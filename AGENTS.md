@@ -12,17 +12,13 @@
 - Execution backends (`local`, `docker`, `modal`, `daytona`) adhere to capability discovery.
 - Keep domain entities isolated from transport layers and storage drivers.
 
-## 2. Invariants & Security (ADR-0026 to ADR-0037)
+## 2. Invariants & Security
 
-- Hermes profile layout is the standard hub format for agent distribution.
+- Hermes profile layout is the standard hub format for agent distribution (ADR-0026).
 - Maintain strict ownership split: distribution-owned vs config-override vs user-owned.
-- Exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
-- Learning loop requires 4 gates: Validity, Activation (beacon), Significance ($z \ge 1.96, n \ge 26$), Gain.
-- Dual-Track Evolution: Live concurrent observer tracks primary agent; background evolver synthesizes autonomously (not just user /learn).
-- Model tier rule: Evolver tier must be $\ge$ Task tier + 1; never run evolution when tier condition fails.
-- Cron misfire policy is `run_once` on startup to avoid thundering herd.
-- Rollback and SemVer versioning for harness patches must preserve parent links.
-- All admitted patches must pass statistical rigor before gene bank entry.
+- Strictly exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
+- Cron misfire policy is `run_once` on startup to avoid thundering herd (ADR-0004).
+- Remote execution backend preserves local state ownership (ADR-0028).
 
 ## 3. Testing Guidelines
 

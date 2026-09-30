@@ -27,8 +27,6 @@ env_requires:
 
 backend_preference: [string]        # flowz extension
 execution_defaults: ExecutionDefaults  # flowz extension
-gated_screening: GatedScreeningConfig  # flowz extension
-evolution: EvolutionConfig             # flowz extension
 
 distribution_owned: [string]        # optional override
 ```
@@ -52,7 +50,7 @@ distribution_owned: [string]        # optional override
 ### Ownership Split
 - **Distribution-owned:** SOUL.md, mcp.json, skills/, agents/, cron/, backends/builtin/, distribution.yaml
 - **Config override:** config.yaml (preserved on update unless --force-config)
-- **User-owned:** memories/, sessions/, state.db*, auth.json, .env, credentials/, .credentials.json, logs/, workspace/, plans/, home/, *_cache/, local/, profile.yaml, harness/bank/, trajectory/
+- **User-owned:** memories/, sessions/, state.db*, auth.json, .env, credentials/, .credentials.json, logs/, workspace/, plans/, home/, *_cache/, local/, profile.yaml
 
 ### Hard-Excluded (Regression-Tested Invariant)
 Installer strips even if author ships:
