@@ -887,6 +887,9 @@ impl GuardianGrep {
         file: &str,
         patch: &Patch,
     ) -> Result<String, Box<dyn std::error::Error>> {
+        if patch.anchor.file != file {
+            return Err(format!("anchor file {} does not match {}", patch.anchor.file, file).into());
+        }
         let anchor = &patch.anchor;
         
         // Verify anchor matches current content (drift detection)
