@@ -1,0 +1,19 @@
+Cargo.toml
+  s_9ca38dd156c025::t_5709cce8dddf33 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82f35c5bc32d1f81edf82da54c51addf950793b3",
+  "prompts": {},
+  "sessions": {
+    "s_9ca38dd156c025": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c15c178-7d36-4260-be4e-8acb3081d58f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
