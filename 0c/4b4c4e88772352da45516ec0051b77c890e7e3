@@ -1,0 +1,27 @@
+crates/guardian/Cargo.toml
+  s_9ca38dd156c025::t_780deb6fcbbd12 45-46
+crates/guardian/tests/guardian_tests.rs
+  s_9ca38dd156c025::t_65740843acd305 35
+crates/guardian/tests/integration_tests.rs
+  s_9ca38dd156c025::t_a8db003a7139fe 5-7
+crates/guardian/tests/test_gene_bank_bridge.rs
+  s_9ca38dd156c025::t_63a9ed4f999377 2,7
+crates/sbx-core/src/backends/ssh.rs
+  s_9ca38dd156c025::t_ba6b7699d43a79 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0c4b4c4e88772352da45516ec0051b77c890e7e3",
+  "prompts": {},
+  "sessions": {
+    "s_9ca38dd156c025": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c15c178-7d36-4260-be4e-8acb3081d58f",
+        "model": "unknown"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
