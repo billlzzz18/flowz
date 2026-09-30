@@ -141,7 +141,7 @@ Failure behavior:
 - Do not fabricate facts.
 "#;
     crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
-        "flowz_worker_prompt",
+        "flowz_workflow_worker_prompt",
         &vars,
         fallback,
     )
