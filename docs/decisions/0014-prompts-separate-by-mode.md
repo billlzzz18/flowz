@@ -11,10 +11,10 @@
 
 1. **Mode-Specific Toolsets:**
    - จัดกลุ่ม Tools ออกเป็น Toolset ตามโดเมน:
-     - `workflow_toolset`: เครื่องมือกลุ่ม `flowz_workflow_*`
-     - `cron_toolset`: เครื่องมือกลุ่ม `flowz_cron_*`
-     - `subagent_toolset`: เครื่องมือกลุ่ม `flowz_subagent_*`
-     - `supervisor_toolset`: เครื่องมือกลุ่ม `flowz_supervisor_*`
+     - `workflow`: เครื่องมือกลุ่ม `flowz_workflow_*`
+     - `cron`: เครื่องมือกลุ่ม `flowz_cron_*`
+     - `subagent`: เครื่องมือกลุ่ม `flowz_subagent_*`
+     - `canvas`: เครื่องมือกลุ่ม `flowz_canvas_*` (supervisor ยังไม่มี tools ใน tools.json)
    - แต่ละโหมดจะโหลดเฉพาะ Toolset ที่ตรงกับหน้าที่ของตนเข้าสู่ Context Window เท่านั้น
 
 2. **Dedicated Prompts per Mode:**
