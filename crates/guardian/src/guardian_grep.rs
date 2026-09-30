@@ -983,7 +983,7 @@ impl RegexCache {
         if let Some(r) = self.get(pattern) {
             return r;
         }
-        let regex = regex::Regex::new(pattern).unwrap_or_else(|_| regex::Regex::new("").unwrap());
+        let regex = regex::Regex::new(pattern).unwrap_or_else(|_| regex::Regex::new(r"\b\B").unwrap());
         self.patterns.write().ok().map(|mut m| m.insert(pattern.to_string(), regex.clone()));
         regex
     }
