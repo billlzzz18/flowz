@@ -10,7 +10,7 @@
 ## Decision
 
 1. **Markdown-First Authoring:**
-   - มนุษย์และนักพัฒนาเขียน Definitions (Cron, Workflow, และ Subagent Specs) ในรูปแบบ Markdown:
+   - มนุษย์และนักพัฒนาเขียน Definitions (Cron, Workflow, และ Subagent Specs) ในรูปแบบ Markdown; ห้ามเพิ่ม `timeout` ใน YAML Frontmatter หรือ `CronDefinition` เพราะ Cron ไม่มี timeout
      - ส่วน YAML Frontmatter สำหรับ Structured Configuration และ Metadata
      - ส่วน Markdown Body สำหรับ Natural Language Instructions และ Prompting
    - JSON มีสถานะเป็นเพียง Generated Runtime Artifact ไม่ใช่ Authoring Source
