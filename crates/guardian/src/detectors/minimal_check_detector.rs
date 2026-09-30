@@ -54,7 +54,8 @@ impl MinimalCheckDetector {
 
                 for l in lines.iter().skip(depth_start) {
                     body_lines += 1;
-                    depth += l.matches('{').count() - l.matches('}').count();
+                    depth += l.matches('{').count();
+                    depth = depth.saturating_sub(l.matches('}').count());
                     if l.contains("if ") || l.contains("match ") {
                         has_branches = true;
                     }
