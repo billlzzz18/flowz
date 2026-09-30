@@ -234,7 +234,7 @@ class SlopCleaner:
         text = re.sub(r'\n{3,}', '\n\n', text)
         
         # Fix spaces at start of sentences after deletions
-        text = re.sub(r'([.!?])\s+([a-z])', lambda m: m.group(1) + ' ' + m.group(2).upper(), text)
+        text = re.sub(r'([.!?])[ \t]+([a-z])', lambda m: m.group(1) + ' ' + m.group(2).upper(), text)
         
         # Fix orphaned commas
         text = re.sub(r',\s*,', ',', text)
