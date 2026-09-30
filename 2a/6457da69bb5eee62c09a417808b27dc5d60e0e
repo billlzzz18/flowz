@@ -1,0 +1,123 @@
+crates/guardian/hooks/guardian.ps1
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-32
+crates/guardian/skills/prompt-analysis/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-56
+.agents/rules/common.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-26
+.agents/rules/adr_pattern.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-31
+crates/guardian/presets/frontend_guidelines.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1
+crates/guardian/sdks/typescript/guardian/tsconfig.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-19
+crates/guardian/skills/anti-slop/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-209
+crates/guardian/sdks/python/guardian/pyproject.toml
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-30
+crates/guardian/skills/guardian-gain/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-45
+crates/guardian/skills/stop-slop/CHANGELOG.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-24
+crates/guardian/skills/stop-slop/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-68
+crates/guardian/hooks/guardian.bash
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-23
+docs/decisions/0027-client-interop-adapter-layer.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 4
+crates/guardian/skills/guardian/scripts/guardian.mjs
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-91
+crates/guardian/sdks/python/guardian/README.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-59
+crates/guardian/sdks/typescript/guardian/package.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-20
+crates/guardian/setup.sh
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-10
+crates/guardian/skills/anti-slop/references/code-patterns.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-452
+crates/guardian/skills/guardian-sdk/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-173
+crates/guardian/skills/guardian-audit/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-116
+docs/decisions/0028-remote-execution-backend-layer.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 4
+crates/guardian/rust-toolchain.toml
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-14
+crates/guardian/skills/stop-slop/references/structures.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-134
+tests/test_register_decision.py
+  s_9ca38dd156c025::t_adf2dbd7e166e9 4-5,14-16,18-20,54
+  s_9ca38dd156c025::t_3f9f2dd4238831 17
+  s_9ca38dd156c025::t_0cbc090c8461a7 21-23
+crates/guardian/skills/anti-slop/README.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-488
+crates/guardian/presets/api_security.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1
+crates/guardian/skills/prompt-analysis/references/schema.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-15
+crates/guardian/sdks/typescript/guardian/src/index.ts
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-159
+crates/guardian/skills/anti-slop/scripts/detect_code_slop.py
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-383
+crates/guardian/skills/stop-slop/README.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-62
+crates/guardian/skills/anti-slop/references/design-patterns.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-342
+crates/guardian/skills/anti-slop/scripts/detect_slop.py
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-276
+crates/guardian/sdks/python/guardian/Cargo.toml
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-12
+crates/guardian/skills/guardian-hooks/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-115
+crates/guardian/hooks/guardian.zsh
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-21
+crates/guardian/clippy.toml
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-52
+docs/decisions.csv
+  s_9ca38dd156c025::t_6504c7c6b49a24 2-30,33-38
+scripts/register_decision.py
+  s_9ca38dd156c025::t_adf2dbd7e166e9 46,65,69,72-75,112,114
+crates/guardian/hooks/guardian.fish
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-18
+crates/guardian/sdks/python/guardian/src/lib.rs
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-358
+crates/guardian/skills/anti-slop/CLAUDE_MD_UPDATES.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-375
+crates/guardian/skills/stop-slop/LICENSE
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-21
+crates/guardian/skills/stop-slop/references/examples.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-59
+crates/guardian/skills/guardian/SKILL.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-70
+crates/guardian/vscode/package.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1
+crates/guardian/skills/anti-slop/scripts/clean_slop.py
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-341
+crates/guardian/flake.nix
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-49
+crates/guardian/skills/stop-slop/references/phrases.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-128
+crates/guardian/rustfmt.toml
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-43
+crates/guardian/presets/rust_best_practices.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1
+crates/guardian/skills/anti-slop/references/text-patterns.md
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1-202
+crates/guardian/presets/team_standards.json
+  s_9ca38dd156c025::t_adf2dbd7e166e9 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2a6457da69bb5eee62c09a417808b27dc5d60e0e",
+  "prompts": {},
+  "sessions": {
+    "s_9ca38dd156c025": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c15c178-7d36-4260-be4e-8acb3081d58f",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
