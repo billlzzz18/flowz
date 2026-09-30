@@ -1,0 +1,29 @@
+docs/decisions/0026-hermes-profile-format-hub.md
+  s_9ca38dd156c025::t_a989074f5084c2 53
+tests/test_register_decision.py
+  s_25b314e480dcee::t_66470c81b03978 33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e976414a100b502c88046f6ed218dc2bd852fe56",
+  "prompts": {},
+  "sessions": {
+    "s_25b314e480dcee": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a21eae9b95d48169b",
+        "model": "unknown"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    },
+    "s_9ca38dd156c025": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c15c178-7d36-4260-be4e-8acb3081d58f",
+        "model": "unknown"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
