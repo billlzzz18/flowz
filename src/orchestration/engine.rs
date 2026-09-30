@@ -86,7 +86,6 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         };
 
         let mut execution_result = WorkflowExecutionResult::new(total_items);
-        execution_result.trace_recorded = true;
         // Start Langfuse trace for this workflow run (ADR-0030 observability).
         // Returns the job_id as trace_id; gracefully degrades if Langfuse not initialized.
         let mode_str = match request.mode {
@@ -94,6 +93,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
             ExecutionMode::Parallel => "parallel",
         };
         crate::logging::langfuse::trace_workflow_run(&job_id, total_items, mode_str);
+        execution_result.trace_recorded = crate::logging::langfuse::is_initialized();
 
         for result in results {
             match result {
