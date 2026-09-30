@@ -163,9 +163,13 @@ impl LangfuseClient {
     }
 
     /// ส่งเหตุการณ์ LangfuseEvent ไปยัง Langfuse API หรือ mock channel
+    /// ส่งเหตุการณ์ LangfuseEvent ไปยัง Langfuse API หรือ mock channel
     pub fn emit_event(&self, event: LangfuseEvent) {
         if let Some(ref tx) = self.mock_tx {
             let _ = tx.send(event);
+        } else {
+            // TODO: Implement actual HTTP API call to Langfuse
+            tracing::warn!("Langfuse event dropped - HTTP API not yet implemented");
         }
     }
 }
