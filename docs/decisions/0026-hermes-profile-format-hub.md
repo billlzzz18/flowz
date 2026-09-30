@@ -50,7 +50,7 @@ distribution_owned: [string]        # optional override
 ### Ownership Split
 - **Distribution-owned:** SOUL.md, mcp.json, skills/, agents/, cron/, backends/builtin/, distribution.yaml
 - **Config override:** config.yaml (preserved on update unless --force-config)
-- **User-owned:** memories/, sessions/, state.db*, auth.json, .env, credentials/, .credentials.json, logs/, workspace/, plans/, home/, *_cache/, local/, profile.yaml
+- **User-owned:** memories/, sessions/, state.db*, auth.json, .env, credentials/, .credentials.json, logs/, workspace/, plans/, home/, *_cache/, local/, profile.yaml, harness/bank/, trajectory/
 
 ### Hard-Excluded (Regression-Tested Invariant)
 Installer strips even if author ships:
