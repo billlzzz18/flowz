@@ -19,6 +19,8 @@
 - Strictly exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
 - Cron misfire policy is `run_once` on startup to avoid thundering herd (ADR-0004).
 - Remote execution backend preserves local state ownership (ADR-0028).
+- Hybrid Topology (ADR-0030): Local Client UX (AGY) paired with Cloud Sandbox Execution (SBX) and Pre-Admission Quality Guard (Guardian).
+- Pre-admission gatekeeping: Remote sandbox artifacts must pass Guardian screening before admission to local state (ADR-0030).
 
 ## 3. Testing Guidelines
 
