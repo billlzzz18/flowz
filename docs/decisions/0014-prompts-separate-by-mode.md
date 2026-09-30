@@ -43,5 +43,5 @@
 ## Enforcement
 
 - ห้าม Agent โหมดหนึ่งเข้าถึง Tool ของอีกโหมดหนึ่งโดยไม่ได้รับอนุญาต
-- Test: Cron prompt ห้ามมีข้อมูล in-flight time budget และ Subagent prompt ห้ามมี cron fields
+- Test: Cron prompt ห้ามมี `TimeBudget`; Subagent prompt ห้ามมี `cron`. ระบุ Prompt IDs (`flowz_workflow_compose`, `flowz_cron_create`, `flowz_subagent_delegate`) และแยก Registration ออกจาก content
 - Test: จำลองการรันหลาย turn แล้วตรวจสอบว่า Context Compressor ถูกเรียกทำงานตามเกณฑ์
