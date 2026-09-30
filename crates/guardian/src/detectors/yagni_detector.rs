@@ -171,7 +171,7 @@ impl YAGNIDetector {
         let mut unused_variables = HashMap::new();
         for (name, mut info) in visitor.variables {
             let uses = *visitor.variable_uses.get(&name).unwrap_or(&0);
-            info.usage_count = uses.saturating_sub(1); // subtract definition
+            info.usage_count = uses;
             if info.usage_count == 0 {
                 unused_variables.insert(name, info);
             }

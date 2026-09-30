@@ -11,6 +11,7 @@ use std::sync::Arc;
 #[tokio::main]
 async fn main() -> Result<()> {
     flowz::logging::init_logging()?;
+    flowz::logging::langfuse::init_langfuse();
 
     let notifier = build_notifier();
     let policy = WorkflowPolicy::default();

@@ -189,10 +189,19 @@ fn test_gene_bank_bridge_emits_rollback_span() {
 fn test_is_valid_semver_validation() {
     assert!(is_valid_semver("1.0.0"));
     assert!(is_valid_semver("0.1.0-alpha.1"));
+    assert!(is_valid_semver("1.0.0-alpha"));
+    assert!(is_valid_semver("1.0.0-alpha+build"));
     assert!(is_valid_semver("2.10.3+build123"));
+    assert!(is_valid_semver("1.0.0-0.3.7"));
+    assert!(is_valid_semver("1.0.0-x.7.z.92"));
+    assert!(is_valid_semver("1.0.0-alpha+001"));
     assert!(!is_valid_semver("1.0"));
     assert!(!is_valid_semver("v1.0.0"));
     assert!(!is_valid_semver("invalid"));
     assert!(!is_valid_semver("1.0.0.0"));
+    assert!(!is_valid_semver("01.0.0"));
+    assert!(!is_valid_semver("1.0.0-01"));
+    assert!(!is_valid_semver("1.0.0-alpha..1"));
+    assert!(!is_valid_semver("1.0.0-alpha@beta"));
     assert!(!is_valid_semver(""));
 }

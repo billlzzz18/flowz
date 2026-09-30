@@ -145,8 +145,9 @@ class SlopDetector:
             if line and any(line.lower().startswith(t) for t in transitions):
                 transition_starters += 1
         
-        if len(self.lines) > 0:
-            transition_ratio = transition_starters / len([l for l in self.lines if l.strip()])
+        non_empty_count = len([l for l in self.lines if l.strip()])
+        if non_empty_count > 0:
+            transition_ratio = transition_starters / non_empty_count
             if transition_ratio > 0.3:
                 self.findings['structure'].append({
                     'issue': 'Excessive transitions',

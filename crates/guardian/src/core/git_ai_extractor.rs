@@ -68,11 +68,23 @@ impl GitAIExtractor {
             return Ok(0.0);
         }
         let ranges = Self::get_ai_authorship(file_path, commit_sha)?;
-        let ai = ranges
+        let mut raw_lines = ranges
             .into_iter()
             .flat_map(|x| x.ai_lines)
-            .map(|(s, e)| if e >= s { e - s + 1 } else { 0 })
-            .sum::<usize>();
+            .filter(|(s, e)| *e >= *s)
+            .collect::<Vec<_>>();
+        raw_lines.sort_by_key(|&(s, _)| s);
+        let mut merged: Vec<(usize, usize)> = Vec::new();
+        for (s, e) in raw_lines {
+            if let Some(last) = merged.last_mut() {
+                if s <= last.1 + 1 {
+                    last.1 = last.1.max(e);
+                    continue;
+                }
+            }
+            merged.push((s, e));
+        }
+        let ai = merged.iter().map(|(s, e)| e - s + 1).sum::<usize>();
         Ok((ai as f64 / total as f64 * 100.0).clamp(0.0, 100.0))
     }
     pub fn get_ai_authors(

@@ -43,7 +43,7 @@ impl RegexCache {
     fn new() -> Self {
         let r = |pat: &str| Regex::new(pat).expect("built-in regex");
         Self {
-            slop_manual_loop: r(r"for\s+\w+\s+in\s+0\..\.len\(\)"),
+            slop_manual_loop: r(r"for\s+\w+\s+in\s+0\s*\.\.\s*\w+\.len\(\)"),
             slop_clone: r(r"\.clone\(\)"),
             slop_unwrap: r(r"\.unwrap\(\)"),
             slop_panic: r(r"\b(?:panic|todo|unimplemented)!\s*\("),

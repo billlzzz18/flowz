@@ -147,11 +147,6 @@ impl LangfuseClient {
         &self.public_key
     }
 
-    /// ดึง secret key ของ LangfuseClient
-    pub fn secret_key(&self) -> &str {
-        &self.secret_key
-    }
-
     /// ดึง base URL ของ LangfuseClient
     pub fn base_url(&self) -> &str {
         &self.base_url
@@ -160,6 +155,24 @@ impl LangfuseClient {
     /// ดึงอ้างอิงของ HTTP Client สำหรับเรียก API
     pub fn http_client(&self) -> &reqwest::Client {
         &self.http_client
+    }
+
+    /// สร้าง request builder ที่ผูก Basic Auth (public_key, secret_key) ไว้อัตโนมัติ ปลอดภัย ไม่รั่วไหล secret_key
+    pub fn create_authed_request(
+        &self,
+        method: reqwest::Method,
+        endpoint_or_path: &str,
+    ) -> reqwest::RequestBuilder {
+        let base = self.base_url.trim_end_matches('/');
+        let path = endpoint_or_path.trim_start_matches('/');
+        let url = if endpoint_or_path.starts_with("http://") || endpoint_or_path.starts_with("https://") {
+            endpoint_or_path.to_string()
+        } else {
+            format!("{}/{}", base, path)
+        };
+        self.http_client
+            .request(method, url)
+            .basic_auth(&self.public_key, Some(&self.secret_key))
     }
 
     /// ส่งเหตุการณ์ LangfuseEvent ไปยัง Langfuse API หรือ mock channel
@@ -259,14 +272,65 @@ impl GuardianScoreBridge {
     }
 }
 
-/// ตรวจสอบความถูกต้องของ SemVer รูปแบบ Major.Minor.Patch (ADR-0037)
+/// ตรวจสอบความถูกต้องของ SemVer 2.0.0 รูปแบบ Major.Minor.Patch[-prerelease][+build] (ADR-0037)
 pub fn is_valid_semver(s: &str) -> bool {
-    let main_part = s.split(['-', '+']).next().unwrap_or(s);
-    let parts: Vec<&str> = main_part.split('.').collect();
-    if parts.len() != 3 {
+    let s = s.trim();
+    if s.is_empty() {
         return false;
     }
-    parts.iter().all(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()))
+
+    // Separate build metadata if present
+    let (version_pre, build_meta) = match s.split_once('+') {
+        Some((v, b)) => (v, Some(b)),
+        None => (s, None),
+    };
+
+    if let Some(build) = build_meta {
+        if build.is_empty() {
+            return false;
+        }
+        for part in build.split('.') {
+            if part.is_empty() || !part.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
+                return false;
+            }
+        }
+    }
+
+    // Separate pre-release if present
+    let (core, pre_release) = match version_pre.split_once('-') {
+        Some((c, p)) => (c, Some(p)),
+        None => (version_pre, None),
+    };
+
+    if let Some(pre) = pre_release {
+        if pre.is_empty() {
+            return false;
+        }
+        for part in pre.split('.') {
+            if part.is_empty() || !part.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
+                return false;
+            }
+            if part.chars().all(|c| c.is_ascii_digit()) && part.len() > 1 && part.starts_with('0') {
+                return false;
+            }
+        }
+    }
+
+    // Validate core version: X.Y.Z
+    let core_parts: Vec<&str> = core.split('.').collect();
+    if core_parts.len() != 3 {
+        return false;
+    }
+    for part in core_parts {
+        if part.is_empty() || !part.chars().all(|c| c.is_ascii_digit()) {
+            return false;
+        }
+        if part.len() > 1 && part.starts_with('0') {
+            return false;
+        }
+    }
+
+    true
 }
 
 /// ตัวช่วยสร้างข้อมูลโครงสร้าง LangfuseTrace ร่วมกัน

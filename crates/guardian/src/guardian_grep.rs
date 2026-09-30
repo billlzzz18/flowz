@@ -113,9 +113,29 @@ impl GuardianGrep {
         let mut rules_by_lang: HashMap<SupportLang, Vec<Rule>> = HashMap::new();
         let mut rule_index = HashMap::new();
 
+        let all_supported_langs = [
+            SupportLang::Rust,
+            SupportLang::TypeScript,
+            SupportLang::JavaScript,
+            SupportLang::Python,
+            SupportLang::Go,
+            SupportLang::Java,
+            SupportLang::Cpp,
+            SupportLang::C,
+            SupportLang::Markdown,
+            SupportLang::Css,
+            SupportLang::Html,
+        ];
+
         for rule in rules {
-            let lang = Self::parse_lang(&rule.lang);
-            rules_by_lang.entry(lang).or_default().push(rule.clone());
+            if rule.lang.eq_ignore_ascii_case("all") {
+                for &l in &all_supported_langs {
+                    rules_by_lang.entry(l).or_default().push(rule.clone());
+                }
+            } else {
+                let lang = Self::parse_lang(&rule.lang);
+                rules_by_lang.entry(lang).or_default().push(rule.clone());
+            }
             rule_index.insert(rule.name.clone(), rule);
         }
 

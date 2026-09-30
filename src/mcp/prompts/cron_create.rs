@@ -23,7 +23,7 @@ impl PromptHandler for CronCreatePrompt {
         let command = args.get("command").cloned().unwrap_or_default();
         let arguments = args.get("arguments").cloned().unwrap_or_default();
 
-        let prompt = cron_create_prompt_template(&name, &schedule, &timezone, &command, &arguments);
+        let prompt = cron_create_prompt_async(&name, &schedule, &timezone, &command, &arguments).await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],
@@ -89,26 +89,26 @@ Return a flowz_cron_create request.
 /// Variables use {{var}} syntax and are substituted from the provided values.
 pub async fn cron_create_prompt_async(
     name: &str,
-    expression: &str,
-    command: &str,
+    schedule: &str,
     timezone: &str,
-    project_name: &str,
+    command: &str,
+    arguments: &str,
 ) -> String {
     let mut vars = HashMap::new();
     vars.insert("name".to_string(), name.to_string());
-    vars.insert("expression".to_string(), expression.to_string());
-    vars.insert("command".to_string(), command.to_string());
+    vars.insert("schedule".to_string(), schedule.to_string());
     vars.insert("timezone".to_string(), timezone.to_string());
-    vars.insert("project_name".to_string(), project_name.to_string());
+    vars.insert("command".to_string(), command.to_string());
+    vars.insert("arguments".to_string(), arguments.to_string());
 
     let fallback = r#"
 Create a cron job definition for flowz-mcp.
 
-Project: {{project_name}}
 Name: {{name}}
-Schedule: {{expression}}
+Schedule: {{schedule}}
 Timezone: {{timezone}}
 Command: {{command}}
+Arguments: {{arguments}}
 
 Rules:
 1. Cron expression must be 5 or 6 fields (minute hour day month weekday [year])

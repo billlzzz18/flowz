@@ -59,14 +59,14 @@ impl StreamingQualityGate {
             .iter()
             .filter(|x| x.kind == EventFindingKind::ToolLoop)
             .count();
-        self.coverage_sum += r.metadata_coverage;
+        self.coverage_sum += r.metadata_coverage * (r.scanned as f64);
         self.windows += 1
     }
     pub fn decision(&self) -> QualityGateDecision {
-        let coverage = if self.windows == 0 {
+        let coverage = if self.scanned == 0 {
             100.0
         } else {
-            self.coverage_sum / self.windows as f64
+            self.coverage_sum / self.scanned as f64
         };
         let fail = coverage < self.config.min_metadata_coverage
             || self.invalid > self.config.max_invalid_events

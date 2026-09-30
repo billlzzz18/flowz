@@ -39,22 +39,21 @@ pub async fn fetch_prompt_with_fallback(
 /// คืนค่า None ถ้ามีข้อผิดพลาดใดๆ หรือไม่มีการตั้งคีย์
 async fn fetch_prompt_from_langfuse(prompt_name: &str) -> Option<String> {
     let client = crate::logging::langfuse::get_client()?;
-    let base_url = client.base_url().trim_end_matches('/');
-    let url = format!("{}/api/public/v1/prompts/{}", base_url, prompt_name);
+    let path = format!("/api/public/v2/prompts/{}", prompt_name);
 
     let resp = client
-        .http_client()
-        .get(&url)
-        .header("Authorization", format!("Bearer {}", client.public_key()))
+        .create_authed_request(reqwest::Method::GET, &path)
         .header("Content-Type", "application/json")
         .send()
         .await
-        .ok()?
-        .json::<LangfusePromptResponse>()
-        .await
         .ok()?;
 
-    resp.prompt
+    if !resp.status().is_success() {
+        return None;
+    }
+
+    let body = resp.json::<LangfusePromptResponse>().await.ok()?;
+    body.prompt
 }
 
 /// แทนที่ {{variable_name}} ใน template ด้วยค่าจาก vars

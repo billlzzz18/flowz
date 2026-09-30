@@ -130,7 +130,9 @@ pub mod api {
                 default_db_path().to_string_lossy().into_owned()
             });
             if let Some(parent) = std::path::Path::new(&path).parent() {
-                std::fs::create_dir_all(parent)?;
+                if !parent.as_os_str().is_empty() {
+                    std::fs::create_dir_all(parent)?;
+                }
             }
             Ok(MetricsDb::open(&path)?)
         }

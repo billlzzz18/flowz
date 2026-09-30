@@ -57,12 +57,14 @@ impl FeedbackProcessor {
         self.history.len()
     }
     pub fn get_recommendations(&self, input: &str) -> Vec<String> {
+        let input_lower = input.to_ascii_lowercase();
         self.patterns
             .iter()
             .filter(|(k, _)| {
-                let input = input.to_ascii_lowercase();
                 k.split(',')
-                    .any(|tag| input.contains(&tag.to_ascii_lowercase()))
+                    .map(|tag| tag.trim())
+                    .filter(|tag| !tag.is_empty())
+                    .any(|tag| input_lower.contains(&tag.to_ascii_lowercase()))
             })
             .map(|(_, p)| format!("Based on feedback: {}", p.example))
             .collect()

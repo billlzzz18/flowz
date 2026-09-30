@@ -22,7 +22,7 @@ impl PromptHandler for ComposePrompt {
             .cloned()
             .unwrap_or_else(|| "en".to_string());
 
-        let prompt = compose_prompt_template(&task, &constraints, &desired_output, &language);
+        let prompt = compose_prompt_async(&task, &constraints, &desired_output, &language).await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],

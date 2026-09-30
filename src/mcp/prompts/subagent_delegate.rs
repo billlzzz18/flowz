@@ -21,8 +21,7 @@ impl PromptHandler for SubagentDelegatePrompt {
         let items_str = args.get("items").cloned().unwrap_or_default();
         let item_id = args.get("item_id").cloned().unwrap_or_default();
         let instruction = args.get("instruction").cloned().unwrap_or_default();
-
-        let prompt = subagent_delegate_prompt_template(&action, &items_str, &item_id, &instruction);
+        let prompt = delegate_prompt_async(&action, &items_str, &item_id, &instruction).await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],
@@ -108,13 +107,21 @@ Return a flowz_subagent_stop request.
 
 /// Async version: attempts to fetch from Langfuse, falls back to hardcoded template.
 /// Variables use {{var}} syntax and are substituted from the provided values.
-pub async fn delegate_prompt_async(action: &str, items_str: &str) -> String {
+pub async fn delegate_prompt_async(
+    action: &str,
+    items_str: &str,
+    item_id: &str,
+    instruction: &str,
+) -> String {
     let mut vars = HashMap::new();
     vars.insert("action".to_string(), action.to_string());
     vars.insert("items_str".to_string(), items_str.to_string());
+    vars.insert("item_id".to_string(), item_id.to_string());
+    vars.insert("instruction".to_string(), instruction.to_string());
 
-    let fallback = match action {
-        "spawn" => {
+    let (prompt_name, fallback) = match action {
+        "spawn" => (
+            "flowz_subagent_delegate_spawn",
             r#"
 Spawn subagents for parallel work in flowz-mcp.
 
@@ -129,12 +136,59 @@ Rules:
 6. Use flowz_subagent_delegate tool with action=spawn
 
 Return a flowz_subagent_delegate request with action=spawn.
-"#
-        }
-        _ => "Unknown action. Use: spawn, list, steer, stop",
+"#,
+        ),
+        "list" => (
+            "flowz_subagent_delegate_list",
+            r#"
+List running subagents in flowz-mcp.
+
+Rules:
+1. Returns subagent status: running, done, failed
+2. Includes metrics: duration, iterations, cost
+3. Use flowz_subagent_list tool
+
+Return a flowz_subagent_list request.
+"#,
+        ),
+        "steer" => (
+            "flowz_subagent_delegate_steer",
+            r#"
+Steer a running subagent in flowz-mcp with new instructions.
+
+Item ID: {{item_id}}
+Instruction: {{instruction}}
+
+Rules:
+1. Sends instruction to the running subagent
+2. Subagent incorporates instruction in next step
+3. Use flowz_subagent_steer tool
+
+Return a flowz_subagent_steer request.
+"#,
+        ),
+        "stop" => (
+            "flowz_subagent_delegate_stop",
+            r#"
+Stop a running subagent in flowz-mcp.
+
+Item ID: {{item_id}}
+
+Rules:
+1. Stops the subagent gracefully
+2. Use flowz_subagent_stop tool
+
+Return a flowz_subagent_stop request.
+"#,
+        ),
+        _ => (
+            "flowz_subagent_delegate",
+            "Unknown action. Use: spawn, list, steer, stop",
+        ),
     };
+
     crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
-        "flowz_subagent_delegate",
+        prompt_name,
         &vars,
         fallback,
     )
