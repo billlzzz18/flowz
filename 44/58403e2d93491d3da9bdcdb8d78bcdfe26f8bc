@@ -1,0 +1,16 @@
+crates/guardian/src/integration/langfuse.rs
+  h_a25ade2a4fe7aa 72-87,258-623
+crates/guardian/tests/test_gene_bank_bridge.rs
+  h_a25ade2a4fe7aa 1-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4458403e2d93491d3da9bdcdb8d78bcdfe26f8bc",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

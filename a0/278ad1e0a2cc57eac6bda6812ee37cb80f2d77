@@ -1,0 +1,20 @@
+Cargo.toml
+  h_a25ade2a4fe7aa 75-79
+src/mcp/prompts/subagent_delegate.rs
+  h_a25ade2a4fe7aa 108-142
+src/mcp/prompts/workflow_compose.rs
+  h_a25ade2a4fe7aa 91-148
+tests/test_workflow_compose_prompt.rs
+  h_a25ade2a4fe7aa 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a0278ad1e0a2cc57eac6bda6812ee37cb80f2d77",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

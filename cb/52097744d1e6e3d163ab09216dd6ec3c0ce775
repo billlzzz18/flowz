@@ -1,0 +1,20 @@
+Cargo.toml
+  h_a25ade2a4fe7aa 34,59-62
+src/logging/langfuse.rs
+  h_a25ade2a4fe7aa 1-78
+src/logging/mod.rs
+  h_a25ade2a4fe7aa 2
+tests/test_flowz_langfuse_logging.rs
+  h_a25ade2a4fe7aa 1-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb52097744d1e6e3d163ab09216dd6ec3c0ce775",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

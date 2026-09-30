@@ -1,0 +1,22 @@
+Cargo.toml
+  h_a25ade2a4fe7aa 62-67,81-84
+src/domain/mod.rs
+  h_a25ade2a4fe7aa 216-241
+src/orchestration/engine.rs
+  h_a25ade2a4fe7aa 39-50,89-96,400-401,413
+src/spawn/mod.rs
+  h_a25ade2a4fe7aa 205
+tests/test_engine_tracing.rs
+  h_a25ade2a4fe7aa 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3339db9a805b0cbada7e98a3444a9867954391b",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
