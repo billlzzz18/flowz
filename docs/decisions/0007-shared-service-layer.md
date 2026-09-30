@@ -12,7 +12,7 @@
 - Business logic ทั้งหมดอยู่ใน FlowzService layer
 - MCP handler และ CLI handler เป็นแค่ adapter
 - ทั้งสองส่ง InvocationContext เข้า service โดยมีข้อมูล:
-  - `source`: แหล่งที่มา เช่น Mcp, Cli, หรือ Cron
+  - `source`: แหล่งที่มา เช่น Mcp หรือ Cli
   - `request_id`: UUID ประจำรอบการเรียก (แยกจาก JSON-RPC id)
   - `client_id` / `session_id` (optional): ติดตาม session
   - `output_mode`: โหมดผลลัพธ์ (Json สำหรับ MCP หรือ Human/Terminal สำหรับ CLI)
