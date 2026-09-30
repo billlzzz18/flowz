@@ -232,7 +232,7 @@ impl EventBehaviorDetector {
         let coverage = if scanned == 0 {
             100.0
         } else {
-            events.len() as f64 / scanned as f64 * 100.0
+            events.iter().filter(|(_, event)| event.trace_id.is_some() || event.session_id.is_some() || event.external_event_id.is_some()).count() as f64 / scanned as f64 * 100.0
         };
         EventBehaviorReport {
             scanned,
