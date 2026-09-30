@@ -131,7 +131,7 @@ fn extract_root_import(tree: &syn::UseTree) -> String {
     match tree {
         syn::UseTree::Path(prefix) => extract_root_import(&prefix.tree),
         syn::UseTree::Name(name) => name.ident.to_string(),
-        syn::UseTree::Rename(rename) => rename.ident.to_string(),
+        syn::UseTree::Rename(rename) => rename.rename.to_string(),
         syn::UseTree::Glob(_) => String::new(),
         syn::UseTree::Group(_) => String::new(),
     }
