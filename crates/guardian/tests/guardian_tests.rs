@@ -1,3 +1,4 @@
+use chrono::Utc;
 use guardian::{
     ai_behavior::intent_analyzer::IntentAnalyzer,
     core::metrics::{AIBehaviorMetrics, AIMetrics, CodeMetrics},
@@ -13,7 +14,6 @@ use guardian::{
         pattern_library::{BestPractice, PatternLibrary},
     },
 };
-use chrono::Utc;
 
 #[test]
 fn slop_has_exact_lines_and_ignores_comments() {

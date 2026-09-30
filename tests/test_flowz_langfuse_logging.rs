@@ -70,4 +70,3 @@ fn test_adr0037_semver_and_rollback_trace() {
     let span = event.as_span().expect("expected span");
     assert_eq!(span.name, "rollback");
 }
-

@@ -6,7 +6,7 @@
 use crate::core::metrics::{AIBehaviorMetrics, AIMetrics};
 use serde::{Deserialize, Serialize};
 use std::env;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel};
+use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 /// ข้อมูลการติดตามระดับ Trace สำหรับ Langfuse
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -165,7 +165,9 @@ impl LangfuseClient {
     ) -> reqwest::RequestBuilder {
         let base = self.base_url.trim_end_matches('/');
         let path = endpoint_or_path.trim_start_matches('/');
-        let url = if endpoint_or_path.starts_with("http://") || endpoint_or_path.starts_with("https://") {
+        let url = if endpoint_or_path.starts_with("http://")
+            || endpoint_or_path.starts_with("https://")
+        {
             endpoint_or_path.to_string()
         } else {
             format!("{}/{}", base, path)
@@ -591,13 +593,7 @@ impl GeneBankLangfuseBridge {
     }
 
     /// บันทึกผลการตัดสินของ Gate (Gate 1 ถึง 4 ตาม ADR-0034)
-    pub fn emit_gate_decision(
-        &self,
-        patch_id: &str,
-        gate_number: u8,
-        result: &str,
-        reason: &str,
-    ) {
+    pub fn emit_gate_decision(&self, patch_id: &str, gate_number: u8, result: &str, reason: &str) {
         let event = GeneBankEvent::GateDecision {
             patch_id: patch_id.to_string(),
             gate_number,
@@ -650,13 +646,7 @@ impl GeneBankLangfuseBridge {
     }
 
     /// บันทึกเมื่อ patch ผ่านการคัดกรองทุกด่านและได้รับการยอมรับเข้า Gene Bank (ADR-0037)
-    pub fn emit_admitted(
-        &self,
-        patch_id: &str,
-        component: &str,
-        pathology: &str,
-        semver: &str,
-    ) {
+    pub fn emit_admitted(&self, patch_id: &str, component: &str, pathology: &str, semver: &str) {
         let event = GeneBankEvent::Admitted {
             patch_id: patch_id.to_string(),
             component: component.to_string(),

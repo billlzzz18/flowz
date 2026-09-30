@@ -1,16 +1,12 @@
-use chrono::Utc;
 use guardian::{
     core::{
         git_ai_extractor::GitAIExtractor,
-        metrics::{AIBehaviorMetrics, AIMetrics, CodeMetrics},
-        metrics_db::{MetricsDb, default_db_path},
+        metrics_db::{default_db_path, MetricsDb},
     },
     detectors::{
-        command_log_detector::CommandLogDetector,
-        minimal_check_detector::MinimalCheckDetector,
+        command_log_detector::CommandLogDetector, minimal_check_detector::MinimalCheckDetector,
         over_engineer_detector::OverEngineerDetector,
-        ponytail_comment_detector::PonytailCommentDetector,
-        slop_detector::SlopDetector,
+        ponytail_comment_detector::PonytailCommentDetector, slop_detector::SlopDetector,
         yagni_detector::YAGNIDetector,
     },
     integration::git_hooks::GitHooksManager,
@@ -28,23 +24,7 @@ fn analyze(path: String) -> Result<String, Box<dyn std::error::Error>> {
     let ponytail_marks = PonytailCommentDetector::analyze(&code);
     let minimal_checks = MinimalCheckDetector::analyze(&code);
 
-    let mut m = AIMetrics {
-        commit_sha: "unknown".into(),
-        file_path: path,
-        timestamp: Utc::now(),
-        ai_lines: vec![],
-        metrics: CodeMetrics {
-            slop_score: issues.len() as f64 / 10.0,
-            yagni_violations: y.unused_functions.len() + y.unused_variables.len() + y.unused_imports.len(),
-            dead_code_lines: y.unused_functions.len(),
-            over_engineering_score: over.score,
-            inefficient_patterns: over.findings.len(),
-            ..Default::default()
-        },
-        ai_behavior: AIBehaviorMetrics::default(),
-        quality_score: 0.0,
-    };
-    m.quality_score = m.calculate_overall_score();
+    let m = guardian::api::Guardian::build_metrics(&path, &issues, &y, &over);
 
     Ok(ReportGenerator::generate(&m, &issues, &y, &over, &ponytail_marks, &minimal_checks))
 }

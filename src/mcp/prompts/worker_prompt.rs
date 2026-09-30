@@ -29,7 +29,8 @@ impl PromptHandler for WorkerPrompt {
             &requirements,
             &source_requirements,
             &output_schema,
-        ).await;
+        )
+        .await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],

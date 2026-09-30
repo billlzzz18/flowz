@@ -176,7 +176,11 @@ impl EventBehaviorDetector {
             }
             if let Some(session) = &event.session_id {
                 if let Some((previous_ts, previous_tool)) = last_by_session.get(session) {
-                    if event.event_ts.saturating_add(self.config.max_timestamp_regression) < *previous_ts {
+                    if event
+                        .event_ts
+                        .saturating_add(self.config.max_timestamp_regression)
+                        < *previous_ts
+                    {
                         findings.push(EventFinding {
                             kind: EventFindingKind::TimestampRegression,
                             event_index: *index,
@@ -232,7 +236,13 @@ impl EventBehaviorDetector {
         let coverage = if scanned == 0 {
             100.0
         } else {
-            events.iter().filter(|(_, event)| event.trace_id.is_some() || event.session_id.is_some() || event.external_event_id.is_some()).count() as f64 / scanned as f64 * 100.0
+            let covered = events
+                .iter()
+                .filter(|(_, e)| {
+                    e.trace_id.is_some() || e.session_id.is_some() || e.external_event_id.is_some()
+                })
+                .count();
+            covered as f64 / scanned as f64 * 100.0
         };
         EventBehaviorReport {
             scanned,

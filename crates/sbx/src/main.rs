@@ -4,9 +4,9 @@
 
 use std::{collections::BTreeMap, path::PathBuf};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
-use sbx_core::{backends, Config, ProcessSpec};
+use sbx_core::{Config, ProcessSpec, backends};
 use tokio::io::{self, AsyncWriteExt};
 
 #[derive(Parser)]

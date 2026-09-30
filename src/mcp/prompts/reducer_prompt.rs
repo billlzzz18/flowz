@@ -93,7 +93,10 @@ pub async fn reducer_prompt_async(
     vars.insert("failures_str".to_string(), failures_str.clone());
     vars.insert("schema_str".to_string(), schema_str.clone());
     vars.insert("items_str".to_string(), results_str);
-    vars.insert("brief".to_string(), "Synthesize the successful worker results into the final answer.".to_string());
+    vars.insert(
+        "brief".to_string(),
+        "Synthesize the successful worker results into the final answer.".to_string(),
+    );
 
     let fallback = r#"
 You are the reducer for a multi-agent workflow.

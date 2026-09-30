@@ -25,10 +25,8 @@ impl MinimalCheckDetector {
     /// Check if non-trivial functions have at least one
     /// assert/assert_eq/debug_assert or a #[test] nearby.
     pub fn analyze(code: &str) -> MinimalCheckReport {
-        let fn_re = Regex::new(
-            r"^\s*(?:pub\s+)?(?:fn|async\s+fn)\s+([A-Za-z_]\w*)\s*[\(<]",
-        )
-        .expect("built-in regex");
+        let fn_re = Regex::new(r"^\s*(?:pub\s+)?(?:fn|async\s+fn)\s+([A-Za-z_]\w*)\s*[\(<]")
+            .expect("built-in regex");
         let assert_re =
             Regex::new(r"\b(?:assert|debug_assert|assert_eq|assert_ne)\b").expect("built-in regex");
         let test_attr = "#[test]";

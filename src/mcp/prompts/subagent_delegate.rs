@@ -181,16 +181,9 @@ Rules:
 Return a flowz_subagent_stop request.
 "#,
         ),
-        _ => (
-            "flowz_subagent_delegate",
-            "Unknown action. Use: spawn, list, steer, stop",
-        ),
+        _ => ("flowz_subagent_delegate", "Unknown action. Use: spawn, list, steer, stop"),
     };
 
-    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(
-        prompt_name,
-        &vars,
-        fallback,
-    )
-    .await
+    crate::mcp::prompts::langfuse_fetcher::fetch_prompt_with_fallback(prompt_name, &vars, fallback)
+        .await
 }

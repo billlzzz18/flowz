@@ -45,4 +45,5 @@
 
 - ทุก Definition ต้องถูก Compile ผ่าน `src/adapter/`
 - ห้าม Core Domain ใน `src/domain/` ขึ้นต่อ `src/adapter/`
-- Test: ตรวจสอบการ Compile Markdown Frontmatter เป็น Domain Model และการแยก Source Tracking
+- ห้ามมีฟิลด์ `timeout` ใน YAML Frontmatter หรือ `CronDefinition` โดย Adapter จะ Validate และปฏิเสธทันที
+- Test: ตรวจสอบการ Compile Markdown Frontmatter เป็น Domain Model, การปฏิเสธ `timeout`, และการแยก Source Tracking

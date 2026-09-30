@@ -1,9 +1,6 @@
-use guardian::{
-    core::git_ai_extractor::GitAIExtractor,
-    lsp::GuardianLspAnalyzer,
-};
 #[cfg(unix)]
 use guardian::integration::git_hooks::GitHooksManager;
+use guardian::{core::git_ai_extractor::GitAIExtractor, lsp::GuardianLspAnalyzer};
 use std::fs;
 
 fn test_temp_dir() -> std::path::PathBuf {
@@ -33,7 +30,10 @@ fn empty_file_percentage_is_zero() {
     fs::create_dir_all(&dir).unwrap();
     let p = dir.join("guardian-empty.rs");
     fs::write(&p, "").unwrap();
-    assert_eq!(GitAIExtractor::get_ai_percentage(p.to_str().unwrap(), Some("missing")).unwrap_or(0.0), 0.0);
+    assert_eq!(
+        GitAIExtractor::get_ai_percentage(p.to_str().unwrap(), Some("missing")).unwrap_or(0.0),
+        0.0
+    );
     fs::remove_file(&p).unwrap();
 }
 #[test]

@@ -23,7 +23,8 @@ impl PromptHandler for CronCreatePrompt {
         let command = args.get("command").cloned().unwrap_or_default();
         let arguments = args.get("arguments").cloned().unwrap_or_default();
 
-        let prompt = cron_create_prompt_async(&name, &schedule, &timezone, &command, &arguments).await;
+        let prompt =
+            cron_create_prompt_async(&name, &schedule, &timezone, &command, &arguments).await;
 
         Ok(GetPromptResult::new(
             vec![PromptMessage::user(Content::text(prompt))],

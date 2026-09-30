@@ -1,4 +1,4 @@
-use ast_grep_core::{AstGrep, Pattern, tree_sitter::LanguageExt, tree_sitter::StrDoc};
+use ast_grep_core::{tree_sitter::LanguageExt, tree_sitter::StrDoc, AstGrep, Pattern};
 use ast_grep_language::SupportLang;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
@@ -597,7 +597,10 @@ impl GuardianGrep {
         let lang = Self::detect_language(path);
         let file_name = path.to_string_lossy().to_string();
 
-        let rules = self.rules_by_lang.get(&lang).ok_or("no rules for language")?;
+        let rules = self
+            .rules_by_lang
+            .get(&lang)
+            .ok_or("no rules for language")?;
         if rules.is_empty() {
             return Ok(Vec::new());
         }
@@ -653,17 +656,137 @@ impl GuardianGrep {
     }
 
     fn run_fuzzy_patterns(
-            &self,
-            content: &str,
-            file: &str,
-            rules: &[Rule],
-        ) -> Result<Vec<PatternMatch>, Box<dyn std::error::Error>> {
-            let mut results = Vec::new();
-            let regex_cache = RegexCache::global();
+        &self,
+        content: &str,
+        file: &str,
+        rules: &[Rule],
+    ) -> Result<Vec<PatternMatch>, Box<dyn std::error::Error>> {
+        let mut results = Vec::new();
+        let regex_cache = RegexCache::global();
 
-            for rule in rules {
-                // Use regex for fuzzy/partial patterns that ast-grep can't handle
-                if rule.pattern.contains('*') || rule.pattern.contains('\\') {
+        for rule in rules {
+            // Use regex for fuzzy/partial patterns that ast-grep can't handle
+            if rule.pattern.contains('*') || rule.pattern.contains('\\') {
+                let regex = regex_cache.get_or_create(&rule.pattern);
+                for mat in regex.find_iter(content) {
+                    let line = content[..mat.start()].matches('\n').count() + 1;
+                    let col = mat.start()
+                        - content[..mat.start()]
+                            .rfind('\n')
+                            .map(|i| i + 1)
+                            .unwrap_or(0);
+                    let anchor = Anchor::new(file, line, col);
+                    results.push(PatternMatch {
+                        rule: rule.clone(),
+                        anchor,
+                        text: mat.as_str().to_string(),
+                    });
+                }
+            }
+        }
+
+        // Protocol-specific behavioral rules (special patterns)
+        results.extend(self.run_protocol_patterns(content, file, rules)?);
+
+        Ok(results)
+    }
+
+    fn run_protocol_patterns(
+        &self,
+        content: &str,
+        file: &str,
+        rules: &[Rule],
+    ) -> Result<Vec<PatternMatch>, Box<dyn std::error::Error>> {
+        let mut results = Vec::new();
+        let regex_cache = RegexCache::global();
+
+        for rule in rules {
+            if rule.protocol.is_none() {
+                continue;
+            }
+
+            match rule.name.as_str() {
+                "tool_thrashing" => {
+                    // Pattern: repeat(call(tool=same, args=same)) - detect repeated same tool calls
+                    // Parse JSONL lines for tool calls, track frequency
+                    let threshold = rule.threshold.unwrap_or(3);
+                    let tool_calls = Self::extract_tool_calls(content);
+                    let mut call_counts: std::collections::HashMap<String, usize> =
+                        std::collections::HashMap::new();
+                    for call in tool_calls {
+                        *call_counts.entry(call).or_insert(0) += 1;
+                    }
+                    for (call, count) in call_counts {
+                        if count >= threshold {
+                            let line =
+                                content.lines().position(|l| l.contains(&call)).unwrap_or(0) + 1;
+                            let anchor = Anchor::new(file, line, 1);
+                            results.push(PatternMatch {
+                                rule: rule.clone(),
+                                anchor,
+                                text: format!("tool_thrashing: {} repeated {} times", call, count),
+                            });
+                        }
+                    }
+                }
+                "unhandled_tool_failure_loop" => {
+                    // Pattern: tool_error -> call(same_tool, same_args) - retry same failed tool
+                    let lines: Vec<&str> = content.lines().collect();
+                    for i in 0..lines.len().saturating_sub(1) {
+                        if lines[i].contains("error") || lines[i].contains("Error") {
+                            if lines[i + 1].contains(
+                                &lines[i].replace("error", "").replace("Error", "").trim(),
+                            ) {
+                                let anchor = Anchor::new(file, i + 1, 1);
+                                results.push(PatternMatch {
+                                    rule: rule.clone(),
+                                    anchor,
+                                    text: format!(
+                                        "unhandled_tool_failure_loop: retry after error at line {}",
+                                        i + 1
+                                    ),
+                                });
+                            }
+                        }
+                    }
+                }
+                "context_drift" => {
+                    // Pattern: semantic_drift(summary, intent) - detect response drift
+                    // Simple heuristic: check if response contains keywords unrelated to initial intent
+                    // This is a placeholder for semantic analysis
+                    if content.len() > 5000 {
+                        let anchor = Anchor::new(file, 1, 1);
+                        results.push(PatternMatch {
+                            rule: rule.clone(),
+                            anchor,
+                            text:
+                                "context_drift: potential semantic drift detected (long response)"
+                                    .into(),
+                        });
+                    }
+                }
+                "contract_violation" => {
+                    // Placeholder - would need API spec to validate
+                    // For now, detect common patterns like returning wrong types
+                    let regex = regex_cache.get_or_create(r#"return\s+\w+\s*;"#);
+                    for mat in regex.find_iter(content) {
+                        let line = content[..mat.start()].matches('\n').count() + 1;
+                        let col = mat.start()
+                            - content[..mat.start()]
+                                .rfind('\n')
+                                .map(|i| i + 1)
+                                .unwrap_or(0);
+                        let anchor = Anchor::new(file, line, col);
+                        results.push(PatternMatch {
+                            rule: rule.clone(),
+                            anchor,
+                            text: mat.as_str().to_string(),
+                        });
+                    }
+                }
+                "mock_leak_to_prod" => {
+                    // Uses regex pattern directly (already handled in run_fuzzy_patterns)
+                    // But we add extra check for protocol
                     let regex = regex_cache.get_or_create(&rule.pattern);
                     for mat in regex.find_iter(content) {
                         let line = content[..mat.start()].matches('\n').count() + 1;
@@ -680,145 +803,36 @@ impl GuardianGrep {
                         });
                     }
                 }
+                _ => {}
             }
-
-            // Protocol-specific behavioral rules (special patterns)
-            results.extend(self.run_protocol_patterns(content, file, rules)?);
-
-            Ok(results)
         }
 
-        fn run_protocol_patterns(
-            &self,
-            content: &str,
-            file: &str,
-            rules: &[Rule],
-        ) -> Result<Vec<PatternMatch>, Box<dyn std::error::Error>> {
-            let mut results = Vec::new();
-            let regex_cache = RegexCache::global();
+        Ok(results)
+    }
 
-            for rule in rules {
-                if rule.protocol.is_none() {
-                    continue;
-                }
-
-                match rule.name.as_str() {
-                    "tool_thrashing" => {
-                        // Pattern: repeat(call(tool=same, args=same)) - detect repeated same tool calls
-                        // Parse JSONL lines for tool calls, track frequency
-                        let threshold = rule.threshold.unwrap_or(3);
-                        let tool_calls = Self::extract_tool_calls(content);
-                        let mut call_counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
-                        for call in tool_calls {
-                            *call_counts.entry(call).or_insert(0) += 1;
-                        }
-                        for (call, count) in call_counts {
-                            if count >= threshold {
-                                let line = content.lines().position(|l| l.contains(&call)).unwrap_or(0) + 1;
-                                let anchor = Anchor::new(file, line, 1);
-                                results.push(PatternMatch {
-                                    rule: rule.clone(),
-                                    anchor,
-                                    text: format!("tool_thrashing: {} repeated {} times", call, count),
-                                });
-                            }
-                        }
-                    }
-                    "unhandled_tool_failure_loop" => {
-                        // Pattern: tool_error -> call(same_tool, same_args) - retry same failed tool
-                        let lines: Vec<&str> = content.lines().collect();
-                        for i in 0..lines.len().saturating_sub(1) {
-                            if lines[i].contains("error") || lines[i].contains("Error") {
-                                if lines[i + 1].contains(&lines[i].replace("error", "").replace("Error", "").trim()) {
-                                    let anchor = Anchor::new(file, i + 1, 1);
-                                    results.push(PatternMatch {
-                                        rule: rule.clone(),
-                                        anchor,
-                                        text: format!("unhandled_tool_failure_loop: retry after error at line {}", i + 1),
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    "context_drift" => {
-                        // Pattern: semantic_drift(summary, intent) - detect response drift
-                        // Simple heuristic: check if response contains keywords unrelated to initial intent
-                        // This is a placeholder for semantic analysis
-                        if content.len() > 5000 {
-                            let anchor = Anchor::new(file, 1, 1);
-                            results.push(PatternMatch {
-                                rule: rule.clone(),
-                                anchor,
-                                text: "context_drift: potential semantic drift detected (long response)".into(),
-                            });
-                        }
-                    }
-                    "contract_violation" => {
-                        // Placeholder - would need API spec to validate
-                        // For now, detect common patterns like returning wrong types
-                        let regex = regex_cache.get_or_create(r#"return\s+\w+\s*;"#);
-                        for mat in regex.find_iter(content) {
-                            let line = content[..mat.start()].matches('\n').count() + 1;
-                            let col = mat.start()
-                                - content[..mat.start()]
-                                    .rfind('\n')
-                                    .map(|i| i + 1)
-                                    .unwrap_or(0);
-                            let anchor = Anchor::new(file, line, col);
-                            results.push(PatternMatch {
-                                rule: rule.clone(),
-                                anchor,
-                                text: mat.as_str().to_string(),
-                            });
-                        }
-                    }
-                    "mock_leak_to_prod" => {
-                        // Uses regex pattern directly (already handled in run_fuzzy_patterns)
-                        // But we add extra check for protocol
-                        let regex = regex_cache.get_or_create(&rule.pattern);
-                        for mat in regex.find_iter(content) {
-                            let line = content[..mat.start()].matches('\n').count() + 1;
-                            let col = mat.start()
-                                - content[..mat.start()]
-                                    .rfind('\n')
-                                    .map(|i| i + 1)
-                                    .unwrap_or(0);
-                            let anchor = Anchor::new(file, line, col);
-                            results.push(PatternMatch {
-                                rule: rule.clone(),
-                                anchor,
-                                text: mat.as_str().to_string(),
-                            });
-                        }
-                    }
-                    _ => {}
+    fn extract_tool_calls(content: &str) -> Vec<String> {
+        // Extract tool names from JSONL format (simplified)
+        let mut calls = Vec::new();
+        for line in content.lines() {
+            if let Some(start) = line.find("\"tool\":") {
+                let after = &line[start + 7..];
+                if let Some(end) = after.find(',').or_else(|| after.find('}')) {
+                    let tool = after[..end].trim().trim_matches('"');
+                    calls.push(tool.to_string());
                 }
             }
-
-            Ok(results)
         }
+        calls
+    }
 
-        fn extract_tool_calls(content: &str) -> Vec<String> {
-            // Extract tool names from JSONL format (simplified)
-            let mut calls = Vec::new();
-            for line in content.lines() {
-                if let Some(start) = line.find("\"tool\":") {
-                    let after = &line[start + 7..];
-                    if let Some(end) = after.find(',').or_else(|| after.find('}')) {
-                        let tool = after[..end].trim().trim_matches('"');
-                        calls.push(tool.to_string());
-                    }
-                }
-            }
-            calls
-        }
-
-        fn glob_match(pattern: &str, path: &str) -> bool {
+    fn glob_match(pattern: &str, path: &str) -> bool {
         let pattern = pattern.replace("**/", "");
         let pattern = pattern.replace("*.", ".*\\.");
         let pattern = pattern.replace("*", ".*");
         let regex = format!("^{}$", pattern);
-        regex::Regex::new(&regex).map(|r| r.is_match(path)).unwrap_or(false)
+        regex::Regex::new(&regex)
+            .map(|r| r.is_match(path))
+            .unwrap_or(false)
     }
 
     /// Scan directory recursively
@@ -833,16 +847,23 @@ impl GuardianGrep {
                 let matches = self.scan_file(path)?;
                 if !matches.is_empty() {
                     entries.push(BrainLogEntry {
-                        file: path.strip_prefix(dir).unwrap_or(path).to_string_lossy().into(),
+                        file: path
+                            .strip_prefix(dir)
+                            .unwrap_or(path)
+                            .to_string_lossy()
+                            .into(),
                         language: Self::detect_language(path).to_string(),
                         pattern: "multi-grep".into(),
-                        matches: matches.into_iter().map(|m| MatchInfo {
-                            rule_id: m.rule.name.clone(),
-                            severity: format!("{:?}", m.rule.severity),
-                            anchor: m.anchor,
-                            text: m.text,
-                            meta: Some(serde_json::json!({"description": m.rule.description})),
-                        }).collect(),
+                        matches: matches
+                            .into_iter()
+                            .map(|m| MatchInfo {
+                                rule_id: m.rule.name.clone(),
+                                severity: format!("{:?}", m.rule.severity),
+                                anchor: m.anchor,
+                                text: m.text,
+                                meta: Some(serde_json::json!({"description": m.rule.description})),
+                            })
+                            .collect(),
                         timestamp: std::time::SystemTime::now()
                             .duration_since(std::time::UNIX_EPOCH)
                             .unwrap()
@@ -895,9 +916,7 @@ impl GuardianGrep {
 
     /// Decompress brain logs from JSONL
     pub fn decompress_logs(data: &str) -> Result<Vec<BrainLogEntry>, Box<dyn std::error::Error>> {
-        data.lines()
-            .map(|l| Ok(serde_json::from_str(l)?))
-            .collect()
+        data.lines().map(|l| Ok(serde_json::from_str(l)?)).collect()
     }
 
     /// Apply patch A -> B using 3-position anchoring to prevent drift
@@ -912,31 +931,52 @@ impl GuardianGrep {
             return Err(format!("anchor file {} does not match {}", patch.anchor.file, file).into());
         }
         let anchor = &patch.anchor;
-        
+
         // Validate file anchor
         if !anchor.file.is_empty() && anchor.file != file {
-            return Err(format!("patch anchor file mismatch: expected {}, got {}", anchor.file, file).into());
+            return Err(format!(
+                "patch anchor file mismatch: expected {}, got {}",
+                anchor.file, file
+            )
+            .into());
         }
 
         // Verify anchor matches current content (drift detection)
         let lines: Vec<&str> = content.lines().collect();
         if anchor.line == 0 || anchor.line > lines.len() {
-            return Err(format!("anchor line {} out of bounds (file has {} lines)", anchor.line, lines.len()).into());
+            return Err(format!(
+                "anchor line {} out of bounds (file has {} lines)",
+                anchor.line,
+                lines.len()
+            )
+            .into());
         }
         let line = lines[anchor.line - 1];
         if anchor.col == 0 || anchor.col > line.len() + 1 {
-            return Err(format!("anchor col {} out of bounds (line has {} chars)", anchor.col, line.len()).into());
+            return Err(format!(
+                "anchor col {} out of bounds (line has {} chars)",
+                anchor.col,
+                line.len()
+            )
+            .into());
         }
 
         // Find the best match using partial pattern (trust workspace approach)
-        let match_result = self.find_best_partial_match(content, file, &patch.from_pattern, anchor)?;
-        
+        let match_result =
+            self.find_best_partial_match(content, file, &patch.from_pattern, anchor)?;
+
         // Apply replacement at the exact anchored position
         let mut result = content.to_string();
-        let byte_start = content.lines().take(anchor.line - 1).map(|l| l.len() + 1).sum::<usize>() + anchor.col - 1;
+        let byte_start = content
+            .lines()
+            .take(anchor.line - 1)
+            .map(|l| l.len() + 1)
+            .sum::<usize>()
+            + anchor.col
+            - 1;
         let byte_end = byte_start + match_result.matched_len;
         result.replace_range(byte_start..byte_end, &patch.to_pattern);
-        
+
         Ok(result)
     }
 
@@ -949,29 +989,37 @@ impl GuardianGrep {
     ) -> Result<PartialMatch, Box<dyn std::error::Error>> {
         let regex_cache = RegexCache::global();
         let regex = regex_cache.get_or_create(pattern);
-        
+
         let mut candidates = Vec::new();
         for mat in regex.find_iter(content) {
             let line = content[..mat.start()].matches('\n').count() + 1;
-            let col = mat.start() - content[..mat.start()].rfind('\n').map(|i| i + 1).unwrap_or(0);
+            let col = mat.start()
+                - content[..mat.start()]
+                    .rfind('\n')
+                    .map(|i| i + 1)
+                    .unwrap_or(0);
             let _cand_anchor = Anchor::new(file, line, col);
-            
+
             // Score by distance to anchor (3-position)
-            let dist = ((line as isize - anchor.line as isize).abs() + (col as isize - anchor.col as isize).abs()) as usize;
+            let dist = ((line as isize - anchor.line as isize).abs()
+                + (col as isize - anchor.col as isize).abs()) as usize;
             candidates.push((dist, mat.start(), mat.end(), mat.as_str().to_string()));
         }
-        
+
         // Sort by distance to anchor, then by match length (prefer longer matches)
         candidates.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| b.2.cmp(&a.2)));
-        
-        candidates.first()
+
+        candidates
+            .first()
             .map(|(_, start, end, text)| PartialMatch {
                 start: *start,
                 end: *end,
                 matched_len: end - start,
                 text: text.clone(),
             })
-            .ok_or_else(|| format!("no match found for pattern '{}' near anchor {:?}", pattern, anchor).into())
+            .ok_or_else(|| {
+                format!("no match found for pattern '{}' near anchor {:?}", pattern, anchor).into()
+            })
     }
 }
 
@@ -1013,8 +1061,12 @@ impl RegexCache {
         if let Some(r) = self.get(pattern) {
             return r;
         }
-        let regex = regex::Regex::new(pattern).unwrap_or_else(|_| regex::Regex::new(r"\b\B").unwrap());
-        self.patterns.write().ok().map(|mut m| m.insert(pattern.to_string(), regex.clone()));
+        let regex =
+            regex::Regex::new(pattern).unwrap_or_else(|_| regex::Regex::new(r"\b\B").unwrap());
+        self.patterns
+            .write()
+            .ok()
+            .map(|mut m| m.insert(pattern.to_string(), regex.clone()));
         regex
     }
 }
@@ -1065,8 +1117,11 @@ mod tests {
         writeln!(f, "fn main() {{ x.unwrap(); }}").unwrap();
 
         let matches = grep.scan_file(&file).unwrap();
-        let unwrap_match = matches.iter().find(|m| m.rule.name == "slop-unwrap").unwrap();
-        
+        let unwrap_match = matches
+            .iter()
+            .find(|m| m.rule.name == "slop-unwrap")
+            .unwrap();
+
         // Anchor should be precise: file, line 1, column where unwrap starts
         assert_eq!(unwrap_match.anchor.file, file.to_string_lossy().to_string());
         assert_eq!(unwrap_match.anchor.line, 1);
@@ -1077,13 +1132,13 @@ mod tests {
     fn test_anchor_drift_detection() {
         let grep = GuardianGrep::new();
         let content = "fn main() { x.unwrap(); }";
-        
+
         let patch = Patch {
             anchor: Anchor::new("test.rs", 1, 15),
             from_pattern: "unwrap()".into(),
             to_pattern: "expect(\"msg\")".into(),
         };
-        
+
         let result = grep.apply_patch(content, "test.rs", &patch).unwrap();
         assert!(result.contains("expect(\"msg\")"));
     }
@@ -1091,14 +1146,14 @@ mod tests {
     #[test]
     fn test_anchor_drift_fails_on_moved_code() {
         let grep = GuardianGrep::new();
-        let content = "fn main() {\n    x.unwrap();\n}";  // unwrap moved to line 2
-        
+        let content = "fn main() {\n    x.unwrap();\n}"; // unwrap moved to line 2
+
         let patch = Patch {
-            anchor: Anchor::new("test.rs", 1, 15),  // Old anchor at line 1
+            anchor: Anchor::new("test.rs", 1, 15), // Old anchor at line 1
             from_pattern: "unwrap()".into(),
             to_pattern: "expect(\"msg\")".into(),
         };
-        
+
         let result = grep.apply_patch(content, "test.rs", &patch);
         assert!(result.is_err(), "should fail when anchor drifted");
     }
@@ -1110,9 +1165,11 @@ mod tests {
         let file = dir.path().join("test.rs");
         let mut f = std::fs::File::create(&file).unwrap();
         writeln!(f, "std::collections::HashMap::fake_method();").unwrap();
-        
+
         let matches = grep.scan_file(&file).unwrap();
-        let fake_match = matches.iter().find(|m| m.rule.name == "rust-fake-std-method");
+        let fake_match = matches
+            .iter()
+            .find(|m| m.rule.name == "rust-fake-std-method");
         assert!(fake_match.is_some(), "should detect fake std method");
     }
 
@@ -1123,9 +1180,11 @@ mod tests {
         let file = dir.path().join("test.rs");
         let mut f = std::fs::File::create(&file).unwrap();
         writeln!(f, "use crate_that_doesnt_exist::something;").unwrap();
-        
+
         let matches = grep.scan_file(&file).unwrap();
-        let fake_import = matches.iter().find(|m| m.rule.name == "rust-fake-crate-import");
+        let fake_import = matches
+            .iter()
+            .find(|m| m.rule.name == "rust-fake-crate-import");
         assert!(fake_import.is_some(), "should detect fake crate import");
     }
 
@@ -1136,9 +1195,11 @@ mod tests {
         let file = dir.path().join("test.rs");
         let mut f = std::fs::File::create(&file).unwrap();
         writeln!(f, "tokio::spawn_blocking(|| {{}});").unwrap();
-        
+
         let matches = grep.scan_file(&file).unwrap();
-        let wrong_path = matches.iter().find(|m| m.rule.name == "rust-tokio-spawn-blocking");
+        let wrong_path = matches
+            .iter()
+            .find(|m| m.rule.name == "rust-tokio-spawn-blocking");
         assert!(wrong_path.is_some(), "should detect wrong tokio path");
     }
 
@@ -1149,9 +1210,11 @@ mod tests {
         let file = dir.path().join("test.rs");
         let mut f = std::fs::File::create(&file).unwrap();
         writeln!(f, "let v = &vec![1,2,3]; v.into_iter();").unwrap();
-        
+
         let matches = grep.scan_file(&file).unwrap();
-        let wrong_iter = matches.iter().find(|m| m.rule.name == "rust-into-iter-on-ref");
+        let wrong_iter = matches
+            .iter()
+            .find(|m| m.rule.name == "rust-into-iter-on-ref");
         assert!(wrong_iter.is_some(), "should detect into_iter on ref");
     }
 
@@ -1191,7 +1254,7 @@ mod tests {
             ("test.css", SupportLang::Css),
             ("test.html", SupportLang::Html),
         ];
-        
+
         for (filename, expected_lang) in langs {
             let path = Path::new(filename);
             let lang = GuardianGrep::detect_language(path);
@@ -1266,12 +1329,13 @@ mod bench {
     fn bench_multi_grep_performance() {
         let grep = GuardianGrep::new();
         let dir = tempdir().unwrap();
-        
+
         // Create 20 files with various patterns (reduced from 100 for speed)
         for i in 0..20 {
             let file = dir.path().join(format!("test{}.rs", i));
             let mut f = std::fs::File::create(&file).unwrap();
-            writeln!(f, "fn main() {{ let x = vec![{}]; x.unwrap(); x.clone(); todo!(); }}", i).unwrap();
+            writeln!(f, "fn main() {{ let x = vec![{}]; x.unwrap(); x.clone(); todo!(); }}", i)
+                .unwrap();
         }
 
         let start = Instant::now();
@@ -1280,7 +1344,7 @@ mod bench {
 
         println!("Scanned 20 files in {:?}", elapsed);
         println!("Found {} entries with matches", entries.len());
-        
+
         // Should complete in under 5 seconds
         assert!(elapsed.as_millis() < 5000, "multi-grep too slow: {:?}", elapsed);
     }
@@ -1289,7 +1353,7 @@ mod bench {
     fn bench_token_efficiency() {
         let grep = GuardianGrep::new();
         let dir = tempdir().unwrap();
-        
+
         for i in 0..50 {
             let file = dir.path().join(format!("test{}.rs", i));
             let mut f = std::fs::File::create(&file).unwrap();
@@ -1298,11 +1362,11 @@ mod bench {
 
         let entries = grep.scan_dir(dir.path()).unwrap();
         let compressed = GuardianGrep::compress_logs(&entries);
-        
+
         // Compressed size should be small (token-efficient)
         let tokens_estimate = compressed.len() / 4; // rough token estimate
         println!("Compressed size: {} bytes, ~{} tokens", compressed.len(), tokens_estimate);
-        
+
         // Should be well under typical context limits
         assert!(compressed.len() < 100_000, "compressed logs too large");
     }
@@ -1313,10 +1377,11 @@ mod bench {
         let dir = tempdir().unwrap();
         let file = dir.path().join("test.rs");
         let mut f = std::fs::File::create(&file).unwrap();
-        writeln!(f, "fn main() {{\n    let x = vec![1,2,3];\n    x.unwrap();\n    y.clone();\n}}").unwrap();
-        
+        writeln!(f, "fn main() {{\n    let x = vec![1,2,3];\n    x.unwrap();\n    y.clone();\n}}")
+            .unwrap();
+
         let matches = grep.scan_file(&file).unwrap();
-        
+
         for m in &matches {
             // Verify each anchor points to the exact match
             let content = std::fs::read_to_string(&file).unwrap();

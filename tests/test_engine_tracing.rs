@@ -7,8 +7,12 @@ use flowz::spawn::test_utils::MockProcessSpawner;
 
 #[tokio::test]
 async fn test_workflow_engine_emits_subagent_span_and_score() {
+    let (mock_client, _rx) = guardian::integration::langfuse::LangfuseClient::new_mock();
+    let _ = flowz::logging::langfuse::init_with_client(mock_client);
+
     // Use MockProcessSpawner to avoid real process spawns.
-    let spawner = std::sync::Arc::new(MockProcessSpawner::success_for_items(&vec!["test-item".to_string()]));
+    let spawner =
+        std::sync::Arc::new(MockProcessSpawner::success_for_items(&vec!["test-item".to_string()]));
     let engine = WorkflowEngine::new_test(spawner);
     let req = RunRequest::fixture_single_item();
     let result = engine.run(req).await;

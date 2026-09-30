@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use bollard::{
     container::LogOutput,
@@ -15,7 +15,7 @@ use bollard::{
     },
 };
 use futures_util::{FutureExt, StreamExt};
-use tokio::io::{duplex, AsyncWriteExt};
+use tokio::io::{AsyncWriteExt, duplex};
 
 use crate::backend::{Process, ProcessSpec, Sandbox};
 use crate::config::DockerCfg;
@@ -30,7 +30,12 @@ pub struct Docker {
 
 impl Docker {
     pub fn new(cfg: DockerCfg) -> Self {
-        Self { cfg, client: None, container: None, owned: false }
+        Self {
+            cfg,
+            client: None,
+            container: None,
+            owned: false,
+        }
     }
 }
 
@@ -41,8 +46,8 @@ impl Sandbox for Docker {
     }
 
     async fn start(&mut self) -> Result<()> {
-        let client = bollard::Docker::connect_with_local_defaults()
-            .context("เชื่อมต่อ Docker daemon ไม่ได้")?;
+        let client =
+            bollard::Docker::connect_with_local_defaults().context("เชื่อมต่อ Docker daemon ไม่ได้")?;
 
         if let Some(name) = &self.cfg.container {
             self.container = Some(name.clone());
@@ -50,7 +55,9 @@ impl Sandbox for Docker {
             // ดึง image เฉพาะเมื่อยังไม่มีในเครื่อง
             if client.inspect_image(image).await.is_err() {
                 eprintln!("[sbx] กำลังดึง image {image}");
-                let opts = CreateImageOptionsBuilder::default().from_image(image).build();
+                let opts = CreateImageOptionsBuilder::default()
+                    .from_image(image)
+                    .build();
                 let mut s = client.create_image(Some(opts), None, None);
                 while let Some(r) = s.next().await {
                     r.context("ดึง image ไม่สำเร็จ")?;
@@ -107,9 +114,15 @@ impl Sandbox for Docker {
             .context("create_exec ไม่สำเร็จ")?
             .id;
 
-        let opts = StartExecOptions { detach: false, tty: false, output_capacity: None };
-        let StartExecResults::Attached { mut output, input } =
-            client.start_exec(&exec, Some(opts)).await.context("start_exec ไม่สำเร็จ")?
+        let opts = StartExecOptions {
+            detach: false,
+            tty: false,
+            output_capacity: None,
+        };
+        let StartExecResults::Attached { mut output, input } = client
+            .start_exec(&exec, Some(opts))
+            .await
+            .context("start_exec ไม่สำเร็จ")?
         else {
             bail!("exec ถูก detach โดยไม่คาดคิด");
         };
@@ -146,13 +159,21 @@ impl Sandbox for Docker {
         }
         .boxed();
 
-        Ok(Process { stdin: Box::new(input), stdout: Box::new(out_r), stderr: Box::new(err_r), wait })
+        Ok(Process {
+            stdin: Box::new(input),
+            stdout: Box::new(out_r),
+            stderr: Box::new(err_r),
+            wait,
+        })
     }
 
     async fn stop(&mut self) -> Result<()> {
         if let (true, Some(client), Some(id)) = (self.owned, &self.client, &self.container) {
             let opts = RemoveContainerOptionsBuilder::default().force(true).build();
-            client.remove_container(id, Some(opts)).await.context("ลบ container ไม่สำเร็จ")?;
+            client
+                .remove_container(id, Some(opts))
+                .await
+                .context("ลบ container ไม่สำเร็จ")?;
         }
         Ok(())
     }

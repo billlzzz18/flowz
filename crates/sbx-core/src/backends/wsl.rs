@@ -1,7 +1,7 @@
 //! backend `wsl`: ใช้ wsl.exe (เหมาะกับ Hermes บน Windows ที่ต้องรันใน WSL2)
 //! หมายเหตุ: ยังไม่ได้ทดสอบบน Windows จริง
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use tokio::process::Command;
 

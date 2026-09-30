@@ -94,7 +94,17 @@ impl MarkdownDefinition {
                 path.display()
             )));
         }
-        let frontmatter: Frontmatter = serde_yaml::from_str(&yaml).map_err(|e| {
+        let yaml_val: serde_yaml::Value = serde_yaml::from_str(&yaml).map_err(|e| {
+            FlowzError::Validation(format!("invalid frontmatter in {}: {}", path.display(), e))
+        })?;
+        if let Some(mapping) = yaml_val.as_mapping() {
+            if mapping.contains_key(&serde_yaml::Value::String("timeout".to_string())) {
+                return Err(FlowzError::Validation(
+                    "timeout is not allowed in frontmatter (ADR-0023: Cron definitions have no timeout)".into(),
+                ));
+            }
+        }
+        let frontmatter: Frontmatter = serde_yaml::from_value(yaml_val).map_err(|e| {
             FlowzError::Validation(format!("invalid frontmatter in {}: {}", path.display(), e))
         })?;
         if frontmatter.name.trim().is_empty() {
@@ -202,6 +212,20 @@ mod tests {
         assert_eq!(parsed.links.len(), 3);
         let compiled = compile(&parsed, "Asia/Bangkok").unwrap();
         assert!(matches!(compiled.source, DefinitionSource::Markdown { .. }));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn rejects_timeout_in_frontmatter() {
+        let path = std::env::temp_dir().join(format!("flowz-timeout-{}.md", generate_id()));
+        std::fs::write(&path, "---\nname: Invalid\ntimeout: 300\n---\nBody").unwrap();
+        let err = MarkdownDefinition::parse(&path);
+        assert!(err.is_err());
+        assert!(
+            err.unwrap_err()
+                .to_string()
+                .contains("timeout is not allowed in frontmatter")
+        );
         let _ = std::fs::remove_file(path);
     }
 }

@@ -1,6 +1,4 @@
-use guardian::integration::langfuse::{
-    GeneBankLangfuseBridge, LangfuseClient, is_valid_semver,
-};
+use guardian::integration::langfuse::{is_valid_semver, GeneBankLangfuseBridge, LangfuseClient};
 
 #[test]
 fn test_gene_bank_bridge_emits_full_admission_trace() {
@@ -23,10 +21,7 @@ fn test_gene_bank_bridge_emits_admission_start_trace() {
     assert_eq!(event.trace_id(), "patch-101");
     let trace = event.as_trace().expect("expected Trace event");
     assert_eq!(trace.id, "patch-101");
-    assert_eq!(
-        trace.name.as_deref(),
-        Some("admission:Prompt:ThinkingRunaway")
-    );
+    assert_eq!(trace.name.as_deref(), Some("admission:Prompt:ThinkingRunaway"));
     assert_eq!(trace.version.as_deref(), Some("1.0.0"));
 
     let meta = trace.metadata.as_ref().expect("expected metadata");
@@ -54,12 +49,7 @@ fn test_gene_bank_bridge_emits_gate_decision_score_pass() {
 fn test_gene_bank_bridge_emits_gate_decision_score_repair_and_retry() {
     let (client, mut rx) = LangfuseClient::new_mock();
     let bridge = GeneBankLangfuseBridge::new(client);
-    bridge.emit_gate_decision(
-        "patch-103",
-        1,
-        "RepairAndRetry",
-        "Sandbox crashed, retryable",
-    );
+    bridge.emit_gate_decision("patch-103", 1, "RepairAndRetry", "Sandbox crashed, retryable");
 
     let event = rx.try_recv().expect("expected event");
     let score = event.as_score().expect("expected Score event");
@@ -165,12 +155,7 @@ fn test_gene_bank_bridge_emits_admitted_span_with_valid_semver() {
 fn test_gene_bank_bridge_emits_rollback_span() {
     let (client, mut rx) = LangfuseClient::new_mock();
     let bridge = GeneBankLangfuseBridge::new(client);
-    bridge.emit_rollback(
-        "patch-109",
-        "1.2.0",
-        "1.1.0",
-        "regression detected in benchmark",
-    );
+    bridge.emit_rollback("patch-109", "1.2.0", "1.1.0", "regression detected in benchmark");
 
     let event = rx.try_recv().expect("expected event");
     let span = event.as_span().expect("expected Span event");

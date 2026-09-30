@@ -62,7 +62,10 @@ impl<'ast> Visit<'ast> for YagniVisitor {
         let is_public = matches!(node.vis, syn::Visibility::Public(_));
         let is_test = node.attrs.iter().any(|a| {
             a.path().is_ident("test")
-                || a.path().segments.last().map_or(false, |s| s.ident == "test")
+                || a.path()
+                    .segments
+                    .last()
+                    .map_or(false, |s| s.ident == "test")
         });
 
         self.functions.insert(
@@ -153,7 +156,8 @@ impl YAGNIDetector {
 
     /// Analyze Rust code for YAGNI violations using syn AST.
     pub fn analyze(&self, code: &str) -> YAGNIReport {
-        let syntax = syn::parse_file(code).unwrap_or_else(|_| syn::parse2(quote::quote!()).unwrap());
+        let syntax =
+            syn::parse_file(code).unwrap_or_else(|_| syn::parse2(quote::quote!()).unwrap());
         let mut visitor = YagniVisitor::new();
         visitor.visit_file(&syntax);
 
@@ -181,12 +185,17 @@ impl YAGNIDetector {
         let mut unused_imports = HashSet::new();
         for imp in visitor.imports {
             // Check if the import is used anywhere in the code (not just in use statements)
-            if !visitor.variable_uses.contains_key(&imp) && !visitor.function_calls.contains_key(&imp) {
+            if !visitor.variable_uses.contains_key(&imp)
+                && !visitor.function_calls.contains_key(&imp)
+            {
                 unused_imports.insert(imp);
             }
         }
 
-        let score = ((unused_functions.len() + unused_variables.len() + unused_imports.len()) as f64 * 10.0).min(100.0);
+        let score = ((unused_functions.len() + unused_variables.len() + unused_imports.len())
+            as f64
+            * 10.0)
+            .min(100.0);
 
         YAGNIReport {
             unused_functions,

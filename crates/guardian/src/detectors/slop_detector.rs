@@ -52,19 +52,77 @@ impl SlopDetector {
 
         // Pre-define patterns with their metadata, referencing cached regexes
         let patterns = [
-            ("manual_loop_001", "Manual Loop Instead of Iterator", &c.slop_manual_loop, SeverityLevel::Medium, "Use iterators or enumerate", SlopCategory::IdiomaticRust),
-            ("clone_001", "Clone Usage", &c.slop_clone, SeverityLevel::Medium, "Consider references or move semantics", SlopCategory::PerformanceIssue),
-            ("unwrap_001", "Unwrap Without Error Handling", &c.slop_unwrap, SeverityLevel::Critical, "Use ? or explicit error handling", SlopCategory::ErrorHandling),
-            ("panic_001", "Panic-Prone Operation", &c.slop_panic, SeverityLevel::Critical, "Return a Result or handle the case", SlopCategory::ErrorHandling),
-            ("index_001", "Direct Indexing", &c.slop_index, SeverityLevel::High, "Use .get() when input may be out of bounds", SlopCategory::MemorySafety),
-            ("single_impl_001", "Interface With Single Implementation", &c.slop_single_impl, SeverityLevel::Low, "Single-use trait: inline until a second impl appears", SlopCategory::DesignPattern),
-            ("config_const_001", "Config For Unchanging Value", &c.slop_config_const, SeverityLevel::Info, "If this never changes, inline it where used", SlopCategory::DesignPattern),
-            ("factory_single_001", "Factory For Single Product", &c.slop_factory_single, SeverityLevel::Low, "Factory with one path: just call the constructor directly", SlopCategory::DesignPattern),
+            (
+                "manual_loop_001",
+                "Manual Loop Instead of Iterator",
+                &c.slop_manual_loop,
+                SeverityLevel::Medium,
+                "Use iterators or enumerate",
+                SlopCategory::IdiomaticRust,
+            ),
+            (
+                "clone_001",
+                "Clone Usage",
+                &c.slop_clone,
+                SeverityLevel::Medium,
+                "Consider references or move semantics",
+                SlopCategory::PerformanceIssue,
+            ),
+            (
+                "unwrap_001",
+                "Unwrap Without Error Handling",
+                &c.slop_unwrap,
+                SeverityLevel::Critical,
+                "Use ? or explicit error handling",
+                SlopCategory::ErrorHandling,
+            ),
+            (
+                "panic_001",
+                "Panic-Prone Operation",
+                &c.slop_panic,
+                SeverityLevel::Critical,
+                "Return a Result or handle the case",
+                SlopCategory::ErrorHandling,
+            ),
+            (
+                "index_001",
+                "Direct Indexing",
+                &c.slop_index,
+                SeverityLevel::High,
+                "Use .get() when input may be out of bounds",
+                SlopCategory::MemorySafety,
+            ),
+            (
+                "single_impl_001",
+                "Interface With Single Implementation",
+                &c.slop_single_impl,
+                SeverityLevel::Low,
+                "Single-use trait: inline until a second impl appears",
+                SlopCategory::DesignPattern,
+            ),
+            (
+                "config_const_001",
+                "Config For Unchanging Value",
+                &c.slop_config_const,
+                SeverityLevel::Info,
+                "If this never changes, inline it where used",
+                SlopCategory::DesignPattern,
+            ),
+            (
+                "factory_single_001",
+                "Factory For Single Product",
+                &c.slop_factory_single,
+                SeverityLevel::Low,
+                "Factory with one path: just call the constructor directly",
+                SlopCategory::DesignPattern,
+            ),
         ];
 
         for (line_no, raw) in code.lines().enumerate() {
             // Strip comments and string literals
-            let line = c.string_literal.replace_all(raw.split("//").next().unwrap_or(""), "");
+            let line = c
+                .string_literal
+                .replace_all(raw.split("//").next().unwrap_or(""), "");
             if line.trim().is_empty() {
                 continue;
             }

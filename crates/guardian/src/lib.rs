@@ -12,7 +12,7 @@ pub mod api {
     use crate::{
         core::{
             metrics::{AIBehaviorMetrics, AIMetrics, CodeMetrics},
-            metrics_db::{MetricsDb, default_db_path},
+            metrics_db::{default_db_path, MetricsDb},
         },
         detectors::{
             command_log_detector::{CommandDetectorConfig, CommandLogDetector},
@@ -70,6 +70,37 @@ pub mod api {
             Self::new(GuardianConfig::default())
         }
 
+        /// รวม metrics จาก detectors ต่างๆ เข้าเป็น AIMetrics เดียวกัน (Shared path ป้องกัน drift ระหว่าง CLI และ API)
+        pub fn build_metrics(
+            file_path: &str,
+            issues: &[SlopIssue],
+            y: &YAGNIReport,
+            over: &OverEngineeringReport,
+        ) -> AIMetrics {
+            let slop_score = issues.len() as f64 / 10.0;
+            let yagni_violations =
+                y.unused_functions.len() + y.unused_variables.len() + y.unused_imports.len();
+            let dead_code_lines = over.net_deletable_lines.max(y.unused_functions.len());
+            let mut m = AIMetrics {
+                commit_sha: "unknown".into(),
+                file_path: file_path.to_string(),
+                timestamp: chrono::Utc::now(),
+                ai_lines: vec![],
+                metrics: CodeMetrics {
+                    slop_score,
+                    yagni_violations,
+                    dead_code_lines,
+                    over_engineering_score: over.score,
+                    inefficient_patterns: over.findings.len(),
+                    ..Default::default()
+                },
+                ai_behavior: AIBehaviorMetrics::default(),
+                quality_score: 0.0,
+            };
+            m.quality_score = m.calculate_overall_score();
+            m
+        }
+
         /// Analyze a single file
         pub fn analyze_file(
             &self,
@@ -84,25 +115,8 @@ pub mod api {
             let ponytail_marks = PonytailCommentDetector::analyze(&code);
             let minimal_checks = MinimalCheckDetector::analyze(&code);
 
-            let slop_score = issues.len() as f64 / 10.0;
-            let yagni_violations = y.unused_functions.len() + y.unused_variables.len() + y.unused_imports.len();
-            let m = AIMetrics {
-                commit_sha: "unknown".into(),
-                file_path: path.to_string_lossy().into(),
-                timestamp: chrono::Utc::now(),
-                ai_lines: vec![],
-                metrics: CodeMetrics {
-                    slop_score,
-                    yagni_violations,
-                    dead_code_lines: y.unused_functions.len(),
-                    over_engineering_score: over.score,
-                    inefficient_patterns: over.findings.len(),
-                    ..Default::default()
-                },
-                ai_behavior: AIBehaviorMetrics::default(),
-                quality_score: 0.0,
-            };
-            let quality_score = m.calculate_overall_score();
+            let m = Self::build_metrics(&path.to_string_lossy(), &issues, &y, &over);
+            let quality_score = m.quality_score;
 
             Ok(FileAnalysis {
                 file: path.to_string_lossy().into(),
@@ -126,9 +140,11 @@ pub mod api {
 
         /// Get database connection
         pub fn db(&self) -> Result<MetricsDb, Box<dyn std::error::Error>> {
-            let path = self.config.db_path.clone().unwrap_or_else(|| {
-                default_db_path().to_string_lossy().into_owned()
-            });
+            let path = self
+                .config
+                .db_path
+                .clone()
+                .unwrap_or_else(|| default_db_path().to_string_lossy().into_owned());
             if let Some(parent) = std::path::Path::new(&path).parent() {
                 if !parent.as_os_str().is_empty() {
                     std::fs::create_dir_all(parent)?;
