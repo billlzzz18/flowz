@@ -1,0 +1,1 @@
+{"name":"Frontend Quality","rules":[{"id":"color_contrast","severity":"high","threshold":4.5,"enabled":true},{"id":"accessibility","severity":"high","enabled":true},{"id":"responsive_design","severity":"medium","enabled":true}]}

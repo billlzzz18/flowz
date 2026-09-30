@@ -1,6 +1,7 @@
 # ADR-0028: Remote Execution ผ่าน Backend Layer
 
 Status: Accepted
+Date: 2026-09-23
 
 ## Decision
 แยก "จะรันอะไร" (WorkerSpec) ออกจาก "รันที่ไหน" (ExecutionBackend)

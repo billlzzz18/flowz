@@ -43,7 +43,7 @@ class Decision:
 
 
 def _clean(text: str) -> str:
-    text = re.sub(r"[`*_]+", "", text)
+    text = re.sub(r"[`*#]+", "", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip(" -:\n\t")
 
@@ -62,12 +62,17 @@ def parse_decision(path: Path) -> Decision:
     sections: dict[str, list[str]] = {
         "decision": [],
         "context": [],
+        "rationale": [],
         "consequences": [],
     }
 
+    in_code_block = False
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
-        if not line:
+        if line.startswith("```"):
+            in_code_block = not in_code_block
+            continue
+        if in_code_block or not line:
             continue
 
         heading_match = HEADING_RE.match(line)
@@ -104,8 +109,9 @@ def parse_decision(path: Path) -> Decision:
         raise DecisionError(f"{path}: missing non-empty '## Decision' section")
 
     context = _truncate(" ".join(sections["context"]))
+    rationale_section = _truncate(" ".join(sections["rationale"]))
     consequences = _truncate(" ".join(sections["consequences"]))
-    rationale = context or consequences or decision
+    rationale = context or rationale_section or consequences or ""
 
     return Decision(
         id=adr_id,

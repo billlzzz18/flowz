@@ -1,6 +1,8 @@
 import unittest
 import csv
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 class TestRegisterDecision(unittest.TestCase):
@@ -9,9 +11,16 @@ class TestRegisterDecision(unittest.TestCase):
         self.script_path = Path("scripts/register_decision.py")
 
     def test_script_execution(self):
-        res = subprocess.run(["python", str(self.script_path)], capture_output=True, text=True)
-        self.assertEqual(res.returncode, 0, f"Script failed: {res.stderr}")
-        self.assertIn("Successfully synced", res.stdout)
+        with tempfile.TemporaryDirectory() as td:
+            output = Path(td) / "decisions.csv"
+            res = subprocess.run(
+                [sys.executable, str(self.script_path), "--output", str(output)],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(res.returncode, 0, f"Script failed: {res.stderr}")
+            self.assertIn("Successfully synced", res.stdout)
+            self.assertTrue(output.exists())
 
     def test_adr_count_and_columns(self):
         self.assertTrue(self.csv_path.exists())
@@ -42,13 +51,11 @@ class TestRegisterDecision(unittest.TestCase):
             self.assertTrue(p.exists(), f"Source path {p} does not exist")
 
     def test_check_command(self):
-        res = subprocess.run(["python", str(self.script_path), "check"], capture_output=True, text=True)
+        res = subprocess.run([sys.executable, str(self.script_path), "check"], capture_output=True, text=True)
         self.assertEqual(res.returncode, 0, f"Check failed: {res.stderr}")
         self.assertIn("OK:", res.stdout)
 
     def test_parse_decision_single_pass(self):
-        import sys
-        import tempfile
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
         from scripts.register_decision import parse_decision
 

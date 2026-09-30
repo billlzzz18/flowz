@@ -1,0 +1,1 @@
+{"name":"API Security","rules":[{"id":"authentication","severity":"critical","enabled":true},{"id":"input_validation","severity":"high","enabled":true},{"id":"rate_limiting","severity":"medium","enabled":true}]}

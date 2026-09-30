@@ -1,6 +1,7 @@
 # AGENTS.md — Instructions for AI Coding Agents
 
 ## 1. Architecture Guidelines
+
 - Read `docs/README.md`, `docs/plans.csv`, `docs/specs.csv`, and ADRs before modifying code.
 - Check actual module paths under `src/` before assuming component structure.
 - Distinguish specification gaps from existing implementation; do not treat unwritten modules as completed.
@@ -12,6 +13,7 @@
 - Keep domain entities isolated from transport layers and storage drivers.
 
 ## 2. Invariants & Security (ADR-0026 to ADR-0037)
+
 - Hermes profile layout is the standard hub format for agent distribution.
 - Maintain strict ownership split: distribution-owned vs config-override vs user-owned.
 - Exclude credentials and user runtime data: `auth.json`, `.env`, `memories/`, `sessions/`, `state.db*`.
@@ -23,6 +25,7 @@
 - All admitted patches must pass statistical rigor before gene bank entry.
 
 ## 3. Testing Guidelines
+
 - Never report work as passed without real execution output from tests or runtime checks.
 - Report toolchain constraints honestly (e.g. compiler unavailable, memory pressure, missing runtime).
 - Practice test-driven validation: ensure test vector covers edge cases and regression scenarios.
@@ -31,6 +34,7 @@
 - Verify environment and dependencies before running test suites.
 
 ## 4. Documentation & Workflow Guidelines
+
 - Documentation is the sole lifeline of the project; never overwrite, truncate, or drop specs.
 - Use `scripts/register_decision.py` to register and audit ADRs into `docs/decisions.csv`.
 - All ledger modifications in `docs/*.csv` must use atomic operations and valid formatting.

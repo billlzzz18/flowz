@@ -34,9 +34,6 @@ rusqlite = { version = "0.31", features = ["bundled"] }
 guardian = { path = "crates/guardian" }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
-[target.'cfg(target_os = "linux")'.dependencies]
-notify-rust = "4"
-
 [[bin]]
 name = "flowz-mcp"
 path = "src/main.rs"

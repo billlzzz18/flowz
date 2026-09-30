@@ -1,5 +1,5 @@
 {
-  description = "flowz-mcp — Rust MCP server for workflow orchestration";
+  description = "blnk — P2P remote access multitool";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -14,7 +14,7 @@
         pkgs = import nixpkgs { inherit system overlays; };
 
         # Rust toolchain from rust-toolchain.toml
-        rustToolchain = pkgs.rust-bin.stable."1.98.1".complete;
+        rustToolchain = pkgs.rust-bin.stable."1.97.0".complete;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -38,7 +38,7 @@
           ];
 
           shellHook = ''
-            echo "flowz-mcp dev shell — Rust $(rustc --version)"
+            echo "blnk dev shell — Rust $(rustc --version)"
             echo "  cargo check --workspace"
             echo "  cargo test --workspace"
             echo "  just ci"

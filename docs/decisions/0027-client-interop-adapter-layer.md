@@ -1,6 +1,7 @@
 # ADR-0027: Client Interop ผ่าน Adapter Layer
 
 Status: Accepted
+Date: 2026-09-23
 
 ## Decision
 Adapter อยู่ src/adapter/ แยกจาก core domain
