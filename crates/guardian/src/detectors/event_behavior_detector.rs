@@ -176,7 +176,7 @@ impl EventBehaviorDetector {
             }
             if let Some(session) = &event.session_id {
                 if let Some((previous_ts, previous_tool)) = last_by_session.get(session) {
-                    if event.event_ts + self.config.max_timestamp_regression < *previous_ts {
+                    if event.event_ts.saturating_add(self.config.max_timestamp_regression) < *previous_ts {
                         findings.push(EventFinding {
                             kind: EventFindingKind::TimestampRegression,
                             event_index: *index,
