@@ -9,12 +9,10 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 const SYSTEM_ONE_SUFFIX: &str = "/v1/systemone";
 
 #[async_trait]
-pub trait Decider: DecisionBackend {
-    async fn decide(&self, query: DecisionQuery) -> Result<DecisionResponse, DeciderError>;
-}
-
 pub trait DecisionBackend: Send + Sync {
-    fn backend_name(&self) -> &'static str;
+    fn backend_name(&self) -> &str;
+
+    async fn decide(&self, query: DecisionQuery) -> Result<DecisionResponse, DeciderError>;
 }
 
 /// HTTP client for Jev, Laya, tev1, and other compatible System One endpoints.
@@ -22,6 +20,7 @@ pub trait DecisionBackend: Send + Sync {
 #[derive(Clone)]
 pub struct SystemOneClient {
     http: Client,
+    backend_name: String,
     endpoint: String,
     model: String,
     api_key: Option<String>,
@@ -30,19 +29,27 @@ pub struct SystemOneClient {
 impl SystemOneClient {
     /// Creates a client with a 30-second request timeout.
     pub fn new(
+        backend_name: impl Into<String>,
         base_url: impl AsRef<str>,
         model: impl Into<String>,
         api_key: Option<String>,
     ) -> Result<Self, DeciderError> {
-        Self::with_timeout(base_url, model, api_key, DEFAULT_TIMEOUT)
+        Self::with_timeout(backend_name, base_url, model, api_key, DEFAULT_TIMEOUT)
     }
 
     pub fn with_timeout(
+        backend_name: impl Into<String>,
         base_url: impl AsRef<str>,
         model: impl Into<String>,
         api_key: Option<String>,
         timeout: Duration,
     ) -> Result<Self, DeciderError> {
+        let backend_name = backend_name.into();
+        if backend_name.trim().is_empty() {
+            return Err(DeciderError::InvalidConfiguration(
+                "backend name must not be empty".to_string(),
+            ));
+        }
         let base_url = base_url.as_ref().trim().trim_end_matches('/');
         if !(base_url.starts_with("http://") || base_url.starts_with("https://")) {
             return Err(DeciderError::InvalidConfiguration(
@@ -72,6 +79,7 @@ impl SystemOneClient {
 
         Ok(Self {
             http,
+            backend_name,
             endpoint,
             model,
             api_key: api_key.filter(|key| !key.trim().is_empty()),
@@ -87,14 +95,12 @@ impl SystemOneClient {
     }
 }
 
-impl DecisionBackend for SystemOneClient {
-    fn backend_name(&self) -> &'static str {
-        "system-one"
-    }
-}
-
 #[async_trait]
-impl Decider for SystemOneClient {
+impl DecisionBackend for SystemOneClient {
+    fn backend_name(&self) -> &str {
+        &self.backend_name
+    }
+
     async fn decide(&self, query: DecisionQuery) -> Result<DecisionResponse, DeciderError> {
         query.validate()?;
         let request = DecisionRequest {

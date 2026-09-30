@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, env, process};
 
-use decider::{Decider, DecisionQuery, Question, SystemOneClient};
+use decider::{DecisionBackend, DecisionQuery, Question, SystemOneClient};
 use serde_json::json;
 
 fn shared_query() -> DecisionQuery {
@@ -12,29 +12,32 @@ fn shared_query() -> DecisionQuery {
             (
                 "route".to_string(),
                 Question::Choice {
-                    instructions: "Which category best matches the ticket?".to_string(),
+                    instructions: json!("Which category best matches the ticket?"),
                     criteria: BTreeMap::from([
-                        ("billing".to_string(), Some("Payment or duplicate charge".to_string())),
+                        ("billing".to_string(), json!("Payment or duplicate charge")),
                         (
                             "refund".to_string(),
-                            Some("Explicit request to return money".to_string()),
+                            json!({
+                                "description": "Explicit request to return money",
+                                "examples": ["refund", "reverse the charge"]
+                            }),
                         ),
-                        ("other".to_string(), None),
+                        ("other".to_string(), serde_json::Value::Null),
                     ]),
                 },
             ),
             (
                 "explicit_refund_request".to_string(),
                 Question::Noul {
-                    instructions: "Does the customer explicitly request a refund?".to_string(),
+                    instructions: json!("Does the customer explicitly request a refund?"),
                     criteria: None,
                 },
             ),
             (
                 "urgency".to_string(),
                 Question::Score {
-                    instructions: "Score the urgency of this ticket from low to high.".to_string(),
-                    criteria: vec!["low".to_string(), "medium".to_string(), "high".to_string()],
+                    instructions: json!("Score the urgency of this ticket from low to high."),
+                    criteria: vec![json!("low"), json!("medium"), json!("high")],
                 },
             ),
         ]),
@@ -58,7 +61,7 @@ async fn probe(label: &str, prefix: &str) -> Option<bool> {
         }
     };
     let api_key = env::var(format!("{prefix}_API_KEY")).ok();
-    let client = match SystemOneClient::new(base_url, model, api_key) {
+    let client = match SystemOneClient::new(label, base_url, model, api_key) {
         Ok(client) => client,
         Err(error) => {
             println!("FAIL {label}: {error}");
@@ -71,15 +74,15 @@ async fn probe(label: &str, prefix: &str) -> Option<bool> {
             let choice_ok = response
                 .answers
                 .get("route")
-                .is_some_and(|answer| answer.choice.is_some());
+                .is_some_and(|answer| answer.choice_value().is_ok());
             let noul_ok = response
                 .answers
                 .get("explicit_refund_request")
-                .is_some_and(|answer| answer.noul.is_some());
+                .is_some_and(|answer| answer.noul_probability().is_ok());
             let score_ok = response
                 .answers
                 .get("urgency")
-                .is_some_and(|answer| answer.score.is_some());
+                .is_some_and(|answer| answer.score_value().is_ok());
             println!(
                 "{label}: Choice={} Noul={} Score={}",
                 if choice_ok { "PASS" } else { "FAIL" },
