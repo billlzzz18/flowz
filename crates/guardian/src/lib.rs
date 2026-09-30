@@ -19,10 +19,9 @@ pub mod api {
             minimal_check_detector::{MinimalCheckDetector, MinimalCheckReport},
             over_engineer_detector::{OverEngineerDetector, OverEngineeringReport},
             ponytail_comment_detector::{PonytailCommentDetector, PonytailCommentReport},
-            slop_detector::{SeverityLevel, SlopCategory, SlopDetector, SlopIssue},
+            slop_detector::{SlopDetector, SlopIssue},
             yagni_detector::{YAGNIDetector, YAGNIReport},
         },
-        report::report_generator::ReportGenerator,
     };
     use std::path::Path;
 
@@ -79,13 +78,14 @@ pub mod api {
             let code = std::fs::read_to_string(path)?;
 
             let issues = SlopDetector::new().detect(&code);
-            let mut yd = YAGNIDetector::new();
+            let yd = YAGNIDetector::new();
             let y = yd.analyze(&code);
             let over = OverEngineerDetector::analyze(&code);
             let ponytail_marks = PonytailCommentDetector::analyze(&code);
             let minimal_checks = MinimalCheckDetector::analyze(&code);
 
             let slop_score = issues.len() as f64 / 10.0;
+            let yagni_violations = y.unused_functions.len() + y.unused_variables.len() + y.unused_imports.len();
             let m = AIMetrics {
                 commit_sha: "unknown".into(),
                 file_path: path.to_string_lossy().into(),
@@ -93,6 +93,10 @@ pub mod api {
                 ai_lines: vec![],
                 metrics: CodeMetrics {
                     slop_score,
+                    yagni_violations,
+                    dead_code_lines: y.unused_functions.len(),
+                    over_engineering_score: over.score,
+                    inefficient_patterns: over.findings.len(),
                     ..Default::default()
                 },
                 ai_behavior: AIBehaviorMetrics::default(),

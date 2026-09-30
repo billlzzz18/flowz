@@ -1,9 +1,10 @@
 use guardian::{
     core::git_ai_extractor::GitAIExtractor,
-    integration::git_hooks::GitHooksManager,
     lsp::GuardianLspAnalyzer,
 };
-use std::{fs, path::Path};
+#[cfg(unix)]
+use guardian::integration::git_hooks::GitHooksManager;
+use std::fs;
 
 fn test_temp_dir() -> std::path::PathBuf {
     std::env::temp_dir().join("guardian-test")

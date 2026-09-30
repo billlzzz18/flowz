@@ -32,7 +32,7 @@ fn slop_detects_panic_family_but_not_words() {
 }
 #[test]
 fn yagni_does_not_flag_public_or_called_and_resets_state() {
-    let mut d = YAGNIDetector::new();
+    let d = YAGNIDetector::new();
     let first = d.analyze("fn hidden() {}\npub fn api() {}\nfn main(){hidden();}");
     assert!(first.unused_functions.is_empty());
     let second = d.analyze("fn stale() {}\nfn main(){}");

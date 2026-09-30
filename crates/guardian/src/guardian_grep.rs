@@ -93,6 +93,7 @@ pub struct PatternMatch {
 /// Multi-grep engine: single AST pass per language, all patterns applied
 pub struct GuardianGrep {
     rules_by_lang: HashMap<SupportLang, Vec<Rule>>,
+    #[allow(dead_code)]
     rule_index: HashMap<String, Rule>,
 }
 
@@ -608,7 +609,7 @@ impl GuardianGrep {
     fn run_rule_pattern(
         &self,
         ast: &AstGrep<StrDoc<SupportLang>>,
-        content: &str,
+        _content: &str,
         file: &str,
         rule: &Rule,
     ) -> Result<Vec<PatternMatch>, Box<dyn std::error::Error>> {
@@ -892,13 +893,18 @@ impl GuardianGrep {
         }
         let anchor = &patch.anchor;
         
+        // Validate file anchor
+        if !anchor.file.is_empty() && anchor.file != file {
+            return Err(format!("patch anchor file mismatch: expected {}, got {}", anchor.file, file).into());
+        }
+
         // Verify anchor matches current content (drift detection)
         let lines: Vec<&str> = content.lines().collect();
-        if anchor.line > lines.len() {
+        if anchor.line == 0 || anchor.line > lines.len() {
             return Err(format!("anchor line {} out of bounds (file has {} lines)", anchor.line, lines.len()).into());
         }
         let line = lines[anchor.line - 1];
-        if anchor.col > line.len() {
+        if anchor.col == 0 || anchor.col > line.len() + 1 {
             return Err(format!("anchor col {} out of bounds (line has {} chars)", anchor.col, line.len()).into());
         }
 
@@ -949,6 +955,7 @@ impl GuardianGrep {
     }
 }
 
+#[allow(dead_code)]
 struct PartialMatch {
     start: usize,
     end: usize,
@@ -1154,7 +1161,6 @@ mod tests {
 
     #[test]
     fn test_all_languages_covered() {
-        let grep = GuardianGrep::new();
         let langs = [
             ("test.rs", SupportLang::Rust),
             ("test.ts", SupportLang::TypeScript),

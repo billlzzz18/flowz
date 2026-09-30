@@ -1,10 +1,10 @@
 use guardian::integration::langfuse::{
-    GeneBankLangfuseBridge, LangfuseClient, LangfuseEvent, is_valid_semver,
+    GeneBankLangfuseBridge, LangfuseClient, is_valid_semver,
 };
 
 #[test]
 fn test_gene_bank_bridge_emits_full_admission_trace() {
-    let (client, mut rx) = LangfuseClient::new_mock();
+    let (client, rx) = LangfuseClient::new_mock();
     let bridge = GeneBankLangfuseBridge::new(client);
     bridge.emit_admission_start("patch-42", "Prompt", "ThinkingRunaway", None);
     bridge.emit_gate_decision("patch-42", 1, "Pass", "Valid rust");

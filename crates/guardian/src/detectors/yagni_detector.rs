@@ -32,7 +32,6 @@ struct YagniVisitor {
     variables: HashMap<String, VariableInfo>,
     variable_uses: HashMap<String, usize>,
     imports: HashSet<String>,
-    import_uses: HashSet<String>,
     current_scope: String,
 }
 
@@ -50,7 +49,6 @@ impl YagniVisitor {
             variables: HashMap::new(),
             variable_uses: HashMap::new(),
             imports: HashSet::new(),
-            import_uses: HashSet::new(),
             current_scope: "root".into(),
         }
     }
@@ -62,7 +60,10 @@ impl<'ast> Visit<'ast> for YagniVisitor {
         let name = node.sig.ident.to_string();
         let line = 0; // line number requires proc_macro2 "span-locations" feature
         let is_public = matches!(node.vis, syn::Visibility::Public(_));
-        let is_test = node.attrs.iter().any(|a| a.path().is_ident("test"));
+        let is_test = node.attrs.iter().any(|a| {
+            a.path().is_ident("test")
+                || a.path().segments.last().map_or(false, |s| s.ident == "test")
+        });
 
         self.functions.insert(
             name.clone(),
