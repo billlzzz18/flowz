@@ -45,7 +45,7 @@ class SlopCleaner:
     def _remove_high_risk_phrases(self, text: str) -> str:
         """Remove or replace high-risk AI phrases."""
         replacements = {
-            r'\b(?:delve|dive deep) into\b': '',
+            r'\b(?:delve|dive deep) into\b': 'examine',
             r'\bunpack\b(?! (?:the|a|an))': 'examine',  # Keep "unpack the box"
             r'\bnavigate the complexit(?:y|ies) of\b': 'handle',
             r'\bin the ever-evolving landscape of\b': 'in',
