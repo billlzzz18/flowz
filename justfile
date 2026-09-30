@@ -33,7 +33,7 @@ ci: fmt clippy test build-release
 
 # Build release binary
 build-release:
-    cargo build --release --locked
+    cargo build --release
 
 # Run benchmarks
 bench:
