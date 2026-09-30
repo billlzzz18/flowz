@@ -1,0 +1,43 @@
+crates/guardian/Cargo.toml
+  s_9ca38dd156c025::t_ea978528721d78 46
+crates/guardian/src/core/metrics_db.rs
+  s_9ca38dd156c025::t_c9556469137aa9 240
+crates/guardian/src/detectors/regex_cache.rs
+  s_9ca38dd156c025::t_02cb55207d8eac 73
+crates/guardian/src/detectors/slop_detector.rs
+  s_9ca38dd156c025::t_0016fa50edc16e 55-118,123-125,147
+crates/guardian/tests/guardian_tests.rs
+  s_9ca38dd156c025::t_79eb9df2ec94d0 1
+crates/guardian/tests/integration_tests.rs
+  s_9ca38dd156c025::t_971c436f282f30 3,33-36
+crates/guardian/tests/test_gene_bank_bridge.rs
+  s_9ca38dd156c025::t_f0be6fc2f2b186 1,24,52,158
+crates/sbx-core/src/backends/ssh.rs
+  s_9ca38dd156c025::t_54940f4b9f5fa8 3,26-36,47-49,101-107
+src/mcp/prompts/cron_create.rs
+  s_9ca38dd156c025::t_fe4e56dcc011e5 26-27
+src/mcp/prompts/reducer_prompt.rs
+  s_9ca38dd156c025::t_bc8913776fb35d 96-99
+src/mcp/prompts/subagent_delegate.rs
+  s_9ca38dd156c025::t_6d6f046e5e05de 184,187-188
+tests/test_engine_tracing.rs
+  s_9ca38dd156c025::t_b60cfde2c7a4ad 10-12,14-15
+tests/test_workflow_compose_prompt.rs
+  s_9ca38dd156c025::t_74a594f811714c 4-6,10-12,20-26,34-44,46,52-59,69-70,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "caf354e8d675b404a0cc1a4dbdb9ad24a3a4ecd8",
+  "prompts": {},
+  "sessions": {
+    "s_9ca38dd156c025": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c15c178-7d36-4260-be4e-8acb3081d58f",
+        "model": "unknown"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
