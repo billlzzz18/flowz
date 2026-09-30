@@ -65,7 +65,7 @@ impl MinimalCheckDetector {
                     if assert_re.is_match(l) {
                         has_assert = true;
                     }
-                    if depth == 0 && body_lines > 1 {
+                    if depth == 0 && (body_lines > 1 || l.contains('{')) {
                         break;
                     }
                 }
