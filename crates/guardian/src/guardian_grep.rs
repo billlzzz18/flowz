@@ -347,7 +347,7 @@ impl GuardianGrep {
                             description: "Detect console.log statements".into(),
                             lang: "typescript".into(),
                             glob: "**/*.{ts,tsx}".into(),
-                            exclude: Some("**/tests/**".to_string()).into(),
+                            exclude: Some("**/tests/**".to_string()),
                             action: RuleAction::Review,
                             pattern: r#"console\.log\("#.into(),
                             severity: Severity::Low,
@@ -359,7 +359,7 @@ impl GuardianGrep {
                             description: "Detect debugger statements".into(),
                             lang: "javascript".into(),
                             glob: "**/*.{js,jsx}".into(),
-                            exclude: Some("**/tests/**".to_string()).into(),
+                            exclude: Some("**/tests/**".to_string()),
                             action: RuleAction::Block,
                             pattern: r#"debugger"#.into(),
                             severity: Severity::Critical,
@@ -372,7 +372,7 @@ impl GuardianGrep {
                             description: "Detect print statements".into(),
                             lang: "python".into(),
                             glob: "**/*.py".into(),
-                            exclude: Some("**/tests/**".to_string()).into(),
+                            exclude: Some("**/tests/**".to_string()),
                             action: RuleAction::Review,
                             pattern: r#"print\("#.into(),
                             severity: Severity::Low,
@@ -384,7 +384,7 @@ impl GuardianGrep {
                             description: "Detect bare except clauses".into(),
                             lang: "python".into(),
                             glob: "**/*.py".into(),
-                            exclude: Some("**/tests/**".to_string()).into(),
+                            exclude: Some("**/tests/**".to_string()),
                             action: RuleAction::Warn,
                             pattern: r#"except:"#.into(),
                             severity: Severity::High,
@@ -397,7 +397,7 @@ impl GuardianGrep {
                             description: "Detect panic() calls".into(),
                             lang: "go".into(),
                             glob: "**/*.go".into(),
-                            exclude: Some("**/tests/**".to_string()).into(),
+                            exclude: Some("**/tests/**".to_string()),
                             action: RuleAction::Warn,
                             pattern: r#"panic\("#.into(),
                             severity: Severity::High,
@@ -733,20 +733,19 @@ impl GuardianGrep {
                     // Pattern: tool_error -> call(same_tool, same_args) - retry same failed tool
                     let lines: Vec<&str> = content.lines().collect();
                     for i in 0..lines.len().saturating_sub(1) {
-                        if lines[i].contains("error") || lines[i].contains("Error") {
-                            if lines[i + 1].contains(
-                                &lines[i].replace("error", "").replace("Error", "").trim(),
-                            ) {
-                                let anchor = Anchor::new(file, i + 1, 1);
-                                results.push(PatternMatch {
-                                    rule: rule.clone(),
-                                    anchor,
-                                    text: format!(
-                                        "unhandled_tool_failure_loop: retry after error at line {}",
-                                        i + 1
-                                    ),
-                                });
-                            }
+                        if (lines[i].contains("error") || lines[i].contains("Error"))
+                            && lines[i + 1]
+                                .contains(lines[i].replace("error", "").replace("Error", "").trim())
+                        {
+                            let anchor = Anchor::new(file, i + 1, 1);
+                            results.push(PatternMatch {
+                                rule: rule.clone(),
+                                anchor,
+                                text: format!(
+                                    "unhandled_tool_failure_loop: retry after error at line {}",
+                                    i + 1
+                                ),
+                            });
                         }
                     }
                 }
@@ -1235,7 +1234,7 @@ mod tests {
             commit_sha: "abc123".into(),
         };
 
-        let compressed = GuardianGrep::compress_logs(&[entry.clone()]);
+        let compressed = GuardianGrep::compress_logs(std::slice::from_ref(&entry));
         let decompressed = GuardianGrep::decompress_logs(&compressed).unwrap();
         assert_eq!(decompressed.len(), 1);
         assert_eq!(decompressed[0].file, entry.file);

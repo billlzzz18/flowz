@@ -65,11 +65,15 @@ pub mod api {
         pub fn new(config: GuardianConfig) -> Self {
             Self { config }
         }
+    }
 
-        pub fn default() -> Self {
+    impl Default for Guardian {
+        fn default() -> Self {
             Self::new(GuardianConfig::default())
         }
+    }
 
+    impl Guardian {
         /// รวม metrics จาก detectors ต่างๆ เข้าเป็น AIMetrics เดียวกัน (Shared path ป้องกัน drift ระหว่าง CLI และ API)
         pub fn build_metrics(
             file_path: &str,

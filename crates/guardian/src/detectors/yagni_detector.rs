@@ -61,11 +61,7 @@ impl<'ast> Visit<'ast> for YagniVisitor {
         let line = 0; // line number requires proc_macro2 "span-locations" feature
         let is_public = matches!(node.vis, syn::Visibility::Public(_));
         let is_test = node.attrs.iter().any(|a| {
-            a.path().is_ident("test")
-                || a.path()
-                    .segments
-                    .last()
-                    .map_or(false, |s| s.ident == "test")
+            a.path().is_ident("test") || a.path().segments.last().is_some_and(|s| s.ident == "test")
         });
 
         self.functions.insert(

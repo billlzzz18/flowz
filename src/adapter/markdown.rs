@@ -97,12 +97,12 @@ impl MarkdownDefinition {
         let yaml_val: serde_yaml::Value = serde_yaml::from_str(&yaml).map_err(|e| {
             FlowzError::Validation(format!("invalid frontmatter in {}: {}", path.display(), e))
         })?;
-        if let Some(mapping) = yaml_val.as_mapping() {
-            if mapping.contains_key(&serde_yaml::Value::String("timeout".to_string())) {
-                return Err(FlowzError::Validation(
-                    "timeout is not allowed in frontmatter (ADR-0023: Cron definitions have no timeout)".into(),
-                ));
-            }
+        if let Some(mapping) = yaml_val.as_mapping()
+            && mapping.contains_key("timeout")
+        {
+            return Err(FlowzError::Validation(
+                "timeout is not allowed in frontmatter (ADR-0023: Cron definitions have no timeout)".into(),
+            ));
         }
         let frontmatter: Frontmatter = serde_yaml::from_value(yaml_val).map_err(|e| {
             FlowzError::Validation(format!("invalid frontmatter in {}: {}", path.display(), e))
