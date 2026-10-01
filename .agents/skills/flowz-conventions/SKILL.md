@@ -37,7 +37,23 @@ Flowz is an autonomous MCP Agent Orchestrator written in Rust. It enforces stric
 - **Statistical Rigor:** Evolution screening requires 4-gate verification with paired z-test ($z \ge 1.96, n \ge 26$).
 - **No Fabricated Output:** Status reports must reflect actual execution output and compiler/test diagnostics.
 
+### 6. System One Fast-Path Decision Architecture & Capability Matrix
+- **Decider over LLM / Guardian Separation:** System One (`crates/decider`) serves as the fast, typed, low-latency decision plane (`/v1/systemone`) across compatible backends. Guardian remains strictly a policy & audit tool, offloading routing, subagent sizing, tool selection, and model dispatch to System One.
+- **Unified SDK Compatibility:**
+  - **Jev (TypeSafe):** Origin backend. High precision, $0.0042 / 1M tokens.
+  - **Laya:** Lean replica model (~400MB+), specialized in low-resource fast scoring.
+  - **Tev1:** Ollama-compatible endpoint (~800MB+ for 0.8B/4B), runnable locally via standard type-safe SDK interfaces.
+- **Dynamic Orchestration Roles:** Decider handles:
+  1. Routing requests across pipelines without burning LLM context.
+  2. Sizing subagent concurrency dynamically (Solo vs Fan-out count).
+  3. Dynamic Skill & Tool dispatch matching task complexity against inference cost.
+
+### 7. Subagent Orchestration: Horizontal Fan-Out (No Sequential Chains)
+- **Parallel Fan-Out / Fan-In:** Never chain independent subagents sequentially (waterfall). Distribute independent review bots, files, or audit targets in parallel batches across workers simultaneously.
+- **Actionable Inputs & Compact Receipts:** Subagents must be spawned with narrow, pre-scoped inputs and return compact receipts (file:line, concise diagnosis, test status) directly to the Lead for execution decisions.
+
 ## Anti-Patterns
 - **Overwriting specs with speculative code:** Never substitute concise code stubs for detailed specification files.
 - **Direct stdio pollution:** `stdout` is strictly reserved for JSON-RPC transport; all debug logging must go to `stderr` via `tracing`.
 - **Touching user-owned paths:** Never delete or overwrite `memories/`, `sessions/`, `state.db*`, `.env`, `credentials/`, or `trajectory/`.
+- **In-memory-only learning:** Never keep critical team lessons, model matrix, or orchestration feedback solely in conversational memory; persist them immediately into conventions and docs.
