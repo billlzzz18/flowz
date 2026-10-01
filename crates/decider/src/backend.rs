@@ -51,6 +51,11 @@ impl SystemOneClient {
             ));
         }
         let base_url = base_url.as_ref().trim().trim_end_matches('/');
+        if base_url.contains('?') || base_url.contains('#') {
+            return Err(DeciderError::InvalidRequest(
+                "base_url must not contain a query or fragment".to_string(),
+            ));
+        }
         if !(base_url.starts_with("http://") || base_url.starts_with("https://")) {
             return Err(DeciderError::InvalidConfiguration(
                 "base URL must use http:// or https://".to_string(),
@@ -58,7 +63,8 @@ impl SystemOneClient {
         }
 
         let model = model.into();
-        if model.trim().is_empty() {
+        let model = model.trim().to_string();
+        if model.is_empty() {
             return Err(DeciderError::InvalidConfiguration("model must not be empty".to_string()));
         }
         if timeout.is_zero() {
@@ -125,5 +131,54 @@ impl DecisionBackend for SystemOneClient {
             .json::<DecisionResponse>()
             .await
             .map_err(DeciderError::ResponseDecode)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_base_url_with_query_or_fragment() {
+        let res_query = SystemOneClient::with_timeout(
+            "backend",
+            "http://localhost:8080/v1?query=1",
+            "model",
+            None,
+            Duration::from_secs(10),
+        );
+        match res_query {
+            Err(DeciderError::InvalidRequest(msg)) => {
+                assert_eq!(msg, "base_url must not contain a query or fragment");
+            }
+            _ => panic!("expected InvalidRequest error for query"),
+        }
+
+        let res_fragment = SystemOneClient::with_timeout(
+            "backend",
+            "https://localhost:8080/v1#hash",
+            "model",
+            None,
+            Duration::from_secs(10),
+        );
+        match res_fragment {
+            Err(DeciderError::InvalidRequest(msg)) => {
+                assert_eq!(msg, "base_url must not contain a query or fragment");
+            }
+            _ => panic!("expected InvalidRequest error for fragment"),
+        }
+    }
+
+    #[test]
+    fn trims_model_name() {
+        let client = SystemOneClient::with_timeout(
+            "backend",
+            "http://localhost:8080",
+            "  my-model:7b  ",
+            None,
+            Duration::from_secs(10),
+        )
+        .unwrap();
+        assert_eq!(client.model(), "my-model:7b");
     }
 }

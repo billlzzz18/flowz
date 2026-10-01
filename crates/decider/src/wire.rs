@@ -51,10 +51,17 @@ impl Question {
                 validate_instructions(name, instructions)?;
             }
             Self::Noul { instructions, criteria } => {
-                if criteria.as_ref().is_some_and(|value| !value.is_object()) {
-                    return Err(DeciderError::InvalidRequest(format!(
-                        "noul question {name:?} criteria must be an object"
-                    )));
+                if let Some(criteria) = criteria {
+                    let Value::Object(map) = criteria else {
+                        return Err(DeciderError::InvalidRequest(format!(
+                            "noul question {name:?} criteria must be an object"
+                        )));
+                    };
+                    if map.values().any(|value| !is_valid_criterion(value, true)) {
+                        return Err(DeciderError::InvalidRequest(format!(
+                            "noul question {name:?} has an unsupported criterion value"
+                        )));
+                    }
                 }
                 validate_instructions(name, instructions)?;
             }
@@ -114,8 +121,15 @@ pub struct DecisionQuery {
 
 impl DecisionQuery {
     pub fn validate(&self) -> Result<(), DeciderError> {
-        if self.state.is_null() {
-            return Err(DeciderError::InvalidRequest("state must not be null".to_string()));
+        let is_empty_state = match &self.state {
+            Value::Null => true,
+            Value::String(text) => text.trim().is_empty(),
+            Value::Array(items) => items.is_empty(),
+            Value::Object(fields) => fields.is_empty(),
+            _ => false,
+        };
+        if is_empty_state {
+            return Err(DeciderError::InvalidRequest("state must not be empty".to_string()));
         }
         if self.questions.is_empty() {
             return Err(DeciderError::InvalidRequest(
@@ -146,7 +160,7 @@ pub struct DecisionRequest {
 
 /// One named answer. Optional fields preserve the different answer shapes and
 /// provider extensions without coercing probabilities or confidence values.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct Answer {
     #[serde(default)]
     pub choice: Option<String>,
@@ -160,6 +174,8 @@ pub struct Answer {
     pub confidence: Option<f64>,
     #[serde(default)]
     pub legend: Option<Value>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -293,11 +309,7 @@ mod tests {
     fn answer_accessors_report_wrong_answer_shapes() {
         let answer = Answer {
             choice: Some("billing".to_string()),
-            noul: None,
-            score: None,
-            probabilities: None,
-            confidence: None,
-            legend: None,
+            ..Default::default()
         };
         assert_eq!(answer.choice_value().unwrap(), "billing");
         assert_eq!(answer.noul_probability(), Err(AnswerError::MissingValue("noul")));
@@ -334,5 +346,73 @@ mod tests {
             keep_alive: None,
         };
         assert!(invalid_criterion.validate().is_err());
+    }
+
+    #[test]
+    fn rejects_empty_state_variants() {
+        for empty_state in [
+            Value::Null,
+            json!(""),
+            json!("   "),
+            json!([]),
+            json!({}),
+        ] {
+            let query = DecisionQuery {
+                state: empty_state,
+                questions: BTreeMap::from([(
+                    "q".to_string(),
+                    Question::Noul {
+                        instructions: json!("Check"),
+                        criteria: None,
+                    },
+                )]),
+                keep_alive: None,
+            };
+            let err = query.validate().unwrap_err();
+            assert!(matches!(err, DeciderError::InvalidRequest(msg) if msg == "state must not be empty"));
+        }
+    }
+
+    #[test]
+    fn validates_noul_criteria_values() {
+        let valid = DecisionQuery {
+            state: json!({"text": "synthetic"}),
+            questions: BTreeMap::from([(
+                "q".to_string(),
+                Question::Noul {
+                    instructions: json!("Check"),
+                    criteria: Some(json!({"yes": "eligible", "no": null, "extra": ["details"]})),
+                },
+            )]),
+            keep_alive: None,
+        };
+        assert!(valid.validate().is_ok());
+
+        let invalid = DecisionQuery {
+            state: json!({"text": "synthetic"}),
+            questions: BTreeMap::from([(
+                "q".to_string(),
+                Question::Noul {
+                    instructions: json!("Check"),
+                    criteria: Some(json!({"yes": 123})),
+                },
+            )]),
+            keep_alive: None,
+        };
+        let err = invalid.validate().unwrap_err();
+        assert!(matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an unsupported criterion value")));
+    }
+
+    #[test]
+    fn preserves_extra_unrecognized_fields_in_answer() {
+        let json_str = r#"{
+            "choice": "billing",
+            "provider_custom_field": "custom_val",
+            "debug_score": 42
+        }"#;
+        let answer: Answer = serde_json::from_str(json_str).unwrap();
+        assert_eq!(answer.choice_value().unwrap(), "billing");
+        assert_eq!(answer.extra.get("provider_custom_field"), Some(&json!("custom_val")));
+        assert_eq!(answer.extra.get("debug_score"), Some(&json!(42)));
     }
 }
