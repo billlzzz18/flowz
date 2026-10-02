@@ -126,7 +126,7 @@ impl DecisionQuery {
             Value::String(text) => text.trim().is_empty(),
             Value::Array(items) => items.is_empty(),
             Value::Object(fields) => fields.is_empty(),
-            _ => false,
+            Value::Bool(_) | Value::Number(_) => true,
         };
         if is_empty_state {
             return Err(DeciderError::InvalidRequest("state must not be empty".to_string()));
