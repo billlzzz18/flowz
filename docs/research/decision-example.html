@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repo Recap Flowchart</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr;
+      gap: 20px;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .canvas, .notes {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .canvas {
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .notes {
+      padding: 20px;
+    }
+
+    h1, h2 {
+      margin: 0 0 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #fff;
+    }
+
+    h2 {
+      font-size: 18px;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .node {
+      background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 14px 16px;
+      position: relative;
+    }
+
+    .node .type {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      background: var(--accent);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .node.start .type { background: var(--good); }
+    .node.decision .type { background: var(--warn); }
+    .node.stop .type { background: var(--bad); }
+
+    .node .title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .node .desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .arrow {
+      text-align: center;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1;
+      margin: -2px 0;
+    }
+
+    .branch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mini {
+      background: #0b1220;
+      border: 1px dashed #334155;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .mini .label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .mini .text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .note {
+      background: #0b1220;
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    ul {
+      margin: 10px 0 0 18px;
+      padding: 0;
+      color: var(--text);
+    }
+
+    li {
+      margin-bottom: 10px;
+      line-height: 1.55;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--text);
+      background: #0b1220;
+    }
+
+    @media (max-width: 960px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="canvas">
+      <h1>Repo Recap Flowchart</h1>
+      <div class="subtitle">
+        โฟลชาร์ตนี้แสดงลำดับการทำงานของเทมเพลตตั้งแต่เลือกภาษา ตรวจเงื่อนไข เก็บข้อมูล วิเคราะห์ แยกหมวด และสร้างรายงานสุดท้าย
+      </div>
+
+      <div class="legend">
+        <span class="pill">Start / End</span>
+        <span class="pill">Decision</span>
+        <span class="pill">Process</span>
+        <span class="pill">Stop / Error</span>
+      </div>
+
+      <div class="flow">
+        <div class="node start">
+          <div class="type">START</div>
+          <div class="title">เริ่มต้น</div>
+          <div class="desc">รับคำสั่งใช้เทมเพลต repo recap พร้อมอาร์กิวเมนต์ภาษา</div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node decision">
+          <div class="type">DECISION</div>
+          <div class="title">เลือกภาษา</div>
+          <div class="desc">ตรวจว่า argument เป็น <b>en</b>, <b>english</b>, <b>th</b>, <b>thai</b> หรือไม่ส่งมาเลย</div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">YES: en / english</div>
+            <div class="text">ตั้งค่าผลลัพธ์เป็นภาษาอังกฤษ</div>
+          </div>
+          <div class="mini">
+            <div class="label">YES: th / thai / none</div>
+            <div class="text">ตั้งค่าผลลัพธ์เป็นภาษาไทย</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node decision">
+          <div class="type">DECISION</div>
+          <div class="title">ตรวจ Preconditions</div>
+          <div class="desc">เช็กว่าอยู่ใน git repo และ gh CLI authenticated หรือไม่</div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">NO: ไม่อยู่ใน git repo</div>
+            <div class="text">หยุดทำงาน และแจ้งว่าขาด git repository</div>
+          </div>
+          <div class="mini">
+            <div class="label">NO: gh auth ไม่ผ่าน</div>
+            <div class="text">หยุดทำงาน และแจ้งว่าขาดการยืนยันตัวตน gh CLI</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">รวบรวมข้อมูลจาก gh CLI</div>
+          <div class="desc">
+            ดึง repo identity, open PRs, open issues, recent releases และ merged PRs ล่าสุดแบบขนาน
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">หาตัว collaborator / maintainer</div>
+          <div class="desc">
+            ใช้รายชื่อ collaborators เพื่อแยก PR ของเราออกจาก PR ภายนอก หากไม่ได้สิทธิ์ให้ใช้ผู้เขียน PR ที่ merged ล่าสุดเป็น fallback
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node decision">
+          <div class="type">DECISION</div>
+          <div class="title">วิเคราะห์ PR ที่เปิดอยู่</div>
+          <div class="desc">ตรวจผู้เขียน ขนาดงาน การชนกันของไฟล์ และสถานะ CI / review</div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">SELECT: collaborator</div>
+            <div class="text">จัดเป็น <b>Our PRs</b></div>
+          </div>
+          <div class="mini">
+            <div class="label">SELECT: external</div>
+            <div class="text">พิจารณาต่อว่า reviewable หรือ problematic</div>
+          </div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">SCORE: ขนาดงาน</div>
+            <div class="text">ใช้ XS / S / M / L / XL ตาม additions</div>
+          </div>
+          <div class="mini">
+            <div class="label">YES/NO: มีปัญหาหรือไม่</div>
+            <div class="text">เช็ก additions > 1000, files > 10, CI failing, overlap, conflict</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">ตรวจ overlap และ cluster</div>
+          <div class="desc">
+            หา PR ที่แก้ไฟล์เดียวกัน และตรวจว่าผู้เขียนคนเดียวมี open PR 3 อันขึ้นไปหรือไม่
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node decision">
+          <div class="type">DECISION</div>
+          <div class="title">วิเคราะห์ Issues</div>
+          <div class="desc">จัดหมวด issue ตามความสัมพันธ์กับ PR และความเร่งด่วน</div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">SELECT: In progress / Covered by PR</div>
+            <div class="text">ถ้ามี PR เกี่ยวข้องหรือครอบคลุมอยู่แล้ว</div>
+          </div>
+          <div class="mini">
+            <div class="label">SELECT: Quick fix / Feature request</div>
+            <div class="text">ถ้าเป็นเคสเล็กหรือเป็นงานใหญ่ที่ต้องคุยเพิ่ม</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node decision">
+          <div class="type">DECISION</div>
+          <div class="title">สรุป Releases ล่าสุด</div>
+          <div class="desc">ใช้ release list เป็นหลัก หากไม่มีให้ fallback ไปดู merged PR ที่เป็น release pattern</div>
+        </div>
+
+        <div class="branch">
+          <div class="mini">
+            <div class="label">YES: มี release</div>
+            <div class="text">สรุป 5 release ล่าสุด</div>
+          </div>
+          <div class="mini">
+            <div class="label">NO: ไม่มี release</div>
+            <div class="text">ใช้ fallback จาก merged PR ที่เป็น release-please pattern</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">สร้าง Executive Summary</div>
+          <div class="desc">
+            สรุปจำนวน PR / issues, contributor ที่ active, ความเสี่ยง, quick wins, bug fixes และสถานะ PR ของเรา
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">จัดรูปแบบ Markdown</div>
+          <div class="desc">
+            ตั้งชื่อเรื่อง ใส่ sections คั่นด้วย --- ทำลิงก์ clickable และใช้ตารางแบบ Markdown
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node">
+          <div class="type">PROCESS</div>
+          <div class="title">คัดลอกไปยังคลิปบอร์ด</div>
+          <div class="desc">
+            ใช้ pbcopy / xclip / wl-copy หรือ fallback เป็น cat แล้วคัดลอกเนื้อหาที่จัดรูปแบบแล้ว
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <div class="node start">
+          <div class="type">END</div>
+          <div class="title">จบงาน</div>
+          <div class="desc">แสดงผลสรุปและยืนยันว่า copied to clipboard แล้ว</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="notes">
+      <h2>Notes in Canvas</h2>
+      <div class="note">
+        <strong>1) Yes/No Decision</strong>
+        ใช้ตอนเช็ก preconditions, มี release ไหม, มี PR ไหม, มีปัญหาไหม
+      </div>
+      <div class="note">
+        <strong>2) Score Decision</strong>
+        ใช้ตอนประเมินขนาด PR แบบ XS/S/M/L/XL และประเมินความเสี่ยงจาก additions / files / conflict
+      </div>
+      <div class="note">
+        <strong>3) Select Decision</strong>
+        ใช้ตอนเลือกภาษา, จัดกลุ่ม PR, จัดกลุ่ม issue, และเลือก fallback path
+      </div>
+      <div class="note">
+        <strong>ภาพรวมลำดับการกระทำ</strong>
+        เริ่มจากภาษา → ตรวจเงื่อนไข → ดึงข้อมูล → แยกประเภท → วิเคราะห์ความเสี่ยง → สรุปผล → จัดรูปแบบ → คัดลอก
+      </div>
+      <div class="note">
+        <strong>จุดที่โฟลว์นี้สำคัญ</strong>
+        มันไม่ใช่แค่สรุปข้อมูล แต่เป็นการ “คัดกรอง + ตัดสินใจ + จัดลำดับ” ก่อนส่งรายงานสุดท้าย
+      </div>
+
+      <ul>
+        <li><b>Precondition</b> = ต้องผ่านก่อนถึงจะทำต่อ</li>
+        <li><b>Classification</b> = แยก PR / issue เป็นหมวด</li>
+        <li><b>Prioritization</b> = ดูขนาดและความเสี่ยง</li>
+        <li><b>Fallback</b> = ถ้าไม่มีข้อมูลหลักให้ใช้ข้อมูลสำรอง</li>
+      </ul>
+    </aside>
+  </div>
+</body>
+</html>
