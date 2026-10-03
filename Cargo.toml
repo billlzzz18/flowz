@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 autotests = false
 
 [dependencies]
+decider = { path = "crates/decider" }
 sbx-core = { path = "crates/sbx-core" }
 pmcp = { version = "2.9", default-features = false, features = ["macros", "schema-generation", "validation"] }
 tokio = { version = "1", features = ["full"] }
