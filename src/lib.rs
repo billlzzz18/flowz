@@ -1,5 +1,4 @@
 pub mod adapter;
-pub mod canvas;
 pub mod cron;
 pub mod domain;
 pub mod error;
@@ -11,6 +10,4 @@ pub mod orchestration;
 pub mod service;
 pub mod spawn;
 pub mod storage;
-pub mod tui;
-pub mod ui;
 pub mod workflow;

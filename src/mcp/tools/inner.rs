@@ -13,11 +13,9 @@ use serde_json::Value;
 )]
 #[repr(u8)]
 pub enum Toolset {
-    Workflow = 1,
     Cron = 2,
     Subagent = 3,
     Supervisor = 4,
-    Canvas = 5,
 }
 
 #[async_trait]

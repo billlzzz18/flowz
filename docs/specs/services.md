@@ -10,7 +10,6 @@ use std::sync::Arc;
 use crate::error::FlowzError;
 
 pub struct FlowzService {
-    pub workflow: Arc<dyn WorkflowService>,
     pub cron: Arc<dyn CronService>,
     pub supervisor: Arc<dyn SupervisorService>,
     pub subagent: Arc<dyn SubagentService>,
@@ -18,71 +17,11 @@ pub struct FlowzService {
     pub skill: Arc<dyn SkillService>,
     pub evolution: Arc<dyn EvolutionService>,
     pub trajectory: Arc<dyn TrajectoryService>,
+    pub decision: decision::DecisionService,
 }
 ```
 
-## D.2 WorkflowService
-
-```rust
-use async_trait::async_trait;
-use chrono::{DateTime, Utc};
-use futures::Stream;
-use crate::error::FlowzError;
-use crate::invocation::InvocationContext;
-use crate::workflow::model::{RunRequest, Cost};
-
-#[async_trait]
-pub trait WorkflowService: Send + Sync {
-    async fn run(
-        &self,
-        ctx: InvocationContext,
-        request: RunRequest,
-    ) -> Result<RunResponse, FlowzError>;
-
-    async fn job(
-        &self,
-        ctx: InvocationContext,
-        job_id: JobId,
-    ) -> Result<JobStatus, FlowzError>;
-
-    async fn cancel(
-        &self,
-        ctx: InvocationContext,
-        job_id: JobId,
-    ) -> Result<(), FlowzError>;
-
-    async fn watch(
-        &self,
-        job_id: JobId,
-    ) -> Result<Box<dyn Stream<Item = JobEvent> + Send + Unpin>, FlowzError>;
-}
-
-pub struct RunResponse {
-    pub job_id: JobId,
-    pub status: JobStatus,
-    pub items: Vec<ItemResult>,
-    pub reducer: Option<ItemResult>,
-    pub total_cost: Option<Cost>,
-    pub duration_ms: u64,
-}
-
-pub struct JobStatus {
-    pub job_id: JobId,
-    pub status: JobState,
-    pub started_at: DateTime<Utc>,
-    pub ended_at: Option<DateTime<Utc>>,
-    pub items: Vec<ItemStatus>,
-}
-
-pub enum JobState {
-    Pending,
-    Running,
-    Completed,
-    Failed,
-    TimedOut,
-    Cancelled,
-}
-```
+> Note: D.2 (WorkflowService) removed per ADR and simplification decisions. Numbering preserved for cross-reference stability.
 
 ## D.3 CronService
 
@@ -442,3 +381,26 @@ pub struct WaitResult {
     pub current_state: SubagentState,
 }
 ```
+
+## D.12 Decision Service (System One Fast-Path)
+
+```rust
+// src/service/decision.rs
+use std::sync::Arc;
+use decider::{DecisionBackend, DecisionQuery, DecisionResponse, DeciderError};
+
+pub struct DecisionService {
+    primary: Option<Arc<dyn DecisionBackend>>,
+    fallback: Option<Arc<dyn DecisionBackend>>,
+}
+
+impl DecisionService {
+    pub fn new() -> Self;
+    pub fn with_backends(
+        primary: Option<Arc<dyn DecisionBackend>>,
+        fallback: Option<Arc<dyn DecisionBackend>>,
+    ) -> Self;
+    pub async fn decide(&self, query: DecisionQuery) -> Result<DecisionResponse, DeciderError>;
+}
+```
+

@@ -1,31 +1,25 @@
-# ADR-0014: การบริหาร Context Window และ Mode Isolation (Prompts, Toolsets, Compression)
+# ADR-0014: การบริหาร Context Window และ Mode Isolation (Prompts, Toolsets)
 
 **Status:** Accepted (Consolidated)
 **Date:** 2026-09-21 (Updated: 2026-09-30)
 
 ## Context
 
-การส่ง System Prompts ขนาดยาว, การโหลด Tool Schemas ทั้งหมดพร้อมกัน และการสะสมประวัติการทำงานใน multi-step workflows ส่งผลให้ Context Window บวมอย่างรวดเร็ว สิ้นเปลือง token สูง เพิ่ม latency และเพิ่มโอกาสที่ LLM จะเลือก tool ผิดพลาด
+การส่ง System Prompts ขนาดยาว และการโหลด Tool Schemas ทั้งหมดพร้อมกัน ส่งผลให้ Context Window บวมอย่างรวดเร็ว สิ้นเปลือง token สูง เพิ่ม latency และเพิ่มโอกาสที่ LLM จะเลือก tool ผิดพลาด
 
 ## Decision
 
 1. **Mode-Specific Toolsets:**
    - จัดกลุ่ม Tools ออกเป็น Toolset ตามโดเมน:
-     - `workflow`: เครื่องมือกลุ่ม `flowz_workflow_*`
      - `cron`: เครื่องมือกลุ่ม `flowz_cron_*`
      - `subagent`: เครื่องมือกลุ่ม `flowz_subagent_*`
-     - `canvas`: เครื่องมือกลุ่ม `flowz_canvas_*` (supervisor ยังไม่มี tools ใน tools.json)
+     - `supervisor`: เครื่องมือกลุ่ม `flowz_decide` (และ audit/inspection ในอนาคต)
    - แต่ละโหมดจะโหลดเฉพาะ Toolset ที่ตรงกับหน้าที่ของตนเข้าสู่ Context Window เท่านั้น
 
 2. **Dedicated Prompts per Mode:**
    - แยกเนื้อหาของ Prompt ตามโหมดเด็ดขาด ไม่ใช้ Mega-prompt รวมศูนย์
-   - Workflow Prompt โฟกัสที่การแบ่งงานและ compose/reduce
    - Subagent Prompt โฟกัสที่การทำงานเดี่ยวให้จบตาม deadline
    - Cron Prompt โฟกัสที่การตั้งเวลาและเงื่อนไข trigger
-
-3. **Context Compression Pipeline:**
-   - กำหนดให้ Workflow Engine มีกลไก `ContextCompressor` สำหรับ workflow ที่มีขนาดยาว
-   - ใช้ Preflight compression เมื่อประวัติข้อความแตะเกณฑ์ที่กำหนด (เช่น 50% ของ Context) และ Micro-compaction เพื่อสรุปผลลัพธ์ของแต่ละ turn
 
 ## Consequences
 
@@ -43,5 +37,4 @@
 ## Enforcement
 
 - ห้าม Agent โหมดหนึ่งเข้าถึง Tool ของอีกโหมดหนึ่งโดยไม่ได้รับอนุญาต
-- Test: Cron prompt ห้ามมี `TimeBudget`; Subagent prompt ห้ามมี `cron`. ระบุ Prompt IDs (`flowz_workflow_compose`, `flowz_cron_create`, `flowz_subagent_delegate`) และแยก Registration ออกจาก content
-- Test: จำลองการรันหลาย turn แล้วตรวจสอบว่า Context Compressor ถูกเรียกทำงานตามเกณฑ์
+- Test: Cron prompt ห้ามมี `TimeBudget`; Subagent prompt ห้ามมี `cron`. ระบุ Prompt IDs (`flowz_cron_create`, `flowz_subagent_delegate`) และแยก Registration ออกจาก content
