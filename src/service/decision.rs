@@ -120,7 +120,13 @@ mod tests {
 
         let query = DecisionQuery {
             state: json!({"test": true}),
-            questions: BTreeMap::new(),
+            questions: BTreeMap::from([(
+                "gate".to_string(),
+                decider::Question::Noul {
+                    instructions: json!("Test question"),
+                    criteria: None,
+                },
+            )]),
             keep_alive: None,
         };
 
