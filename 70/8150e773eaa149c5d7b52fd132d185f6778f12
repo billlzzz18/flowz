@@ -1,0 +1,30 @@
+crates/decider/src/backend.rs
+  s_8ea30baa169893::t_fba11e5cd4b38d 135-136
+  s_8ea30baa169893::t_a1e40ec467dac9 10,56,131-134,137-138,140-146,164,167,178,181
+crates/decider/src/wire.rs
+  s_8ea30baa169893::t_203d3f2d0f7f55 60-62,361-364,378-380,411-429
+CHANGELOG.md
+  s_8ea30baa169893::t_a5f7baef627ccb 1-10
+.agents/skills/flowz-conventions/SKILL.md
+  s_8ea30baa169893::t_95b34407767cad 41,46
+crates/decider/src/error.rs
+  s_8ea30baa169893::t_d41e86a2998fdf 15-19,37-41,47
+crates/decider/tests/mock_server.rs
+  s_8ea30baa169893::t_80d19a3fe31e94 228-239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "708150e773eaa149c5d7b52fd132d185f6778f12",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash-n"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
