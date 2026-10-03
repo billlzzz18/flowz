@@ -1,0 +1,67 @@
+docs/reference/jev-ai/SCHEMA.md
+  s_8ea30baa169893::t_1c5489ac9caa09 1-32
+docs/reference/jev-ai/comparisons/jev-vs-jevos-vs-llm.md
+  s_8ea30baa169893::t_f386b4c808ac16 1-27
+docs/reference/jev-ai/concepts/jev-for-decision-plugin.md
+  s_8ea30baa169893::t_16a211fda8992a 1-53
+docs/reference/jev-ai/concepts/jev-primitives-and-api.md
+  s_8ea30baa169893::t_a053cdaf64f839 1-45
+docs/reference/jev-ai/concepts/jev-safety-and-evaluation.md
+  s_8ea30baa169893::t_1ee50236cf4809 1-42
+docs/reference/jev-ai/entities/jev-typesafe.md
+  s_8ea30baa169893::t_5be9b6a57042c9 1-33
+docs/reference/jev-ai/entities/jev-ultrafast.md
+  s_8ea30baa169893::t_79da9637685ce2 1-31
+docs/reference/jev-ai/entities/jevos-local.md
+  s_8ea30baa169893::t_c701dd3926a05f 1-37
+docs/reference/jev-ai/index.md
+  s_8ea30baa169893::t_7394ef8b098348 1-27
+docs/reference/jev-ai/log.md
+  s_8ea30baa169893::t_c13faeb23d3e0a 1-6
+docs/reference/jev-ai/queries/how-to-use-jev-with-decision-audit.md
+  s_8ea30baa169893::t_b3b905d1b774ae 1-63
+docs/reference/jev-ai/queries/jev-browser-agent-lessons.md
+  s_8ea30baa169893::t_dafa7667caa195 1-33
+docs/reference/jev-ai/queries/jev-data-contract.md
+  s_8ea30baa169893::t_a328a34756fe98 1-155
+docs/reference/jev-ai/raw/articles/browserbase-what-is-jev.md
+  s_8ea30baa169893::t_61e7314174ea23 1-323
+docs/reference/jev-ai/raw/articles/langchain-building-harness-with-jev.md
+  s_8ea30baa169893::t_10953f738a56b6 1-318
+docs/reference/jev-ai/raw/articles/typesafe-system-one-jev.md
+  s_8ea30baa169893::t_6739ff39fbea04 1-247
+docs/reference/jev-ai/raw/repos/jev-ultrafast-agent.py
+  s_8ea30baa169893::t_bf5248742f7485 1-180
+docs/reference/jev-ai/raw/repos/jev-ultrafast-browser.py
+  s_8ea30baa169893::t_477b937e81d0b1 1-200
+docs/reference/jev-ai/raw/repos/jev-ultrafast-model.py
+  s_8ea30baa169893::t_307c5e991ddf08 1-204
+docs/reference/jev-ai/raw/repos/jev-ultrafast-performance.md
+  s_8ea30baa169893::t_7ffb4aa5a58f07 1-61
+docs/reference/jev-ai/raw/repos/jev-ultrafast-questions.py
+  s_8ea30baa169893::t_5b0ae79a9dc646 1-32
+docs/reference/jev-ai/raw/repos/jev-ultrafast-readme.md
+  s_8ea30baa169893::t_d44964f0002805 1-148
+docs/reference/jev-ai/raw/repos/jev-ultrafast-snapshot.js
+  s_8ea30baa169893::t_b805f1a09f3d0f 1-113
+docs/reference/jev-ai/raw/repos/jevos-readme.md
+  s_8ea30baa169893::t_459c8b1c33f33a 1-170
+docs/research/decision-example.html
+  s_8ea30baa169893::t_aad61927fe1d92 1-426
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a977a2388b9bde0b37b553da80dce03b5c11170f",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "unknown"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
