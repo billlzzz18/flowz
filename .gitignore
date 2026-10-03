@@ -10,3 +10,4 @@ __pycache__/
 *.py[cod]
 .scratch/
 *.trashed*
+models/jevos-v2-q4_k_m.gguf
