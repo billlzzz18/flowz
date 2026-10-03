@@ -1,0 +1,68 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "System One Decision Engine Workflow",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 684],
+    "output": ".archify/workflow-decision-engine-20261003-152000/decision-engine.html"
+  },
+  "lanes": [
+    { "id": "client", "label": "Client / Caller" },
+    { "id": "service", "label": "Decision Service" },
+    { "id": "decider", "label": "Decider Client (`crates/decider`)" },
+    { "id": "backend", "label": "System One Backend (`/v1/systemone`)" }
+  ],
+  "phases": [
+    { "id": "gate", "label": "Preconditions", "fromCol": 0, "toCol": 1 },
+    { "id": "query", "label": "Decision Query", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "eval", "label": "Inference & Delivery", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "precond_grp", "label": "Precondition Check", "lane": "service", "fromCol": 0, "toCol": 1, "variant": "security" },
+    { "id": "query_grp", "label": "Typed Questions", "lane": "decider", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "backend_grp", "label": "Fast Inference", "lane": "backend", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["trigger", "precheck", "build_query", "send_http", "eval_models", "decode_answer", "dispatch"],
+  "nodes": [
+    { "id": "trigger", "lane": "client", "col": 0, "type": "frontend", "label": "Trigger Event", "sublabel": "Repo Recap / Route ask", "width": 140 },
+    { "id": "precheck", "lane": "service", "col": 1, "type": "security", "label": "Preconditions Gate", "sublabel": "Git repo + auth token", "tag": "Noul Gate", "width": 140 },
+    { "id": "aborted", "lane": "service", "col": 2, "type": "security", "label": "Early Exit", "sublabel": "Stop & notify user", "width": 140 },
+    { "id": "build_query", "lane": "decider", "col": 2, "type": "backend", "label": "Build DecisionQuery", "sublabel": "Choice, Noul, Score", "tag": "Typed Query", "width": 140 },
+    { "id": "send_http", "lane": "decider", "col": 3, "type": "messagebus", "label": "SystemOneClient", "sublabel": "POST /v1/systemone", "tag": "10MB Cap", "width": 140 },
+    { "id": "eval_models", "lane": "backend", "col": 4, "type": "cloud", "label": "System One Engine", "sublabel": "Jev / Laya / Tev1", "tag": "<10ms fast path", "width": 140 },
+    { "id": "decode_answer", "lane": "decider", "col": 5, "type": "backend", "label": "Decode Answers", "sublabel": "choice, noul, score", "width": 140 },
+    { "id": "dispatch", "lane": "service", "col": 5, "type": "backend", "label": "Dispatch Action", "sublabel": "Route, size subagents", "tag": "Execute", "width": 140 }
+  ],
+  "edges": [
+    { "id": "trig-pre", "from": "trigger", "to": "precheck", "label": "start", "variant": "default" },
+    { "id": "pre-abort", "from": "precheck", "to": "aborted", "label": "invalid", "variant": "security", "role": "error" },
+    { "id": "pre-build", "from": "precheck", "to": "build_query", "label": "valid", "variant": "emphasis" },
+    { "id": "build-send", "from": "build_query", "to": "send_http", "variant": "default" },
+    { "id": "send-eval", "from": "send_http", "to": "eval_models", "label": "HTTP POST", "variant": "emphasis" },
+    { "id": "eval-decode", "from": "eval_models", "to": "decode_answer", "label": "JSON reply", "variant": "default" },
+    { "id": "decode-dispatch", "from": "decode_answer", "to": "dispatch", "label": "typed answer", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Decision Contract",
+      "items": [
+        "Yes/No (Noul): Precondition verification and binary guards",
+        "Select (Choice): Routing and classification between options",
+        "Score: Workload sizing (XS..XL) and urgency evaluation"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Architecture Boundary",
+      "items": [
+        "Backend (/v1/systemone): Low-latency model scoring and inference",
+        "Client (crates/decider): Transport, request validation, and response caps",
+        "Service (src/service/decision): Orchestration and execution flow"
+      ]
+    }
+  ]
+}
