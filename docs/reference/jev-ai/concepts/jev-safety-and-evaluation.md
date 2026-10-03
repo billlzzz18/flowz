@@ -20,7 +20,7 @@ Jev ถูกออกแบบให้คืน confidence/probability แต�
 
 ## Evaluation protocol สำหรับ plugin
 
-ทำ dataset จาก decision logs ที่มี ground truth หรือ adjudication โดยไม่ใช้ final outcome อย่างเดียว ให้เก็บ policy version, input, candidate options, Jev signals, final decision และ auditor scores จากนั้นทำ:
+ทำ dataset จาก decision logs ที่ผ่านการ redact/minimize ข้อมูล credentials, PII และ tokens แล้ว โดยใช้ ground truth หรือ adjudication ไม่ใช้ final outcome อย่างเดียว ให้เก็บ policy version, input snapshot (redacted), candidate options, Jev signals, final decision และ auditor scores จากนั้นทำ:
 
 - reliability diagram หรือ binning ของ probability
 - precision/recall ต่อ gate สำคัญ

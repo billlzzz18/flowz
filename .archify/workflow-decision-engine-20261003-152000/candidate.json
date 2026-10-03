@@ -27,14 +27,14 @@
   ],
   "mainPath": ["trigger", "precheck", "build_query", "send_http", "eval_models", "decode_answer", "dispatch"],
   "nodes": [
-    { "id": "trigger", "lane": "client", "col": 0, "type": "frontend", "label": "Trigger Event", "sublabel": "Repo Recap / Route ask", "width": 140 },
-    { "id": "precheck", "lane": "service", "col": 1, "type": "security", "label": "Preconditions Gate", "sublabel": "Git repo + auth token", "tag": "Noul Gate", "width": 140 },
+    { "id": "trigger", "lane": "client", "col": 0, "type": "frontend", "label": "Trigger Event", "sublabel": "Supervisor query ask", "width": 140 },
+    { "id": "precheck", "lane": "service", "col": 1, "type": "security", "label": "Preconditions Gate", "sublabel": "Validate state payload", "tag": "State Check", "width": 140 },
     { "id": "aborted", "lane": "service", "col": 2, "type": "security", "label": "Early Exit", "sublabel": "Stop & notify user", "width": 140 },
     { "id": "build_query", "lane": "decider", "col": 2, "type": "backend", "label": "Build DecisionQuery", "sublabel": "Choice, Noul, Score", "tag": "Typed Query", "width": 140 },
     { "id": "send_http", "lane": "decider", "col": 3, "type": "messagebus", "label": "SystemOneClient", "sublabel": "POST /v1/systemone", "tag": "10MB Cap", "width": 140 },
-    { "id": "eval_models", "lane": "backend", "col": 4, "type": "cloud", "label": "System One Engine", "sublabel": "Jev / Laya / Tev1", "tag": "<10ms fast path", "width": 140 },
+    { "id": "eval_models", "lane": "backend", "col": 4, "type": "cloud", "label": "System One Engine", "sublabel": "Jev / Laya / Tev1", "tag": "70-500ms p50", "width": 140 },
     { "id": "decode_answer", "lane": "decider", "col": 5, "type": "backend", "label": "Decode Answers", "sublabel": "choice, noul, score", "width": 140 },
-    { "id": "dispatch", "lane": "service", "col": 5, "type": "backend", "label": "Dispatch Action", "sublabel": "Route, size subagents", "tag": "Execute", "width": 140 }
+    { "id": "dispatch", "lane": "service", "col": 5, "type": "backend", "label": "Return Answers", "sublabel": "Typed decision answers", "tag": "Answers", "width": 140 }
   ],
   "edges": [
     { "id": "trig-pre", "from": "trigger", "to": "precheck", "label": "start", "variant": "default" },

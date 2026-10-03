@@ -12,24 +12,37 @@ confidence: medium
 
 ## ระยะที่ 1: shadow mode
 
-อย่าเปลี่ยนผลจริงทันที ให้ hook เรียก Jev หลังได้ input ของ `decision-maker` แล้วบันทึก `jev_request`, `jev_response`, `latency_ms`, `provider`, `model`, `policy_version`, `thresholds` และ fingerprint ลง `decisions.jsonl` เพิ่ม field ใน CSV เช่น `jev_input_sufficient`, `jev_constraint_violation`, `jev_escalation`, `jev_route`, `jev_error` แต่ยังให้ decision-maker เดิมเป็นผู้กำหนดผล
+อย่าเปลี่ยนผลจริงทันที ให้ hook เรียก Jev หลังได้ input ของ `decision-maker` แล้วบันทึก `jev_request` (ที่ redact/minimize ข้อมูล credentials หรือ raw tokens แล้ว), `jev_response` (เฉพาะ structured fields ไม่เก็บ raw payload เกินจำเป็น), `latency_ms`, `provider`, `model`, `policy_version`, `thresholds` และ fingerprint ลง `decisions.jsonl` เพิ่ม field ใน CSV เช่น `jev_input_sufficient`, `jev_constraint_violation`, `jev_escalation`, `jev_route`, `jev_error` แต่ยังให้ decision-maker เดิมเป็นผู้กำหนดผล
 
 ## ระยะที่ 2: fast gate ที่ปลอดภัย
 
-เปิดใช้เฉพาะ gate ที่ false negative มีทาง fallback และไม่ทำ external action โดยตรง ตัวอย่าง:
+เปิดใช้เฉพาะ gate ที่ false negative มีทาง fallback และไม่ทำ external action โดยตรง ตัวอย่าง (ต้อง redact/minimize ข้อมูลอ่อนไหวก่อนส่ง และ unwrap nested noul structure ตาม response contract):
 
 ```python
-signals = jev.evaluate(
-    state={"request": raw_input, "policy": normalized_policy},
+# Minimizing and redacting input according to data contract
+minimized_state = {
+    "request": redact_sensitive_data(raw_input),
+    "policy": normalized_policy,
+}
+
+response = jev.evaluate(
+    state=minimized_state,
     questions={
         "input_sufficient": {"type": "noul", "instructions": "Does the request contain enough evidence for a bounded decision?"},
         "hard_violation": {"type": "noul", "instructions": "Does any candidate violate a hard safety, authorization, privacy, legal, or data-loss constraint?"},
         "escalate": {"type": "noul", "instructions": "Would a wrong choice exceed the agent's authority or cause irreversible harm?"}
     }
 )
-if signals["hard_violation"] >= 0.80:
+
+# Unwrap noul probabilities (or response.answers[q]["noul"])
+signals = {
+    q: ans.get("noul", ans.get("probability", 0.0)) if isinstance(ans, dict) else ans
+    for q, ans in response.get("answers", {}).items()
+}
+
+if signals.get("hard_violation", 0.0) >= 0.80:
     route = "REJECT_OR_ESCALATE"
-elif signals["escalate"] >= 0.70 or signals["input_sufficient"] < 0.70:
+elif signals.get("escalate", 0.0) >= 0.70 or signals.get("input_sufficient", 1.0) < 0.70:
     route = "DECISION_MAKER_WITH_CAUTION"
 else:
     route = "DECISION_MAKER"

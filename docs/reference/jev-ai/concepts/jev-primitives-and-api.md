@@ -39,7 +39,12 @@ confidence: medium
 
 ## Threshold ไม่ใช่ decision
 
-`p >= 0.8` เป็นเพียง signal ไม่ใช่คำสั่งอัตโนมัติ ควรทำ policy mapping เช่น `p_safe >= 0.95` จึงผ่าน fast path, ช่วง 0.20–0.95 ส่ง decision-maker, และ `p_violation >= 0.80` block หรือ escalate ตามความรุนแรง การกำหนด threshold ต้องมาจาก cost ของ false positive/false negative และ calibration set ของเรา ดู [[concepts/jev-safety-and-evaluation]]
+`p >= 0.8` เป็นเพียง signal ไม่ใช่คำสั่งอัตโนมัติ ควรทำ policy mapping ที่มีขอบเขต disjoint และไม่คลุมเครือ เช่น:
+- Fast path: `p_safe >= 0.95` และไม่มีสัญญาณ violation
+- Safe review: `p_safe` อยู่ในช่วง [0.20, 0.95) ส่ง decision-maker พร้อม caution
+- Block/Escalate: `p_violation >= 0.80` (หรือ `p_safe < 0.20`) block หรือ escalate ทันทีตาม severity
+
+การกำหนด threshold ต้องครอบคลุมทุกช่วง ไม่เกิดช่องว่างหรือเงื่อนไขซ้อนทับ และต้อง calibrate จาก cost ของ false positive/false negative บน calibration set ของเรา ดู [[concepts/jev-safety-and-evaluation]]
 
 
 ดูการเลือก provider และข้อจำกัดของ local implementation เพิ่มเติมใน [[comparisons/jev-vs-jevos-vs-llm]]

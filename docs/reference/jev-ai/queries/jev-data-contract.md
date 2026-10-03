@@ -12,7 +12,7 @@ confidence: high
 
 ## สถานะของ schema
 
-plugin ปัจจุบันเก็บ decision record และ audit score ได้แล้ว แต่ยังไม่มี field ของ Jev ใน `decision_hooks.py` ดังนั้น schema ด้านล่างเป็น **extension contract สำหรับ implementation ระยะถัดไป** ไม่ใช่สิ่งที่ระบบปัจจุบันเขียนได้ครบโดยอัตโนมัติ
+เอกสารนี้ระบุ schema ของ decision record และ evaluations เมื่อผสาน Jev โดยปัจจุบัน plugin ส่งเพียง telemetry span (เช่น ผ่าน Langfuse) และ schema ด้านล่างเป็น **extension contract สำหรับ implementation ระยะถัดไป** ที่จะเขียนลง `decisions.jsonl` และ `evaluations.csv` ไม่ใช่สิ่งที่ระบบปัจจุบันเขียนลงไฟล์ดิสก์โดยอัตโนมัติ
 
 หลักการคือ `decisions.jsonl` เป็นแหล่งข้อมูลเหตุการณ์แบบ lossless ต่อหนึ่ง decision ส่วน `evaluations.csv` เป็นตารางแบนสำหรับวิเคราะห์และให้ subagent #2 ประเมิน อย่าใช้ CSV แทน JSONL เพราะ CSV ไม่เหมาะกับ nested request/response, option list, signal distribution และ error detail
 
@@ -122,16 +122,7 @@ plugin ปัจจุบันเก็บ decision record และ audit scor
 CSV ควรมีหนึ่งแถวต่อหนึ่งการ audit ของ decision record โดยเก็บค่าที่ query ได้ง่ายและ flatten ค่า nested เป็น JSON string:
 
 ```text
-run_id,event,round,context,record_id,agent_id,decision_model,judge_model,
-jev_enabled,jev_provider,jev_model,jev_endpoint_class,jev_status,jev_request_id,
-jev_latency_ms,jev_input_sufficient,jev_hard_violation,jev_needs_escalation,
-jev_route,jev_thresholds,jev_error,
-objective_alignment,problem_framing,evidence_quality,constraint_compliance,
-alternative_comparison,risk_calibration,uncertainty_handling,decision_quality,
-scope_discipline,actionability_and_boundary,bias_resistance,cross_round_stability,
-input_quality,contextual_fairness,total_score,normalized_score,
-confidence_calibration,bias_stability_signals,critical_issue,recommendation,rationale,
-decision_timestamp,evaluation_timestamp,evaluator_version
+run_id,event,round,context,record_id,agent_id,decision_model,judge_model,jev_enabled,jev_provider,jev_model,jev_endpoint_class,jev_status,jev_request_id,jev_latency_ms,jev_input_sufficient,jev_hard_violation,jev_needs_escalation,jev_route,jev_thresholds,jev_error,objective_alignment,problem_framing,evidence_quality,constraint_compliance,alternative_comparison,risk_calibration,uncertainty_handling,decision_quality,scope_discipline,actionability_and_boundary,bias_resistance,cross_round_stability,input_quality,contextual_fairness,total_score,normalized_score,confidence_calibration,bias_stability_signals,critical_issue,recommendation,rationale,decision_timestamp,evaluation_timestamp,evaluator_version
 ```
 
 `jev_thresholds` และ `bias_stability_signals` เป็น JSON string ที่ถูก escape ตาม CSV rules ส่วน probability ควรเก็บเป็นตัวเลขทศนิยม 0–1 เพื่อ query, aggregate และ plot ได้โดยไม่ต้อง parse JSON

@@ -12,13 +12,13 @@ confidence: medium
 
 ## สถาปัตยกรรม
 
-`browser-use/jev-ultrafast` ไม่ให้โมเดลควบคุม browser แบบอิสระ แต่สร้าง snapshot ของ visible DOM เป็นตาราง element ที่มี index แล้วให้ Jev เลือก operation และ target ที่เป็นไปได้ เช่น `CLICK`, `TYPE_TEXT`, `SELECT`, `SCROLL`, `WAIT`, `DONE`, `BLOCKED` ใน request เดียว แนวทางนี้ทำให้ action space dynamic และจำกัดผลลัพธ์ให้เป็นตัวเลือกที่ executor รองรับ
+`browser-use/jev-ultrafast` ไม่ให้โมเดลควบคุม browser แบบอิสระ แต่สร้าง snapshot ของ visible DOM เป็นตาราง element ที่มี index แล้วให้ Jev เลือก operation และ target ที่เป็นไปได้ เช่น `CLICK`, `TYPE_TEXT`, `SELECT`, `SCROLL_UP`, `SCROLL_DOWN`, `WAIT`, `DONE`, `BLOCKED` ใน request เดียว แนวทางนี้ทำให้ action space dynamic และจำกัดผลลัพธ์ให้เป็นตัวเลือกที่ executor รองรับ
 
 ข้อความที่จะกรอก field ถูกแยกไปให้ small text model เมื่อ operation เป็น `TYPE_TEXT` เท่านั้น ส่วน Jev ทำหน้าที่เลือกการกระทำและ element ไม่ได้สร้าง selector, coordinate, shell command หรือ JavaScript โดยตรง
 
 ## Guardrail ที่สำคัญ
 
-โค้ดอ่าน state แบบ atomic, รักษา node identity, ตรวจ freshness ก่อน execute, ตรวจว่ element ยัง visible และไม่ถูกบัง, บันทึก action ก่อนอ่าน state รอบถัดไป และหยุดเมื่อเกิด stale/ambiguous mutation หลักการนี้สำคัญกับ decision plugin เช่นกัน: decision result ต้องผูกกับ input fingerprint และห้ามนำ output เก่ามาใช้กับ context ใหม่
+โค้ดอ่าน state แบบ atomic, รักษา node identity, ตรวจ freshness ก่อน execute, ตรวจว่า element ยัง visible และไม่ถูกบัง, บันทึก action ก่อนอ่าน state รอบถัดไป, re-observe เมื่อ decision stale และหยุดเมื่อผล native SELECT ไม่แน่ชัด หลักการนี้สำคัญกับ decision plugin เช่นกัน: decision result ต้องผูกกับ input fingerprint และห้ามนำ output เก่ามาใช้กับ context ใหม่
 
 Policy ระบุว่า `DONE` ต้องมี visible evidence ว่าข้อกำหนดทั้งหมดเสร็จ และการรอไม่ใช่ default หากมี control ที่ทำให้ progress ได้ บทเรียนนี้แปลงเป็น decision boundary ได้ว่า “ผ่าน threshold” ต้องมี evidence ครบ ไม่ใช่ดูจากคะแนนเดียว
 
