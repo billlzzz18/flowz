@@ -57,12 +57,17 @@ impl Question {
                             "noul question {name:?} criteria must be an object"
                         )));
                     };
-                    if map.iter().any(|(key, value)| {
-                        key.trim().is_empty() || !is_valid_criterion(value, true)
-                    }) {
-                        return Err(DeciderError::InvalidRequest(format!(
-                            "noul question {name:?} has an unsupported criterion value"
-                        )));
+                    for (key, value) in map {
+                        if key.trim().is_empty() {
+                            return Err(DeciderError::InvalidRequest(format!(
+                                "noul question {name:?} has an empty criterion key"
+                            )));
+                        }
+                        if !is_valid_criterion(value, true) {
+                            return Err(DeciderError::InvalidRequest(format!(
+                                "noul question {name:?} has an unsupported criterion value"
+                            )));
+                        }
                     }
                 }
                 validate_instructions(name, instructions)?;
@@ -163,7 +168,7 @@ pub struct DecisionRequest {
 
 /// One named answer. Optional fields preserve the different answer shapes and
 /// provider extensions without coercing probabilities or confidence values.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct Answer {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub choice: Option<String>,
@@ -426,7 +431,7 @@ mod tests {
         };
         let err = whitespace_key.validate().unwrap_err();
         assert!(
-            matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an unsupported criterion value"))
+            matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an empty criterion key"))
         );
     }
 

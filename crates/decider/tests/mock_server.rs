@@ -51,7 +51,7 @@ async fn spawn_mock_server(
             "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{response_body}",
             response_body.len()
         );
-        stream.write_all(response.as_bytes()).await.unwrap();
+        let _ = stream.write_all(response.as_bytes()).await;
     });
 
     (format!("http://{address}"), request_rx)

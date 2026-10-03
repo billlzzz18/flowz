@@ -40,7 +40,7 @@ Flowz is an autonomous MCP Agent Orchestrator written in Rust. It enforces stric
 ### 6. System One Fast-Path Decision Architecture & Capability Matrix
 - **Decider over LLM / Guardian Separation:** System One serves as the fast, typed, low-latency decision plane (`/v1/systemone`) across compatible backends, while `crates/decider` provides the typed Rust question/answer client for querying it without embedding application control-flow logic. System One handles routing, subagent sizing, tool selection, and model dispatch decisions, while Guardian continues to manage cross-session memory, structured logs, pre-admission screening, reuse suggestions, dashboards, and policy audits.
 - **Unified SDK Compatibility:**
-  - **Jev (TypeSafe):** Origin backend. High precision reference implementation; verify current rate against the TypeSafe plan.
+  - **Jev (TypeSafe):** Origin backend; verify current rate against the TypeSafe plan.
   - **Laya:** Lean replica model specialized in low-resource fast scoring; verify current size against the deployed artifact.
   - **Tev1:** Ollama-compatible endpoint for 0.8B/4B models, runnable locally; verify current size against the Ollama manifest.
 - **Dynamic Orchestration Roles:** The `/v1/systemone` backend (queried via `crates/decider`) evaluates:
