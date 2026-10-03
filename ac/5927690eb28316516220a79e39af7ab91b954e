@@ -1,0 +1,28 @@
+docs/reference/jev-ai/raw/repos/jev-ultrafast-browser.py
+  s_8ea30baa169893::t_dd4101964a4935 29-45
+docs/reference/jev-ai/raw/repos/jev-ultrafast-model.py
+  s_8ea30baa169893::t_fe4b5e50464753 32-36
+docs/reference/jev-ai/raw/repos/jev-ultrafast-readme.md
+  s_8ea30baa169893::t_a0e7a97f350bb1 23
+  s_8ea30baa169893::t_ba931743dff488 117-120
+docs/reference/jev-ai/raw/repos/jev-ultrafast-snapshot.js
+  s_8ea30baa169893::t_d16a37da0f334f 81-82
+docs/superpowers/plans/2026-10-03-decision-system-one.md
+  s_8ea30baa169893::t_4070745354c7e4 5,7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ac5927690eb28316516220a79e39af7ab91b954e",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash-n"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
