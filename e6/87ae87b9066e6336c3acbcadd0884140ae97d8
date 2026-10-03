@@ -1,0 +1,19 @@
+.gitignore
+  s_8ea30baa169893::t_fb2fc9714eb448 13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e687ae87b9066e6336c3acbcadd0884140ae97d8",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash-n"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
