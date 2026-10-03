@@ -57,10 +57,12 @@ impl Question {
                             "noul question {name:?} criteria must be an object"
                         )));
                     };
-if map
-    .iter()
-    .any(|(key, value)| key.trim().is_empty() || !is_valid_criterion(value, true))
-{
+                    if map
+                        .iter()
+                        .any(|(key, value)| {
+                            key.trim().is_empty() || !is_valid_criterion(value, true)
+                        })
+                    {
                         return Err(DeciderError::InvalidRequest(format!(
                             "noul question {name:?} has an unsupported criterion value"
                         )));
