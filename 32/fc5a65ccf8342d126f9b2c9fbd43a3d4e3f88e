@@ -1,0 +1,35 @@
+.archify/workflow-decision-engine-20261003-152000/decision-engine.browser-check.json
+  s_8ea30baa169893::t_82919c012f1384 3-1296
+  s_8ea30baa169893::t_6ab5d62ea94bbe 1-2,1297
+.archify/workflow-decision-engine-20261003-152000/decision-engine.finalize.json
+  s_8ea30baa169893::t_82919c012f1384 3-1575
+  s_8ea30baa169893::t_6a1e9f16000aef 1-2,1576-1586
+.archify/workflow-decision-engine-20261003-152000/decision-engine.delivery.json
+  s_8ea30baa169893::t_82919c012f1384 3
+  s_8ea30baa169893::t_f8fc2d854f23bf 1-2,4-17
+.archify/workflow-decision-engine-20261003-152000/candidate.json
+  s_8ea30baa169893::t_8bc576847d5ff1 1-8,10,12-68
+  s_8ea30baa169893::t_dc599eec1d0555 9
+  s_8ea30baa169893::t_a0c1a7528cfbdd 11
+.archify/workflow-decision-engine-20261003-152000/decision-engine.finalize-summary.json
+  s_8ea30baa169893::t_82919c012f1384 3-75
+  s_8ea30baa169893::t_ad4d359977541d 1-2,76
+.archify/workflow-decision-engine-20261003-152000/decision-engine.html
+  s_8ea30baa169893::t_4a6927a64abf44 1-13764
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "32fc5a65ccf8342d126f9b2c9fbd43a3d4e3f88e",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
