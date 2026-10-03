@@ -1,0 +1,16 @@
+crates/decider/src/backend.rs
+  h_a25ade2a4fe7aa 54-58,66-67,136-184
+crates/decider/src/wire.rs
+  h_a25ade2a4fe7aa 54-64,124-132,163,177-178,312,350-417
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2db6e1904c857a9802feb7968e5ed0b04e0d24ee",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

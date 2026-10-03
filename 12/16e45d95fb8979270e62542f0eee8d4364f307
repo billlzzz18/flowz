@@ -1,0 +1,14 @@
+.agents/skills/flowz-conventions/SKILL.md
+  h_a25ade2a4fe7aa 40-54,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1216e45d95fb8979270e62542f0eee8d4364f307",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

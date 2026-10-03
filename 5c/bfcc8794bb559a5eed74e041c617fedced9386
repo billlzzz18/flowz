@@ -1,0 +1,27 @@
+src/service/decision.rs
+  s_8ea30baa169893::t_37e8e802b83e43 73,84,90,109
+  s_8ea30baa169893::t_e6277e3b6669a3 2,5-6,11-13,16-17,19-35,39-59
+  s_8ea30baa169893::t_f83786e24098b9 1,3-4,7-10,14-15,18,36-38,60-67
+  s_8ea30baa169893::t_3cd4142b86dd13 68-72,74-83,85-89,91-108,110-133
+src/service/supervisor.rs
+  s_8ea30baa169893::t_df18bbcba376fb 1
+crates/decider/src/wire.rs
+  s_8ea30baa169893::t_aa3dcc1bae28be 166,168,170,172,174,176,178
+  s_8ea30baa169893::t_baadb8fd098c4a 116,121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5cbfcc8794bb559a5eed74e041c617fedced9386",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash-n"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}

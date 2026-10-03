@@ -1,0 +1,21 @@
+.gitignore
+  s_8ea30baa169893::t_bd299ff643d46a 12-13
+scripts/setup-decider.ps1
+  s_8ea30baa169893::t_af8a569025ebf4 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c4b79444b53d992eea1f2a8fa740cd72488a1e8c",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
