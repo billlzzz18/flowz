@@ -1,0 +1,29 @@
+docs/decisions/0021-self-registering-tool-registry.md
+  s_8ea30baa169893::t_d7ce345edadc7c 22,24,27,30-31
+docs/decisions.csv
+  s_8ea30baa169893::t_ee5a8fdf712a68 5,8
+docs/decisions/0014-prompts-separate-by-mode.md
+  s_8ea30baa169893::t_386b38d7fae9f8 16
+  s_8ea30baa169893::t_2cd708909363cc 40
+docs/specs/data-dictionary.md
+  s_8ea30baa169893::t_4facb4d11a43c2 1006-1026,1028
+  s_8ea30baa169893::t_7153ddf0d90be7 814-868
+docs/decisions/0006-mcp-namespace-flowz-prefix.md
+  s_8ea30baa169893::t_3d314b567e4ef9 17,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7b89a487762ce5673e206617a7f0fd38411089fb",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
