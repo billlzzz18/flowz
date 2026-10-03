@@ -1,0 +1,24 @@
+src/service/mod.rs
+  s_8ea30baa169893::t_7278f880bab613 2,9
+  s_8ea30baa169893::t_51017235802890 5,14
+src/mcp/tools/decision.rs
+  s_8ea30baa169893::t_02202801693aa3 1-32,34-70,72-81,83-94
+  s_8ea30baa169893::t_32f7f7ef5638ab 33
+  s_8ea30baa169893::t_f23eba37a04da3 71,82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0c2572669f24db2a3ab9969ac55528b48aa4ecca",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash-n"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
