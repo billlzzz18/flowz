@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0fd2e52e-362b-445d-be88-2800f2aa1333",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\01work\\Active\\users\\billlzzz18\\flowz\\.archify\\workflow-decision-engine-20261003-152000\\candidate.json",
+  "output": "D:\\01work\\Active\\users\\billlzzz18\\flowz\\.archify\\workflow-decision-engine-20261003-152000\\decision-engine.html",
+  "specification": {
+    "sha256": "bb5106fc913bdf4ce8f379633e6cccd413f3daa3955cba86d70a96716cfac319",
+    "bytes": 4204
+  },
+  "artifact": {
+    "sha256": "b61089596ff7571fb2afd743ae48421590b649f5f639e5de090b57184b81964a",
+    "bytes": 761142
+  }
+}
