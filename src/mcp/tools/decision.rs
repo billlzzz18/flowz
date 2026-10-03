@@ -39,8 +39,7 @@ impl McpTool for DecisionTool {
             "required": ["state", "questions"],
             "properties": {
                 "state": {
-                    "type": "object",
-                    "description": "Context and environment state payload evaluated across all questions."
+                    "description": "Context and environment state payload evaluated across all questions (object, array, or primitive)."
                 },
                 "questions": {
                     "type": "object",
@@ -56,11 +55,12 @@ impl McpTool for DecisionTool {
 
     async fn call(&self, args: Value, ctx: &InvocationContext) -> Result<Value, FlowzError> {
         let query: DecisionQuery = serde_json::from_value(args).map_err(|e| {
-            FlowzError::Internal(format!("Invalid decision query arguments: {e}"))
+            FlowzError::Validation(format!("Invalid decision query arguments: {e}"))
         })?;
 
         let start_time = chrono::Utc::now();
         let span_id = uuid::Uuid::new_v4().to_string();
+        let invocation_trace_id = format!("{}:{}", ctx.request_id, span_id);
 
         let res = self.service.decision.decide(query.clone()).await;
 
@@ -68,7 +68,7 @@ impl McpTool for DecisionTool {
         if let Some(client) = langfuse::get_client() {
             let span = LangfuseSpan {
                 id: span_id,
-                trace_id: ctx.request_id.clone(),
+                trace_id: invocation_trace_id,
                 name: "flowz_decide".to_string(),
                 start_time: Some(start_time),
                 end_time: Some(chrono::Utc::now()),
@@ -88,6 +88,9 @@ impl McpTool for DecisionTool {
                 "answers": resp.answers,
                 "usage": resp.usage,
             })),
+            Err(decider::DeciderError::InvalidRequest(msg)) => {
+                Err(FlowzError::Validation(format!("Decision validation error: {msg}")))
+            }
             Err(err) => Err(FlowzError::Internal(format!("Decision failed: {err}"))),
         }
     }

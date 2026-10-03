@@ -5,7 +5,7 @@
 
 ## Context
 
-ชื่อ generic อย่าง cron_create หรือ workflow/run ทำให้เกิด collision กับ MCP server อื่น และทำให้ skill อ้างชื่อกำกวม → agent อาจไปหยิบ cron ของระบบอื่น
+ชื่อ generic อย่าง cron_create ทำให้เกิด collision กับ MCP server อื่น และทำให้ skill อ้างชื่อกำกวม → agent อาจไปหยิบ cron ของระบบอื่น
 
 ## Decision
 
@@ -16,6 +16,8 @@
   - flowz_cron_cancel
   - flowz_decide
 - Prompt names ใช้ prefix เดียวกัน:
+  - flowz_workflow_worker_prompt
+  - flowz_workflow_reducer_prompt
   - flowz_subagent_delegate
   - flowz_cron_create
 - CLI ใช้ hierarchy: flowz cron create

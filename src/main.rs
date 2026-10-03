@@ -24,8 +24,9 @@ async fn main() -> Result<()> {
                 .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "scripts/worker.py not found"))
         })
         .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("scripts/worker.py"));
+    let python_cmd = if cfg!(windows) { "python" } else { "python3" };
     let spawner = StdProcessSpawner {
-        executable: PathBuf::from("python"),
+        executable: PathBuf::from(python_cmd),
         args: vec![worker_script.to_string_lossy().to_string()],
         base_env: std::collections::HashMap::new(),
         timeout_secs: 300,

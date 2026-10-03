@@ -190,9 +190,9 @@ pub trait McpTool: Send + Sync {
 
 ## E.15 Decision Tool: `flowz_decide` (System One Fast-Path)
 
-- Toolset: `Toolset::Workflow`
+- Toolset: `Toolset::Supervisor`
 - Name: `flowz_decide`
-- Description: Fast-path multi-question decision engine using System One models with multi-tier fallback (Ollama tev1 / Local CPU laya / Cloud Jev) and Langfuse telemetry.
+- Description: Evaluate fast-path typed questions using System One models with multi-tier fallback and Langfuse tracing.
 
 ### Input Schema
 ```json
@@ -200,7 +200,7 @@ pub trait McpTool: Send + Sync {
   "type": "object",
   "required": ["state", "questions"],
   "properties": {
-    "state": { "type": "object", "description": "Context and environment state payload evaluated across all questions." },
+    "state": { "description": "Context and environment state payload evaluated across all questions." },
     "questions": { "type": "object", "description": "Map of named questions (choice, noul, or score)." },
     "keep_alive": { "type": "string", "description": "Optional keep-alive setting for local models (e.g. 5m)." }
   }

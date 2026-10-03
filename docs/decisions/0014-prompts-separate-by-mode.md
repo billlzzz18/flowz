@@ -1,11 +1,11 @@
-# ADR-0014: การบริหาร Context Window และ Mode Isolation (Prompts, Toolsets, Compression)
+# ADR-0014: การบริหาร Context Window และ Mode Isolation (Prompts, Toolsets)
 
 **Status:** Accepted (Consolidated)
 **Date:** 2026-09-21 (Updated: 2026-09-30)
 
 ## Context
 
-การส่ง System Prompts ขนาดยาว, การโหลด Tool Schemas ทั้งหมดพร้อมกัน และการสะสมประวัติการทำงานใน multi-step workflows ส่งผลให้ Context Window บวมอย่างรวดเร็ว สิ้นเปลือง token สูง เพิ่ม latency และเพิ่มโอกาสที่ LLM จะเลือก tool ผิดพลาด
+การส่ง System Prompts ขนาดยาว และการโหลด Tool Schemas ทั้งหมดพร้อมกัน ส่งผลให้ Context Window บวมอย่างรวดเร็ว สิ้นเปลือง token สูง เพิ่ม latency และเพิ่มโอกาสที่ LLM จะเลือก tool ผิดพลาด
 
 ## Decision
 
@@ -13,7 +13,7 @@
    - จัดกลุ่ม Tools ออกเป็น Toolset ตามโดเมน:
      - `cron`: เครื่องมือกลุ่ม `flowz_cron_*`
      - `subagent`: เครื่องมือกลุ่ม `flowz_subagent_*`
-     - `supervisor`: เครื่องมือกลุ่ม `flowz_decide`, audit และ inspection
+     - `supervisor`: เครื่องมือกลุ่ม `flowz_decide` (และ audit/inspection ในอนาคต)
    - แต่ละโหมดจะโหลดเฉพาะ Toolset ที่ตรงกับหน้าที่ของตนเข้าสู่ Context Window เท่านั้น
 
 2. **Dedicated Prompts per Mode:**

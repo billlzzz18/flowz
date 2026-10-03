@@ -847,11 +847,17 @@ pub struct DecisionQuery {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Answer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub choice: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub noul: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub score: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub probabilities: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub confidence: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub legend: Option<Value>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, Value>,
@@ -1004,25 +1010,26 @@ pub enum ConfigError {
     Invalid(String),
 }
 
+// crates/decider/src/error.rs
 #[derive(Debug, thiserror::Error)]
 pub enum DeciderError {
-    #[error("invalid request: {0}")]
+    #[error("invalid decision request: {0}")]
     InvalidRequest(String),
 
-    #[error("invalid configuration: {0}")]
+    #[error("invalid System One client configuration: {0}")]
     InvalidConfiguration(String),
 
-    #[error("transport error: {0}")]
-    Transport(String),
+    #[error("System One transport request failed")]
+    Transport(#[source] reqwest::Error),
 
-    #[error("HTTP status {status}")]
+    #[error("System One endpoint returned HTTP {status}")]
     HttpStatus { status: u16 },
 
-    #[error("parse error: {0}")]
-    Parse(String),
+    #[error("System One endpoint returned an invalid response: {0}")]
+    ResponseDecode(String),
 
-    #[error("timeout")]
-    Timeout,
+    #[error("System One endpoint returned a response exceeding limit ({0} bytes)")]
+    ResponseTooLarge(usize),
 }
 ```
 

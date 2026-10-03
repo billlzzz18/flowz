@@ -17,8 +17,11 @@ pub struct FlowzService {
     pub skill: Arc<dyn SkillService>,
     pub evolution: Arc<dyn EvolutionService>,
     pub trajectory: Arc<dyn TrajectoryService>,
+    pub decision: decision::DecisionService,
 }
 ```
+
+> Note: D.2 (WorkflowService) removed per ADR and simplification decisions. Numbering preserved for cross-reference stability.
 
 ## D.3 CronService
 
