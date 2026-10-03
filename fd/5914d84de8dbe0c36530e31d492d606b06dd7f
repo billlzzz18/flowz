@@ -1,0 +1,38 @@
+Cargo.toml
+  s_8ea30baa169893::t_049986cae81cc2 35
+src/service/decision.rs
+  s_8ea30baa169893::t_c95211f30d499f 38-45,47
+  s_8ea30baa169893::t_fd18cca25b6bb7 10,12-13,15,18,28-34,46
+  s_8ea30baa169893::t_8098d338249d41 77
+  s_8ea30baa169893::t_6c320114f14fac 151-153,155-157,163
+  s_8ea30baa169893::t_a06261d757b69b 154,158-162
+scripts/setup-decider.ps1
+  s_8ea30baa169893::t_b53cdfc84842e1 23-25,28,40-45,47-49
+src/service/mod.rs
+  s_8ea30baa169893::t_a8dbf1f36c12d7 2,10,14-15,19-20,26-31
+src/main.rs
+  s_8ea30baa169893::t_50eea09b54cd33 35
+.agents/skills/flowz-conventions/SKILL.md
+  s_8ea30baa169893::t_3eb2ecb48b89a2 41
+CHANGELOG.md
+  s_8ea30baa169893::t_f72215a2b00bbb 6
+crates/decider/src/backend.rs
+  s_8ea30baa169893::t_145ae9a2ea4527 138,140-143
+  s_8ea30baa169893::t_fdd123054224ae 137,139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd5914d84de8dbe0c36530e31d492d606b06dd7f",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
