@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
         notifier.clone(),
     ));
 
-    let service = Arc::new(FlowzService::new());
+    let service = Arc::new(FlowzService::new()?);
 
     let tools = register_all_tools(orch.clone(), service.clone());
     let prompts = register_all_prompts();

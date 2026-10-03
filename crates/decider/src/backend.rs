@@ -134,12 +134,13 @@ impl DecisionBackend for SystemOneClient {
             );
         }
 
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|err| DeciderError::ResponseDecode(err.to_string()))?;
-        if bytes.len() > MAX_RESPONSE_BYTES {
-            return Err(DeciderError::ResponseTooLarge(bytes.len()));
+        let mut response = response;
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.map_err(DeciderError::Transport)? {
+            if bytes.len() + chunk.len() > MAX_RESPONSE_BYTES {
+                return Err(DeciderError::ResponseTooLarge(bytes.len() + chunk.len()));
+            }
+            bytes.extend_from_slice(&chunk);
         }
 
         serde_json::from_slice::<DecisionResponse>(&bytes)

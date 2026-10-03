@@ -7,15 +7,15 @@ pub struct DecisionService {
 }
 
 impl DecisionService {
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self, DeciderError> {
         // Default backend: laya or tev1 (Ollama / Local CPU)
-        let primary = Self::build_backend("SYSTEMONE_BASE_URL", "SYSTEMONE_MODEL", "laya");
-        let fallback = Self::build_backend("SYSTEMONE_FALLBACK_URL", "SYSTEMONE_FALLBACK_MODEL", "tev1:0.8b");
+        let primary = Self::build_backend("SYSTEMONE_BASE_URL", "SYSTEMONE_MODEL", "laya")?;
+        let fallback = Self::build_backend("SYSTEMONE_FALLBACK_URL", "SYSTEMONE_FALLBACK_MODEL", "tev1:0.8b")?;
 
-        Self {
+        Ok(Self {
             primary,
             fallback,
-        }
+        })
     }
 
     pub fn with_backends(
@@ -25,14 +25,26 @@ impl DecisionService {
         Self { primary, fallback }
     }
 
-    fn build_backend(url_env: &str, model_env: &str, default_model: &str) -> Option<Arc<dyn DecisionBackend>> {
-        let base_url = std::env::var(url_env).unwrap_or_else(|_| "http://localhost:11434".to_string());
+    fn build_backend(url_env: &str, model_env: &str, default_model: &str) -> Result<Option<Arc<dyn DecisionBackend>>, DeciderError> {
+        let base_url = match std::env::var(url_env) {
+            Ok(url) if !url.trim().is_empty() => url,
+            Ok(_) => return Ok(None),
+            Err(std::env::VarError::NotPresent) => "http://localhost:11434".to_string(),
+            Err(e) => return Err(DeciderError::InvalidConfiguration(format!("failed to read {url_env}: {e}"))),
+        };
         let model = std::env::var(model_env).unwrap_or_else(|_| default_model.to_string());
         let api_key = std::env::var("SYSTEMONE_API_KEY").ok();
 
-        SystemOneClient::new("systemone", base_url, model, api_key)
-            .ok()
-            .map(|c| Arc::new(c) as Arc<dyn DecisionBackend>)
+        Self::build_backend_from_values(base_url, model, api_key).map(Some)
+    }
+
+    pub fn build_backend_from_values(
+        base_url: impl AsRef<str>,
+        model: impl Into<String>,
+        api_key: Option<String>,
+    ) -> Result<Arc<dyn DecisionBackend>, DeciderError> {
+        let client = SystemOneClient::new("systemone", base_url, model, api_key)?;
+        Ok(Arc::new(client) as Arc<dyn DecisionBackend>)
     }
 
     pub async fn decide(&self, query: DecisionQuery) -> Result<DecisionResponse, DeciderError> {
@@ -62,7 +74,7 @@ impl DecisionService {
 
 impl Default for DecisionService {
     fn default() -> Self {
-        Self::new()
+        Self::new().unwrap_or_else(|_| Self::with_backends(None, None))
     }
 }
 
@@ -135,5 +147,18 @@ mod tests {
             res.answers.get("gate").unwrap().choice.as_deref(),
             Some("fallback")
         );
+    }
+
+    #[test]
+    fn test_build_backend_fails_on_invalid_url() {
+        let res = DecisionService::build_backend_from_values(
+            "http://localhost:8080?query=1",
+            "model",
+            None,
+        );
+        match res {
+            Err(DeciderError::InvalidConfiguration(_)) => {}
+            _ => panic!("expected InvalidConfiguration error"),
+        }
     }
 }

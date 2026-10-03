@@ -32,6 +32,7 @@ which = "6"
 dirs = "5"
 rusqlite = { version = "0.31", features = ["bundled"] }
 guardian = { path = "crates/guardian" }
+decider = { path = "crates/decider" }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 [[bin]]
