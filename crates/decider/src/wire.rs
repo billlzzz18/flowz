@@ -113,11 +113,12 @@ fn is_valid_criterion(value: &Value, allow_null: bool) -> bool {
 }
 
 /// Provider-independent input. The model name is owned by `SystemOneClient`.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DecisionQuery {
     pub state: Value,
     pub questions: BTreeMap<String, Question>,
     /// Optional provider-specific keep-alive value (for example, Ollama's `"5m"`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub keep_alive: Option<Value>,
 }
 
@@ -162,19 +163,19 @@ pub struct DecisionRequest {
 
 /// One named answer. Optional fields preserve the different answer shapes and
 /// provider extensions without coercing probabilities or confidence values.
-#[derive(Debug, Clone, PartialEq, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Answer {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub choice: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub noul: Option<f64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub score: Option<f64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub probabilities: Option<Value>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub confidence: Option<f64>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub legend: Option<Value>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, Value>,
