@@ -11,3 +11,4 @@ __pycache__/
 .scratch/
 *.trashed*
 /models/
+.archify/**/build/
