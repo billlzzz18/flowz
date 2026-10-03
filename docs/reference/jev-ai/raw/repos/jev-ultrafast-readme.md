@@ -20,7 +20,7 @@ Give it one goal. [TypeSafe's Jev](https://docs.typesafe.ai/introduction) picks 
 
 <a href="docs/demo.mp4"><img src="docs/demo.gif" alt="A real Google Flights search at 1× speed, with generated city names and dynamic operation/target decisions" width="100%" /></a>
 
-[Watch the MP4](docs/demo.mp4) · [Measurements](docs/performance.md) · [Read the loop](jev_ultrafast/agent.py)
+[Watch the MP4](docs/demo.mp4) · [Measurements](jev-ultrafast-performance.md) · [Read the loop](jev-ultrafast-agent.py)
 
 ## The action space
 
@@ -114,10 +114,10 @@ Every executed target is resolved from an observed node. The executor rechecks p
 
 | File | Job |
 | --- | --- |
-| [agent.py](jev_ultrafast/agent.py) | The complete loop and text-helper handoff |
-| [snapshot.js](jev_ultrafast/snapshot.js) | Atomic DOM snapshot, indexed controls, freshness guards |
-| [browser.py](jev_ultrafast/browser.py) | Browser connection, current geometry, execution |
-| [model.py](jev_ultrafast/model.py) | Dynamic operation/target heads and text generation |
+| [agent.py](jev-ultrafast-agent.py) | The complete loop and text-helper handoff |
+| [snapshot.js](jev-ultrafast-snapshot.js) | Atomic DOM snapshot, indexed controls, freshness guards |
+| [browser.py](jev-ultrafast-browser.py) | Browser connection, current geometry, execution |
+| [model.py](jev-ultrafast-model.py) | Dynamic operation/target heads and text generation |
 | [questions.py](jev_ultrafast/questions.py) | Model instructions |
 | [demo.py](jev_ultrafast/demo.py) | Local inspector |
 

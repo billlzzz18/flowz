@@ -78,7 +78,8 @@ sha256: e50473501c8fb8e70f3b21866d987393e3f2315c639d638bd477d170e81ed78d
     } else {
       const editable=!e.readOnly && e.getAttribute('aria-readonly')!=='true' &&
         (['textbox','searchbox','spinbutton'].includes(rname) ||
-          (rname==='combobox' && ['INPUT','TEXTAREA'].includes(e.tagName)));
+          (rname==='combobox' && ['INPUT','TEXTAREA'].includes(e.tagName)) ||
+          e.isContentEditable);
       const value='value' in e ? String(e.value) :
         e.isContentEditable || rname==='combobox' ? e.innerText.trim() : '';
       actions.push({...base,kind:editable?'fill':'click',value});

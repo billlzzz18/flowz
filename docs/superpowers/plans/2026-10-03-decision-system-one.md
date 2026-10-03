@@ -2,9 +2,9 @@
 
 > **เป้าหมายสำหรับ Agent:** ใช้ superpowers:subagent-driven-development หรือ superpowers:executing-plans ในการลงมือทำทีละงาน ขั้นตอนใช้รูปแบบ checkbox (`- [ ]`)
 
-**เป้าหมาย:** สร้างและทดสอบระบบการตัดสินใจ System One ที่รองรับการสลับตัวสำรองหลายระดับ (Ollama tev1 -> Local CPU laya -> Cloud Jev) พร้อมสคริปต์เลือกติดตั้งโมเดลลงเครื่อง
+**เป้าหมาย:** สร้างและทดสอบระบบการตัดสินใจ System One ที่รองรับการสลับตัวสำรอง (Primary: laya -> Fallback: tev1:0.8b / multi-tier backend) พร้อมสคริปต์เลือกติดตั้งโมเดลลงเครื่อง
 
-**สถาปัตยกรรม:** `crates/decider` ทำหน้าที่เป็นท่อรับส่ง HTTP แบบ latency ต่ำไปยัง endpoint `/v1/systemone` ส่วน `src/service/decision.rs` ทำหน้าที่ควบคุมการสลับระหว่างโมเดลหลักและโมเดลสำรองเมื่อเกิดปัญหา และมีสคริปต์ PowerShell ช่วยดาวน์โหลดโมเดล
+**สถาปัตยกรรม:** `crates/decider` ทำหน้าที่เป็นท่อรับส่ง HTTP แบบ latency ต่ำไปยัง endpoint `/v1/systemone` ส่วน `src/service/decision.rs` ทำหน้าที่ควบคุมการสลับระหว่าง primary backend และ fallback backend เมื่อเกิดปัญหาด้าน transport/retryable และมีสคริปต์ PowerShell ช่วยดาวน์โหลดโมเดล
 
 **เทคโนโลยีที่ใช้:** Rust (tokio, reqwest, serde, pmcp), PowerShell, Ollama, GGUF/llama.cpp (jevos/laya)
 

@@ -29,7 +29,11 @@ def post_json(url, key, body):
             continue
         if response.is_error:
             raise RuntimeError(f"Model provider returned HTTP {response.status_code}; no action executed.")
-        return response.json()
+    try:
+        data = response.json()
+    except Exception as e:
+        raise RuntimeError(f"Failed to decode provider response: {e}") from None
+    return data
     raise RuntimeError("Model unavailable")
 
 
