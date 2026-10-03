@@ -1,0 +1,36 @@
+docs/specs/tools.md
+  s_8ea30baa169893::t_0973ed6d6a2fdb 193,195,203
+docs/specs/data-dictionary.md
+  s_8ea30baa169893::t_80936062ee7cd8 850,852,854,856,858,860
+  s_8ea30baa169893::t_c7e5d23187c769 1013,1016,1019,1022-1023,1025,1028-1029,1031-1032
+docs/specs/services.md
+  s_8ea30baa169893::t_40812078cefd1e 20,24-25
+.mcp.json
+  s_8ea30baa169893::t_610268f45d5bac 4-5
+src/mcp/tools/decision.rs
+  s_8ea30baa169893::t_4c059c79c85849 42,58,63,71,91-93
+docs/decisions/0006-mcp-namespace-flowz-prefix.md
+  s_8ea30baa169893::t_56b56232c7aab9 8,19-20
+docs/decisions/0014-prompts-separate-by-mode.md
+  s_8ea30baa169893::t_e4d6133bcc08a9 1,8,16
+docs/decisions/0021-self-registering-tool-registry.md
+  s_8ea30baa169893::t_88ba0dd9e2c952 23-24,27-31,37
+src/main.rs
+  s_8ea30baa169893::t_679aae9de4b331 27,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "918cf0c910187446f94775dcdc22b4afa3dc3c46",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
