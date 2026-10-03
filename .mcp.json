@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "flowz": {
+      "command": "D:\\01work\\Active\\users\\billlzzz18\\flowz\\target\\debug\\flowz-mcp.exe",
+      "args": [],
+      "env": {}
+    }
+  }
+}
