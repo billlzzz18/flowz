@@ -98,6 +98,7 @@ impl<S: ProcessSpawner> WorkflowEngine<S> {
         for result in results {
             match result {
                 Ok(response) if response.ok => {
+                    execution_result.results.push(response.clone());
                     execution_result.successful.push(response);
                     execution_result.completed += 1;
                 }

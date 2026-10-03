@@ -16,26 +16,21 @@ pub use toolsets::toolset_name;
 pub fn register_all_tools(
     orch: Arc<OrchestrationContext>,
     service: Arc<FlowzService>,
-) -> Vec<Box<dyn ToolHandler>> {
+) -> Vec<(&'static str, Box<dyn ToolHandler>)> {
     let registry = build_registry(orch, service);
     let ctx = Arc::new(InvocationContext::new_mcp(uuid::Uuid::new_v4().to_string()));
     registry
         .tools
-        .into_values()
-        .map(|t| {
+        .into_iter()
+        .map(|(name, t)| {
             let adapter = adapter::McpToolAdapter::new(t, ctx.clone());
-            Box::new(adapter) as Box<dyn ToolHandler>
+            (name, Box::new(adapter) as Box<dyn ToolHandler>)
         })
         .collect()
 }
 
 pub fn build_registry(orch: Arc<OrchestrationContext>, service: Arc<FlowzService>) -> ToolRegistry {
     let mut registry = ToolRegistry::new();
-
-    // Register workflow tools
-    registry.register(crate::mcp::tools::workflow_run::WorkflowRunTool::new(orch.clone()));
-    registry.register(crate::mcp::tools::workflow_job::WorkflowJobTool::new(orch.clone()));
-    registry.register(crate::mcp::tools::workflow_cancel::WorkflowCancelTool::new(orch.clone()));
 
     // Register cron tools
     registry.register(crate::mcp::tools::cron_create::CronCreateTool::new(service.clone()));
@@ -49,15 +44,14 @@ pub fn build_registry(orch: Arc<OrchestrationContext>, service: Arc<FlowzService
     registry.register(crate::mcp::tools::subagent_steer::SubagentSteerTool::new(orch.clone()));
     registry.register(crate::mcp::tools::subagent_stop::SubagentStopTool::new(orch.clone()));
 
-    // Canvas uses the same orchestration service as MCP and CLI.
-    registry.register(crate::mcp::tools::canvas::CanvasTool::new(orch.clone()));
+    // Register decision tool (System One)
+    registry.register(crate::mcp::tools::decision::DecisionTool::new(service.clone()));
 
     registry
 }
 
 pub fn register_all_prompts() -> Vec<Box<dyn PromptHandler>> {
     vec![
-        Box::new(crate::mcp::prompts::workflow_compose::ComposePrompt),
         Box::new(crate::mcp::prompts::worker_prompt::WorkerPrompt),
         Box::new(crate::mcp::prompts::reducer_prompt::ReducerPrompt),
         Box::new(crate::mcp::prompts::cron_create::CronCreatePrompt),
