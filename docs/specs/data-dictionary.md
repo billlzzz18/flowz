@@ -811,7 +811,61 @@ pub struct DockerInfo {
 }
 ```
 
-## B.8 Error Types
+## B.8 System One Decision Types
+
+```rust
+// crates/decider/src/wire.rs
+use std::collections::BTreeMap;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum Question {
+    Choice {
+        instructions: Value,
+        criteria: BTreeMap<String, Value>,
+    },
+    Noul {
+        instructions: Value,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        criteria: Option<Value>,
+    },
+    Score {
+        instructions: Value,
+        criteria: Vec<Value>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DecisionQuery {
+    pub state: Value,
+    pub questions: BTreeMap<String, Question>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keep_alive: Option<Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Answer {
+    pub choice: Option<String>,
+    pub noul: Option<f64>,
+    pub score: Option<f64>,
+    pub probabilities: Option<Value>,
+    pub confidence: Option<f64>,
+    pub legend: Option<Value>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct DecisionResponse {
+    pub answers: BTreeMap<String, Answer>,
+    #[serde(default)]
+    pub usage: Option<Value>,
+}
+```
+
+## B.9 Error Types
 
 ```rust
 // src/error.rs
@@ -949,4 +1003,26 @@ pub enum ConfigError {
     #[error("invalid config: {0}")]
     Invalid(String),
 }
+
+#[derive(Debug, thiserror::Error)]
+pub enum DeciderError {
+    #[error("invalid request: {0}")]
+    InvalidRequest(String),
+
+    #[error("invalid configuration: {0}")]
+    InvalidConfiguration(String),
+
+    #[error("transport error: {0}")]
+    Transport(String),
+
+    #[error("HTTP status {status}")]
+    HttpStatus { status: u16 },
+
+    #[error("parse error: {0}")]
+    Parse(String),
+
+    #[error("timeout")]
+    Timeout,
+}
 ```
+

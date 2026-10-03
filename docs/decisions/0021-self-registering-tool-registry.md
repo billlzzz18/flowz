@@ -19,16 +19,16 @@ Hermes ใช้ declarative tool registration + centralized dispatch โดย�
 - Toolsets ทำ grouping
 
 ```rust
-// src/mcp/tools/workflow_run.rs
+// src/mcp/tools/cron_create.rs
 pub fn register(registry: &mut ToolRegistry) {
-    registry.register(WorkflowRunTool);
+    registry.register(CronCreateTool);
 }
 
-pub struct WorkflowRunTool;
+pub struct CronCreateTool;
 
 #[async_trait::async_trait]
-impl McpTool for WorkflowRunTool {
-    fn name(&self) -> &'static str { "flowz_workflow_run" }
+impl McpTool for CronCreateTool {
+    fn name(&self) -> &'static str { "flowz_cron_create" }
     fn schema(&self) -> serde_json::Value { /* ... */ }
     async fn call(&self, args: serde_json::Value, ctx: &InvocationContext) -> Result<serde_json::Value> {
         // ...

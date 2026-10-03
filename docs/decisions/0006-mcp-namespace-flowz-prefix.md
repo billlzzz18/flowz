@@ -11,19 +11,14 @@
 
 - MCP tool name ทั้งหมดใช้ prefix flowz_
 - รูปแบบ: flowz_<domain>_<action> เช่น:
-  - flowz_workflow_run
-  - flowz_workflow_job
-  - flowz_workflow_cancel
   - flowz_cron_create
   - flowz_cron_list
   - flowz_cron_cancel
+  - flowz_decide
 - Prompt names ใช้ prefix เดียวกัน:
-  - flowz_workflow_compose
-  - flowz_workflow_worker_prompt
-  - flowz_workflow_reducer_prompt
   - flowz_subagent_delegate
   - flowz_cron_create
-- CLI ใช้ hierarchy: flowz workflow run, flowz cron create
+- CLI ใช้ hierarchy: flowz cron create
 
 ## Consequences
 
