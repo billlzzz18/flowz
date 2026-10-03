@@ -1,0 +1,31 @@
+src/mcp/mod.rs
+  s_8ea30baa169893::t_d7b159cfbb3f08 47-48
+  s_8ea30baa169893::t_00ad8fce6d6ecc 19,24-25,27
+docs/specs/tools.md
+  s_8ea30baa169893::t_41bbcb50084354 190-222
+src/orchestration/engine.rs
+  s_8ea30baa169893::t_945d25b5adf3fb 101
+examples/demo_workflow.rs
+  s_8ea30baa169893::t_eb98d75e2d202f 3
+  s_8ea30baa169893::t_38962f6a305d9a 1-2
+src/mcp/tools/mod.rs
+  s_8ea30baa169893::t_906a47e68f826e 4,17
+docs/specs/services.md
+  s_8ea30baa169893::t_11d35fde2ae30d 381-403
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3252c40be023eae89c8da2605285f63cd061cff4",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
