@@ -1,0 +1,25 @@
+.agents/skills/flowz-conventions/SKILL.md
+  s_8ea30baa169893::t_6136ddb3d83ea2 43
+crates/decider/tests/mock_server.rs
+  s_8ea30baa169893::t_190c3f8228c40b 54
+crates/decider/src/wire.rs
+  s_8ea30baa169893::t_78eff30b229960 434
+  s_8ea30baa169893::t_fc7b978f1006f1 60-70
+  s_8ea30baa169893::t_2a2409ab9b42ad 171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "078cada1014323af8cc72c751690f8b6c5911b96",
+  "prompts": {},
+  "sessions": {
+    "s_8ea30baa169893": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03bda26-0b17-49b6-9e06-c9ee65e9e93a",
+        "model": "gemini-3.8-flash"
+      },
+      "human_author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
