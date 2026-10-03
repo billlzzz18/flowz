@@ -1,0 +1,16 @@
+.gitignore
+  h_a25ade2a4fe7aa 12-13
+.serena/project.local.yml
+  h_a25ade2a4fe7aa 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c572e889fb1d42fb1fc8ffa43878ea871822d00",
+  "prompts": {},
+  "humans": {
+    "h_a25ade2a4fe7aa": {
+      "author": "bl1nk-team <billlzzz18@gmail.com>"
+    }
+  }
+}
