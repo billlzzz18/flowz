@@ -225,3 +225,15 @@ async fn classifies_connect_failure_as_non_retryable() {
     assert_eq!(error.transport_failure_kind(), Some(TransportFailureKind::Connect));
     assert!(!error.is_retryable());
 }
+
+#[tokio::test]
+async fn rejects_response_exceeding_size_cap() {
+    let big_answer = "x".repeat(10 * 1024 * 1024 + 1024);
+    let body =
+        format!(r#"{{"answers":{{"route":{{"choice":"billing","extra_blob":"{big_answer}"}}}}}}"#);
+    let (base_url, _) = spawn_mock_server("200 OK", Box::leak(body.into_boxed_str())).await;
+    let client = SystemOneClient::new("big-response", &base_url, "test-model", None).unwrap();
+    let error = client.decide(sample_query()).await.unwrap_err();
+    assert!(matches!(error, decider::DeciderError::ResponseTooLarge(_)));
+    assert!(!error.is_retryable());
+}

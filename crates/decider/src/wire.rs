@@ -57,12 +57,9 @@ impl Question {
                             "noul question {name:?} criteria must be an object"
                         )));
                     };
-                    if map
-                        .iter()
-                        .any(|(key, value)| {
-                            key.trim().is_empty() || !is_valid_criterion(value, true)
-                        })
-                    {
+                    if map.iter().any(|(key, value)| {
+                        key.trim().is_empty() || !is_valid_criterion(value, true)
+                    }) {
                         return Err(DeciderError::InvalidRequest(format!(
                             "noul question {name:?} has an unsupported criterion value"
                         )));
@@ -361,6 +358,10 @@ mod tests {
             json!("   "),
             json!([]),
             json!({}),
+            json!(false),
+            json!(true),
+            json!(42),
+            json!(0),
         ] {
             let query = DecisionQuery {
                 state: empty_state,
@@ -374,7 +375,9 @@ mod tests {
                 keep_alive: None,
             };
             let err = query.validate().unwrap_err();
-            assert!(matches!(err, DeciderError::InvalidRequest(msg) if msg == "state must not be empty"));
+            assert!(
+                matches!(err, DeciderError::InvalidRequest(msg) if msg == "state must not be empty")
+            );
         }
     }
 
@@ -405,7 +408,25 @@ mod tests {
             keep_alive: None,
         };
         let err = invalid.validate().unwrap_err();
-        assert!(matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an unsupported criterion value")));
+        assert!(
+            matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an unsupported criterion value"))
+        );
+
+        let whitespace_key = DecisionQuery {
+            state: json!({"text": "synthetic"}),
+            questions: BTreeMap::from([(
+                "q".to_string(),
+                Question::Noul {
+                    instructions: json!("Check"),
+                    criteria: Some(json!({"  ": "eligible"})),
+                },
+            )]),
+            keep_alive: None,
+        };
+        let err = whitespace_key.validate().unwrap_err();
+        assert!(
+            matches!(err, DeciderError::InvalidRequest(msg) if msg.contains("has an unsupported criterion value"))
+        );
     }
 
     #[test]

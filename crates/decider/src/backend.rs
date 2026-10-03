@@ -7,6 +7,7 @@ use crate::{DeciderError, DecisionQuery, DecisionRequest, DecisionResponse};
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 const SYSTEM_ONE_SUFFIX: &str = "/v1/systemone";
+const MAX_RESPONSE_BYTES: usize = 10 * 1024 * 1024; // 10 MiB limit
 
 #[async_trait]
 pub trait DecisionBackend: Send + Sync {
@@ -52,7 +53,7 @@ impl SystemOneClient {
         }
         let base_url = base_url.as_ref().trim().trim_end_matches('/');
         if base_url.contains('?') || base_url.contains('#') {
-            return Err(DeciderError::InvalidRequest(
+            return Err(DeciderError::InvalidConfiguration(
                 "base_url must not contain a query or fragment".to_string(),
             ));
         }
@@ -127,10 +128,22 @@ impl DecisionBackend for SystemOneClient {
             return Err(DeciderError::HttpStatus { status: status.as_u16() });
         }
 
-        response
-            .json::<DecisionResponse>()
+        if matches!(response.content_length(), Some(len) if len as usize > MAX_RESPONSE_BYTES) {
+            return Err(
+                DeciderError::ResponseTooLarge(response.content_length().unwrap() as usize),
+            );
+        }
+
+        let bytes = response
+            .bytes()
             .await
-            .map_err(DeciderError::ResponseDecode)
+            .map_err(|err| DeciderError::ResponseDecode(err.to_string()))?;
+        if bytes.len() > MAX_RESPONSE_BYTES {
+            return Err(DeciderError::ResponseTooLarge(bytes.len()));
+        }
+
+        serde_json::from_slice::<DecisionResponse>(&bytes)
+            .map_err(|err| DeciderError::ResponseDecode(err.to_string()))
     }
 }
 
@@ -148,10 +161,10 @@ mod tests {
             Duration::from_secs(10),
         );
         match res_query {
-            Err(DeciderError::InvalidRequest(msg)) => {
+            Err(DeciderError::InvalidConfiguration(msg)) => {
                 assert_eq!(msg, "base_url must not contain a query or fragment");
             }
-            _ => panic!("expected InvalidRequest error for query"),
+            _ => panic!("expected InvalidConfiguration error for query"),
         }
 
         let res_fragment = SystemOneClient::with_timeout(
@@ -162,10 +175,10 @@ mod tests {
             Duration::from_secs(10),
         );
         match res_fragment {
-            Err(DeciderError::InvalidRequest(msg)) => {
+            Err(DeciderError::InvalidConfiguration(msg)) => {
                 assert_eq!(msg, "base_url must not contain a query or fragment");
             }
-            _ => panic!("expected InvalidRequest error for fragment"),
+            _ => panic!("expected InvalidConfiguration error for fragment"),
         }
     }
 

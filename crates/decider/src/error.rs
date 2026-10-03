@@ -12,8 +12,11 @@ pub enum DeciderError {
     #[error("System One endpoint returned HTTP {status}")]
     HttpStatus { status: u16 },
 
-    #[error("System One endpoint returned an invalid response")]
-    ResponseDecode(#[source] reqwest::Error),
+    #[error("System One endpoint returned an invalid response: {0}")]
+    ResponseDecode(String),
+
+    #[error("System One endpoint returned a response exceeding limit ({0} bytes)")]
+    ResponseTooLarge(usize),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -31,14 +34,17 @@ impl DeciderError {
             Self::HttpStatus { status } => {
                 *status == 408 || *status == 429 || (500..=599).contains(status)
             }
-            Self::Transport(error) | Self::ResponseDecode(error) => error.is_timeout(),
-            Self::InvalidRequest(_) | Self::InvalidConfiguration(_) => false,
+            Self::Transport(error) => error.is_timeout(),
+            Self::ResponseDecode(_)
+            | Self::InvalidRequest(_)
+            | Self::InvalidConfiguration(_)
+            | Self::ResponseTooLarge(_) => false,
         }
     }
 
     pub fn transport_failure_kind(&self) -> Option<TransportFailureKind> {
         let error = match self {
-            Self::Transport(error) | Self::ResponseDecode(error) => error,
+            Self::Transport(error) => error,
             _ => return None,
         };
         Some(if error.is_timeout() {
