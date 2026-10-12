@@ -20,9 +20,12 @@ function Setup-Tev1 {
         Write-Host "Ollama detected. Pulling tev1:0.8b..." -ForegroundColor Green
         try {
             & ollama pull tev1:0.8b
+            if ($LASTEXITCODE -ne 0) {
+                throw "ollama pull returned non-zero exit code $LASTEXITCODE"
+            }
             Write-Host "tev1:0.8b installed successfully in Ollama." -ForegroundColor Green
         } catch {
-            Write-Warning "Failed to pull tev1:0.8b via Ollama. You can run 'ollama run tev1:0.8b' manually."
+            Write-Error "Failed to pull tev1:0.8b via Ollama: $_"
         }
     } else {
         Write-Warning "Ollama is not installed or not in PATH."
@@ -34,13 +37,16 @@ function Setup-Laya {
     Write-Host "`n[2/2] Setting up laya (jevos GGUF standalone CPU model)..." -ForegroundColor Yellow
     $layaFile = Join-Path $modelsDir "jevos-v2-q4_k_m.gguf"
     if (Test-Path $layaFile) {
-        Write-Host "Laya model artifact already exists: $layaFile" -ForegroundColor Green
-    } else {
-        Write-Host "Downloading laya artifact to $layaFile..." -ForegroundColor Gray
-        # ponytail: placeholder artifact pointer; download from repository release when online
-        New-Item -ItemType File -Path $layaFile -Value "LAYA_MODEL_STUB" -Force | Out-Null
-        Write-Host "Configured laya model slot at $layaFile." -ForegroundColor Green
+        if ((Get-Item $layaFile).Length -lt 1000000) {
+            Write-Warning "Existing laya model artifact appears to be an invalid stub (size < 1MB)."
+        } else {
+            Write-Host "Laya model artifact already exists: $layaFile" -ForegroundColor Green
+            return
+        }
     }
+
+    Write-Host "Laya standalone model artifact is not bundled in repository." -ForegroundColor Yellow
+    Write-Host "Download the real GGUF artifact (jevos-v2-q4_k_m.gguf) into $modelsDir before running standalone mode." -ForegroundColor Yellow
 }
 
 switch ($Model) {

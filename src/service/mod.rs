@@ -12,5 +12,23 @@ pub struct FlowzService {
 impl FlowzService {
     pub fn new() -> Self {
         Self::default()
+    pub fn new() -> Result<Self, decider::DeciderError> {
+        Ok(Self {
+            workflow: workflow::WorkflowService::new(),
+            cron: cron::CronService::new(),
+            supervisor: supervisor::SupervisorService::new(),
+            decision: decision::DecisionService::new()?,
+        })
+    }
+}
+
+impl Default for FlowzService {
+    fn default() -> Self {
+        Self::new().unwrap_or_else(|_| Self {
+            workflow: workflow::WorkflowService::new(),
+            cron: cron::CronService::new(),
+            supervisor: supervisor::SupervisorService::new(),
+            decision: decision::DecisionService::with_backends(None, None),
+        })
     }
 }
