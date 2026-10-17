@@ -40,7 +40,7 @@ signals = {
     for q, ans in response.get("answers", {}).items()
 }
 
-if signals.get("hard_violation", 0.0) >= 0.80:
+if signals.get("hard_violation") is not None and signals["hard_violation"] >= 0.80:
     route = "REJECT_OR_ESCALATE"
 elif signals.get("escalate", 0.0) >= 0.70 or signals.get("input_sufficient", 1.0) < 0.70:
     route = "DECISION_MAKER_WITH_CAUTION"
