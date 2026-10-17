@@ -29,7 +29,7 @@ sha256: e50473501c8fb8e70f3b21866d987393e3f2315c639d638bd477d170e81ed78d
   };
   const roles=['button','link','checkbox','radio','switch','tab','menuitem','menuitemradio',
     'option','gridcell','combobox','textbox','searchbox','spinbutton'];
-  const selector='a[href],button,input,textarea,select,summary,[contenteditable="true"],'+
+    'a[href],button,input,textarea,select,summary,[contenteditable],'+
     roles.map(role=>'[role="'+role+'"]').join(',');
   const role = e => {
     const explicit=e.getAttribute('role');
