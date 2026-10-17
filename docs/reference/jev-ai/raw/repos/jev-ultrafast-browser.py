@@ -41,7 +41,11 @@ class Browser:
                     break
                 time.sleep(0.02)
         except Exception:
-            self.close()
+            try:
+                self.close()
+            except Exception:
+                pass
+            raise
             raise
 
     def call(self, method, **params):
