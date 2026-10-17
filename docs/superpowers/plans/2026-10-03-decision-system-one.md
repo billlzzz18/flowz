@@ -8,7 +8,7 @@
 
 **เทคโนโลยีที่ใช้:** Rust (tokio, reqwest, serde, pmcp), PowerShell, Ollama, GGUF/llama.cpp (jevos/laya)
 
-**เอกสารอ้างอิง:** `docs/reference/jev-ai/concepts/jev-for-decision-plugin.md` และ `docs/research/decision-example.html`
+**เอกสารอ้างอิง:** `docs/reference/jev-ai/concepts/jev-for-decision-plugin.md` และ `.archify/workflow-decision-engine-20261003-152000/decision-engine.html`
 
 ## กฎและข้อจำกัดของระบบ
 - จำกัดขนาดข้อมูลตอบกลับสูงสุดไม่เกิน 10 MiB (`MAX_RESPONSE_BYTES = 10 * 1024 * 1024`)
