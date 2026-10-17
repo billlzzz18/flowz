@@ -3,7 +3,7 @@ title: เปรียบเทียบ Jev, jevos และ LLM ทั่ว�
 created: 2026-09-30
 updated: 2026-09-30
 type: comparison
-tags: [comparison, jev, local-inference, decision-model, benchmark, limitations]
+tags: [jev, local-inference, decision-model, benchmark, limitations]
 sources: [raw/articles/typesafe-system-one-jev.md, raw/articles/browserbase-what-is-jev.md, raw/articles/langchain-building-harness-with-jev.md, raw/repos/jevos-readme.md]
 confidence: medium
 ---
