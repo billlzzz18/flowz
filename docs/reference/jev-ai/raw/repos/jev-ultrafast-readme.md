@@ -118,7 +118,7 @@ Every executed target is resolved from an observed node. The executor rechecks p
 | [snapshot.js](jev-ultrafast-snapshot.js) | Atomic DOM snapshot, indexed controls, freshness guards |
 | [browser.py](jev-ultrafast-browser.py) | Browser connection, current geometry, execution |
 | [model.py](jev-ultrafast-model.py) | Dynamic operation/target heads and text generation |
-| [questions.py](jev_ultrafast/questions.py) | Model instructions |
+| [questions.py](jev-ultrafast-questions.py) | Model instructions |
 | [demo.py](jev_ultrafast/demo.py) | Local inspector |
 
 ## Evidence and limits
