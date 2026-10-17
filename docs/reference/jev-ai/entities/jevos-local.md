@@ -14,7 +14,7 @@ confidence: medium
 
 ## วิธีใช้แบบย่อ
 
-ดาวน์โหลด GGUF, ติดตั้ง runtime แล้วรัน server:
+ดาวน์โหลด [GGUF จาก jevos-v2 release](https://github.com/feder-cr/jev/releases/tag/jevos-v2), clone [repository](https://github.com/feder-cr/jev) แล้วเข้าโฟลเดอร์ก่อนรัน:
 
 ```bash
 uv sync
