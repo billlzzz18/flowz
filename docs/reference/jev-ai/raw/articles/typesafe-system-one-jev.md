@@ -7,7 +7,7 @@ sha256: ea2d5a3d3faaa11f8729af3819d4a59d42157dfd4c319848c4a861ab966bcbe0
 ---
 title: "Introducing System One Models & Jev - TypeSafe AI Blog"
 description: TypeSafe AI is an AI lab building machine-native intelligence infrastructure for automation, designed to make decisions within software. Try our first System One Model, Jev, in early access.
-published: "Sep 28, 2026, 7:32 PM UTC"
++published: "Sep 15, 2026"
 ---
 
 [TypeSafe AI](../)
