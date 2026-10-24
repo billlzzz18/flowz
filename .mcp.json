@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "flowz": {
+      "command": "cargo",
+      "args": ["run", "--bin", "flowz-mcp"],
+      "env": {}
+    }
+  }
+}

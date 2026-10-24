@@ -2,91 +2,6 @@
 
 Source: Flowz Implementation Specification (Part E)
 
-## E.1 flowz_workflow_run
-
-Input:
-```json
-{
-  "type": "object",
-  "required": ["items", "run_budget"],
-  "properties": {
-    "items": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/WorkflowItem" }
-    },
-    "reducer": { "$ref": "#/$defs/ReducerSpec" },
-    "run_budget": { "$ref": "#/$defs/RunBudget" },
-    "max_concurrency": { "type": "integer", "minimum": 1 },
-    "failure_policy": { "enum": ["collect", "fail_fast"], "default": "collect" }
-  }
-}
-```
-
-Output:
-```json
-{
-  "type": "object",
-  "required": ["job_id", "status", "items"],
-  "properties": {
-    "job_id": { "type": "string", "format": "uuid" },
-    "status": { "enum": ["pending", "running", "completed", "failed", "timed_out", "cancelled"] },
-    "items": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["item_id", "status"],
-        "properties": {
-          "item_id": { "type": "string" },
-          "status": { "type": "string" },
-          "result": { "type": ["object", "null"] },
-          "error": { "type": ["string", "null"] },
-          "duration_ms": { "type": "integer" }
-        }
-      }
-    },
-    "reducer": { "type": ["object", "null"] },
-    "total_cost": {
-      "type": ["object", "null"],
-      "properties": {
-        "usd": { "type": "number" },
-        "tokens_in": { "type": "integer" },
-        "tokens_out": { "type": "integer" }
-      }
-    },
-    "duration_ms": { "type": "integer" }
-  }
-}
-```
-
-## E.2 flowz_workflow_job
-Input:
-```json
-{
-  "type": "object",
-  "required": ["job_id"],
-  "properties": { "job_id": { "type": "string" } }
-}
-```
-
-## E.3 flowz_workflow_cancel
-Input:
-```json
-{
-  "type": "object",
-  "required": ["job_id"],
-  "properties": { "job_id": { "type": "string" } }
-}
-```
-Output:
-```json
-{
-  "type": "object",
-  "required": ["cancelled"],
-  "properties": { "cancelled": { "type": "boolean" } }
-}
-```
-
 ## E.4 flowz_cron_create
 Input:
 ```json
@@ -272,3 +187,36 @@ pub trait McpTool: Send + Sync {
     ) -> Result<Value, FlowzError>;
 }
 ```
+
+## E.15 Decision Tool: `flowz_decide` (System One Fast-Path)
+
+- Toolset: `Toolset::Supervisor`
+- Name: `flowz_decide`
+- Description: Evaluate fast-path typed questions using System One models with multi-tier fallback and Langfuse tracing.
+
+### Input Schema
+```json
+{
+  "type": "object",
+  "required": ["state", "questions"],
+  "properties": {
+    "state": { "description": "Context and environment state payload evaluated across all questions." },
+    "questions": { "type": "object", "description": "Map of named questions (choice, noul, or score)." },
+    "keep_alive": { "type": "string", "description": "Optional keep-alive setting for local models (e.g. 5m)." }
+  }
+}
+```
+
+### Output Schema
+```json
+{
+  "type": "object",
+  "required": ["status", "answers"],
+  "properties": {
+    "status": { "type": "string", "enum": ["success"] },
+    "answers": { "type": "object" },
+    "usage": { "type": ["object", "null"] }
+  }
+}
+```
+

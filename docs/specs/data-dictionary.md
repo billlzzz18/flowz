@@ -811,7 +811,67 @@ pub struct DockerInfo {
 }
 ```
 
-## B.8 Error Types
+## B.8 System One Decision Types
+
+```rust
+// crates/decider/src/wire.rs
+use std::collections::BTreeMap;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum Question {
+    Choice {
+        instructions: Value,
+        criteria: BTreeMap<String, Value>,
+    },
+    Noul {
+        instructions: Value,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        criteria: Option<Value>,
+    },
+    Score {
+        instructions: Value,
+        criteria: Vec<Value>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DecisionQuery {
+    pub state: Value,
+    pub questions: BTreeMap<String, Question>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub keep_alive: Option<Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Answer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub choice: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub noul: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub score: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub probabilities: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub legend: Option<Value>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, Value>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct DecisionResponse {
+    pub answers: BTreeMap<String, Answer>,
+    #[serde(default)]
+    pub usage: Option<Value>,
+}
+```
+
+## B.9 Error Types
 
 ```rust
 // src/error.rs
@@ -949,4 +1009,27 @@ pub enum ConfigError {
     #[error("invalid config: {0}")]
     Invalid(String),
 }
+
+// crates/decider/src/error.rs
+#[derive(Debug, thiserror::Error)]
+pub enum DeciderError {
+    #[error("invalid decision request: {0}")]
+    InvalidRequest(String),
+
+    #[error("invalid System One client configuration: {0}")]
+    InvalidConfiguration(String),
+
+    #[error("System One transport request failed")]
+    Transport(#[source] reqwest::Error),
+
+    #[error("System One endpoint returned HTTP {status}")]
+    HttpStatus { status: u16 },
+
+    #[error("System One endpoint returned an invalid response: {0}")]
+    ResponseDecode(String),
+
+    #[error("System One endpoint returned a response exceeding limit ({0} bytes)")]
+    ResponseTooLarge(usize),
+}
 ```
+

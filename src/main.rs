@@ -15,13 +15,18 @@ async fn main() -> Result<()> {
 
     let notifier = build_notifier();
     let policy = WorkflowPolicy::default();
-    let worker_script = std::env::current_exe()
-        .ok()
-        .and_then(|p| p.parent().map(|d| d.join("../../worker.py")))
-        .and_then(|p| std::fs::canonicalize(p).ok())
-        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("worker.py"));
+    let worker_script = std::fs::canonicalize("scripts/worker.py")
+        .or_else(|_| {
+            std::env::current_exe()
+                .ok()
+                .and_then(|p| p.parent().map(|d| d.join("../../scripts/worker.py")))
+                .and_then(|p| std::fs::canonicalize(p).ok())
+                .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "scripts/worker.py not found"))
+        })
+        .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("scripts/worker.py"));
+    let python_cmd = if cfg!(windows) { "python" } else { "python3" };
     let spawner = StdProcessSpawner {
-        executable: PathBuf::from("python3"),
+        executable: PathBuf::from(python_cmd),
         args: vec![worker_script.to_string_lossy().to_string()],
         base_env: std::collections::HashMap::new(),
         timeout_secs: 300,
@@ -41,11 +46,12 @@ async fn main() -> Result<()> {
         .name("flowz-mcp")
         .version(env!("CARGO_PKG_VERSION"))
         .capabilities(ServerCapabilities::default());
-    for tool in tools {
-        builder = builder.tool_arc("flowz", Arc::from(tool));
+    for (name, tool) in tools {
+        builder = builder.tool_arc(name, Arc::from(tool));
     }
     for prompt in prompts {
-        builder = builder.prompt_arc("flowz", Arc::from(prompt));
+        let name = prompt.metadata().map(|m| m.name).unwrap_or_else(|| "prompt".to_string());
+        builder = builder.prompt_arc(name, Arc::from(prompt));
     }
     let server = builder.build()?;
 
